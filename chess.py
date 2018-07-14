@@ -4,9 +4,10 @@ import time
 
 
 class MillenniumChess:
-    def __init__(self, port="", mode="USB"):
+    def __init__(self, port="", mode="USB", verbose=False):
         self.replies = {'v': 7, 's': 67, 'l': 3, 'x': 3, 'w': 7, 'r': 7}
         self.mode = mode
+        self.verbose = verbose
         if port == "":
             ports = self.port_search()
             if len(ports) > 0:
@@ -20,6 +21,7 @@ class MillenniumChess:
                     if self.mode == 'USB':
                         self.ser_port.dtr = 0
                     self.init = True
+                    self.port = port
                 except (OSError, serial.SerialException) as e:
                     print("Can't open port {}, {}".format(port, e))
                     self.init = False
@@ -30,9 +32,9 @@ class MillenniumChess:
             print("No port found.")
             self.init = False
 
-    def version_quick_check(self, port, verbose=True):
+    def version_quick_check(self, port):
         try:
-            if verbose is True:
+            if self.verbose is True:
                 print("Testing port: {}".format(port))
             self.ser_port = serial.Serial(port, 38400)  # , timeout=1)
             if self.mode == 'USB':
@@ -43,17 +45,17 @@ class MillenniumChess:
             if len(version) != 7:
                 self.ser_port.close()
                 self.init = False
-                if verbose is True:
+                if self.verbose is True:
                     print("Message length {} instead of 7".format(len(version)))
                 return None
             if version[0] != 'v':
-                if verbose is True:
+                if self.verbose is True:
                     print("Unexpected reply {}".format(version))
                 self.ser_port.close()
                 self.init = False
                 return None
             version = '{}.{}'.format(version[1:2], version[3:4])
-            if verbose is True:
+            if self.verbose is True:
                 print("Millenium {} at {}", version, port)
             self.ser_port.close()
             self.init = False
@@ -64,13 +66,13 @@ class MillenniumChess:
         self.init = False
         return None
 
-    def port_check(self, port, verbose=True):
+    def port_check(self, port):
         try:
             s = serial.Serial(port, 38400)  # , timeout=1)
             s.close()
             return True
         except (OSError, serial.SerialException) as e:
-            if verbose:
+            if self.verbose:
                 print("Can't open port {}, {}".format(port, e))
             return False
 
@@ -79,10 +81,11 @@ class MillenniumChess:
             [port.device for port in serial.tools.list_ports.comports(True)])
         vports = []
         for port in ports:
-            if self.port_check(port, False):
+            if self.port_check(port):
                 version = self.version_quick_check(port)
                 if version != None:
-                    print("Found: {}".format(version))
+                    if self.verbose:
+                        print("Found: {}".format(version))
                     vports.append(port)
         return vports
 
@@ -117,12 +120,12 @@ class MillenniumChess:
             try:
                 self.ser_port.reset_input_buffer()
             except (Exception) as e:
-                print("Failed to empty read-buffer: {}", e)
+                if self.verbose:
+                    print("Failed to empty read-buffer: {}", e)
             gpar = 0
             for b in msg:
                 gpar = gpar ^ ord(b)
             msg = msg+self.hex(gpar)
-            print("-> {}".format(msg))
             bts = []
             for c in msg:
                 bo = self.add_odd_par(c)
@@ -130,11 +133,14 @@ class MillenniumChess:
             try:
                 n = self.ser_port.write(bts)
                 self.ser_port.flush()
-                print("Written: {}".format(n))
+                if self.verbose:
+                    print("Written: {}".format(n))
             except (Exception) as e:
-                print("Failed to write {}: {}", msg, e)
+                if self.verbose:
+                    print("Failed to write {}: {}", msg, e)
         else:
-            print("No open port for write")
+            if self.verbose:
+                print("No open port for write")
 
     def read(self, num):
         rep = []
@@ -144,19 +150,43 @@ class MillenniumChess:
                     b = chr(ord(self.ser_port.read()) & 127)
                     rep.append(b)
                 except (Exception) as e:
-                    print("Read error {}".format(e))
+                    if self.verbose:
+                        print("Read error {}".format(e))
                     pass
         else:
-            print("No open port for read")
+            if self.verbose:
+                print("No open port for read")
         if len(rep) > 2:
             gpar = 0
             for b in rep[:-2]:
                 gpar = gpar ^ ord(b)
             if rep[-2]+rep[-1] != self.hex(gpar):
-                print("CRC error rep={} CRCs: {}!={}".format(rep,
-                                                             rep[-2], self.hex(gpar)))
+                if self.verbose:
+                    print("CRC error rep={} CRCs: {}!={}".format(rep,
+                                                                 rep[-2], self.hex(gpar)))
                 return []
         return rep
+
+    def get_version(self):
+        version = ""
+        self.write("V")
+        version = self.read(7)
+        if len(version) != 7:
+            return ""
+        if version[0] != 'v':
+            return ""
+        version = '{}.{}'.format(version[1]+version[2], version[3]+version[4])
+        return version
+
+    def get_board_raw(self):
+        cmd = "S"
+        self.write(cmd)
+        board = self.read(67)
+        if len(board) != 67:
+            return ""
+        if board[0] != 's':
+            return ""
+        return board[1:65]
 
     def disconnect(self):
         if self.init:
@@ -165,11 +195,7 @@ class MillenniumChess:
 
 
 if __name__ == '__main__':
-    print("Starting!")
-    # port = '/dev/tty.MILLENNIUMCHESS-SerialP'
-    port = '/dev/ttyUSB0'  # rfcomm1'
-    # port = '/dev/rfcomm1'
-    board = MillenniumChess()
+    board = MillenniumChess(verbose=False)
 
     '''
         cmd = "L50"
@@ -187,13 +213,20 @@ if __name__ == '__main__':
         board.write(cmd)
         board.read(3)
     '''
+    if board.init:
+        version = board.get_version()
+        print("Millenium board version {} at {}".format(version, board.port))
 
-    cmd = "V"
-    board.write(cmd)
-    board.read(7)
+        board_raw = board.get_board_raw()
+        if len(board_raw) == 64:
+            for y in range(8):
+                for x in range(8):
+                    print(board_raw[7-x+(7-y)*8], end="")
+                print()
+        else:
+            print("Received {}".format(len(board_raw)))
 
-    cmd = "S"
-    board.write(cmd)
-    board.read(67)
-    board.disconnect()
+        board.disconnect()
+    else:
+        print("No board.")
     print("closed.")
