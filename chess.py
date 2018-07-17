@@ -6,6 +6,9 @@ import time
 class MillenniumChess:
     def __init__(self, port="", mode="USB", verbose=False):
         self.replies = {'v': 7, 's': 67, 'l': 3, 'x': 3, 'w': 7, 'r': 7}
+        self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
+                       "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
+                       "ascii": "PNBRQK.pnbrqk"}
         self.mode = mode
         self.verbose = verbose
         if port == "":
@@ -178,15 +181,50 @@ class MillenniumChess:
         version = '{}.{}'.format(version[1]+version[2], version[3]+version[4])
         return version
 
-    def get_board_raw(self):
+    def get_board_position_raw(self):
         cmd = "S"
         self.write(cmd)
-        board = self.read(67)
-        if len(board) != 67:
+        rph = self.read(67)
+        if len(rph) != 67:
             return ""
-        if board[0] != 's':
+        if rph[0] != 's':
             return ""
-        return board[1:65]
+        return rph[1:65]
+
+    def get_board_position(self):
+        rp = self.get_board_position_raw()
+        position = [[0 for x in range(8)] for y in range(8)]
+        if len(rp) == 64:
+            for y in range(8):
+                for x in range(8):
+                    c = rp[7-x+y*8]
+                    i = self.figrep['ascii'].find(c)
+                    if i == -1:
+                        print("Invalid char in raw position: {}".format(c))
+                        return None
+                    else:
+                        f = self.figrep['int'][i]
+                        position[y][x] = f
+        else:
+            print("Error in board postion, received {}".format(len(board_raw)))
+            return None
+        return position
+
+    def print_position_ascii(self, position):
+        print("  +------------------------+")
+        for y in range(8):
+            print("{} | ".format(8-y))
+            for x in range(8):
+                f = position[7-y][x]
+                c = '?'
+                for i in range(len(self.figrep['int'])):
+                    if self.figrep['int'][i] == f:
+                        c = self.figrep['unic'][i]
+                        break
+                print(" {} ".format(c), end='')
+            print("|")
+        print("  +------------------------+")
+        print("    A  B  C  D  E  F  G  H")
 
     def disconnect(self):
         if self.init:
@@ -218,6 +256,7 @@ if __name__ == '__main__':
         print("Millenium board version {} at {}".format(version, board.port))
 
         board_raw = board.get_board_raw()
+        board.print_ascii_board(board_raw)
         if len(board_raw) == 64:
             for y in range(8):
                 for x in range(8):
