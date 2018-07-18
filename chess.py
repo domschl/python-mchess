@@ -181,7 +181,7 @@ class MillenniumChess:
         version = '{}.{}'.format(version[1]+version[2], version[3]+version[4])
         return version
 
-    def get_board_position_raw(self):
+    def get_position_raw(self):
         cmd = "S"
         self.write(cmd)
         rph = self.read(67)
@@ -191,8 +191,8 @@ class MillenniumChess:
             return ""
         return rph[1:65]
 
-    def get_board_position(self):
-        rp = self.get_board_position_raw()
+    def get_position(self):
+        rp = self.get_position_raw()
         position = [[0 for x in range(8)] for y in range(8)]
         if len(rp) == 64:
             for y in range(8):
@@ -206,22 +206,27 @@ class MillenniumChess:
                         f = self.figrep['int'][i]
                         position[y][x] = f
         else:
-            print("Error in board postion, received {}".format(len(board_raw)))
+            print("Error in board postion, received {}".format(len(rp)))
             return None
         return position
 
     def print_position_ascii(self, position):
         print("  +------------------------+")
         for y in range(8):
-            print("{} | ".format(8-y))
+            print("{} |".format(8-y), end="")
             for x in range(8):
                 f = position[7-y][x]
+                if (x+y) % 2 == 0:
+                    f = f*-1
                 c = '?'
                 for i in range(len(self.figrep['int'])):
                     if self.figrep['int'][i] == f:
                         c = self.figrep['unic'][i]
                         break
-                print(" {} ".format(c), end='')
+                if (x+y) % 2 == 0:
+                    print("\033[7m {} \033[m".format(c), end="")
+                else:
+                    print(" {} ".format(c), end='')
             print("|")
         print("  +------------------------+")
         print("    A  B  C  D  E  F  G  H")
@@ -255,15 +260,10 @@ if __name__ == '__main__':
         version = board.get_version()
         print("Millenium board version {} at {}".format(version, board.port))
 
-        board_raw = board.get_board_raw()
-        board.print_ascii_board(board_raw)
-        if len(board_raw) == 64:
-            for y in range(8):
-                for x in range(8):
-                    print(board_raw[7-x+(7-y)*8], end="")
-                print()
-        else:
-            print("Received {}".format(len(board_raw)))
+        while True:
+            position = board.get_position()
+            board.print_position_ascii(position)
+            time.sleep(0.1)
 
         board.disconnect()
     else:
