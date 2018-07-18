@@ -195,7 +195,7 @@ class MillenniumChess:
 
 
 if __name__ == '__main__':
-    board = MillenniumChess(verbose=False)
+    board = MillenniumChess(verbose=True)
 
     '''
         cmd = "L50"
