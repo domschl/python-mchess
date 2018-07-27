@@ -36,6 +36,8 @@ class MillenniumChess:
             self.init = False
 
     def version_quick_check(self, port):
+        if 'Incoming' in port:
+            return None
         try:
             if self.verbose is True:
                 print("Testing port: {}".format(port))
