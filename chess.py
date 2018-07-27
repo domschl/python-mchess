@@ -70,6 +70,8 @@ class MillenniumChess:
         return None
 
     def port_check(self, port):
+        if port[:9] == "/dev/ttyS":
+            return False
         try:
             s = serial.Serial(port, 38400)  # , timeout=1)
             s.close()
@@ -260,10 +262,10 @@ if __name__ == '__main__':
         version = board.get_version()
         print("Millenium board version {} at {}".format(version, board.port))
 
-        while True:
-            position = board.get_position()
-            board.print_position_ascii(position)
-            time.sleep(0.1)
+        # hile True:
+        position = board.get_position()
+        board.print_position_ascii(position)
+        time.sleep(0.1)
 
         board.disconnect()
     else:
