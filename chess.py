@@ -1,6 +1,7 @@
 import serial
 import serial.tools.list_ports
 import time
+import threading
 
 
 class MillenniumChess:
@@ -141,8 +142,6 @@ class MillenniumChess:
             try:
                 n = self.ser_port.write(bts)
                 self.ser_port.flush()
-                if self.verbose:
-                    print("Written: {}".format(n))
             except (Exception) as e:
                 if self.verbose:
                     print("Failed to write {}: {}", msg, e)
@@ -215,6 +214,35 @@ class MillenniumChess:
             return None
         return position
 
+    def position_to_fen(self, position):
+        fen = ""
+        blanks = 0
+        for y in range(8):
+            for x in range(8):
+                f = position[7-y][x]
+                c = '?'
+                for i in range(len(self.figrep['int'])):
+                    if self.figrep['int'][i] == f:
+                        c = self.figrep['ascii'][i]
+                        break
+                if c == '?':
+                    print("Internal FEN error")
+                    return "bad algorithm"
+                if c == '.':
+                    blanks = blanks + 1
+                else:
+                    if blanks > 0:
+                        fen += str(blanks)
+                        blanks = 0
+                    fen += c
+            if blanks > 0:
+                fen += str(blanks)
+                blanks = 0
+            if y > 0:
+                fen += '/'
+        fen += ' w KQkq - 0 1'
+        return fen
+
     def print_position_ascii(self, position):
         print("  +------------------------+")
         for y in range(8):
@@ -236,10 +264,42 @@ class MillenniumChess:
         print("  +------------------------+")
         print("    A  B  C  D  E  F  G  H")
 
+    def event_worker_thread(self, callback):
+        oldfen = ""
+        while self.thread_active:
+            for i in range(3):
+                position = board.get_position()
+                if position != None:
+                    break
+            fen = self.position_to_fen(position)
+            if fen != oldfen:
+                oldfen = fen
+                callback(self, position, fen)
+            time.sleep(0.2)
+
+    def event_mon(self, callback):
+        self.callback = callback
+        if callback != None:
+            self.thread_active = True
+            self.event_thread = threading.Thread(
+                target=self.event_worker_thread, args=(callback,))
+            self.event_thread.setDaemon(True)
+            self.event_thread.start()
+        else:
+            if self.event_thread != None:
+                self.event_thread.stop()
+                self.thread_active = False
+                self.event_thread = None
+
     def disconnect(self):
         if self.init:
             self.ser_port.close()
             self.init = False
+
+
+def board_event(board, position, fen):
+    board.print_position_ascii(position)
+    print("FEN: {}".format(fen))
 
 
 if __name__ == '__main__':
@@ -265,10 +325,8 @@ if __name__ == '__main__':
         version = board.get_version()
         print("Millenium board version {} at {}".format(version, board.port))
 
-        # hile True:
-        position = board.get_position()
-        board.print_position_ascii(position)
-        time.sleep(0.1)
+        board.event_mon(board_event)
+        time.sleep(100)
 
         board.disconnect()
     else:
