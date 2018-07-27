@@ -87,10 +87,13 @@ class MillenniumChess:
         vports = []
         for port in ports:
             if self.port_check(port):
+                verb = self.verbose
+                self.verbose = False
                 version = self.version_quick_check(port)
+                self.verbose = verb
                 if version != None:
                     if self.verbose:
-                        print("Found: {}".format(version))
+                        print("Found board at: {}".format(port))
                     vports.append(port)
         return vports
 
@@ -157,7 +160,7 @@ class MillenniumChess:
                 except (Exception) as e:
                     if self.verbose:
                         print("Read error {}".format(e))
-                    pass
+                    break
         else:
             if self.verbose:
                 print("No open port for read")
