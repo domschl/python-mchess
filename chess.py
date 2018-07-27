@@ -36,12 +36,10 @@ class MillenniumChess:
             self.init = False
 
     def version_quick_check(self, port):
-        if 'Incoming' in port:
-            return None
         try:
             if self.verbose is True:
                 print("Testing port: {}".format(port))
-            self.ser_port = serial.Serial(port, 38400)  # , timeout=1)
+            self.ser_port = serial.Serial(port, 38400, timeout=1)
             if self.mode == 'USB':
                 self.ser_port.dtr = 0
             self.init = True
@@ -72,8 +70,8 @@ class MillenniumChess:
         return None
 
     def port_check(self, port):
-        if port[:9] == "/dev/ttyS":
-            return False
+        # if port[:9] == "/dev/ttyS" or 'Incoming' in port:
+        #    return False
         try:
             s = serial.Serial(port, 38400)  # , timeout=1)
             s.close()
