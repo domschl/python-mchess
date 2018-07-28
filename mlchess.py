@@ -244,6 +244,31 @@ class MillenniumChess:
         fen += ' w KQkq - 0 1'
         return fen
 
+    def fen_to_position(self, fen):
+        position = [[0 for x in range(8)] for y in range(8)]
+        fenp = fen[:fen.find(' ')]
+        fi = 0
+        for y in range(8):
+            for x in range(8):
+                c = fenp[fi]
+                fi += 1
+                if c >= '1' and c <= '8':
+                    x += int(c)
+                    continue
+                ci = -99
+                for i in range(len(self.figrep['ascii'])):
+                    if self.figrep['ascii'][i] == c:
+                        ci = self.figrep['int'][i]
+                        break
+                if ci == -99:
+                    print("Internal FEN2 error")
+                    return "bad algorithm"
+                position[7-y][x] = ci
+            if y < 8 and fenp[fi] != '/':
+                print("Illegal fen: missing '\'")
+                return []
+            fi += 1
+
     def print_position_ascii(self, position):
         print("  +------------------------+")
         for y in range(8):
