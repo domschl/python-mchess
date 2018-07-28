@@ -239,7 +239,7 @@ class MillenniumChess:
             if blanks > 0:
                 fen += str(blanks)
                 blanks = 0
-            if y > 0:
+            if y < 7:
                 fen += '/'
         fen += ' w KQkq - 0 1'
         return fen
@@ -249,7 +249,8 @@ class MillenniumChess:
         fenp = fen[:fen.find(' ')]
         fi = 0
         for y in range(8):
-            for x in range(8):
+            x = 0
+            while x < 8:
                 c = fenp[fi]
                 fi += 1
                 if c >= '1' and c <= '8':
@@ -261,13 +262,16 @@ class MillenniumChess:
                         ci = self.figrep['int'][i]
                         break
                 if ci == -99:
-                    print("Internal FEN2 error")
+                    print("Internal FEN2 error decoding {} at {}{}".format(c, y, x))
                     return "bad algorithm"
                 position[7-y][x] = ci
-            if y < 8 and fenp[fi] != '/':
-                print("Illegal fen: missing '\'")
+                x += 1
+            if y < 7 and fenp[fi] != '/':
+                print(
+                    "Illegal fen: missing '/' {}{}: {}[{}]".format(y, x, fenp[fi], fi))
                 return []
             fi += 1
+        return position
 
     def print_position_ascii(self, position):
         print("  +------------------------+")
@@ -326,6 +330,13 @@ class MillenniumChess:
 def board_event(board, position, fen):
     board.print_position_ascii(position)
     print("FEN: {}".format(fen))
+    pos = board.fen_to_position(fen)
+    board.print_position_ascii(pos)
+    fen2 = board.position_to_fen(pos)
+    if fen == fen2:
+        print("Conversion ok")
+    else:
+        print("FEN error: {} != {}".format(fen, fen2))
 
 
 if __name__ == '__main__':
