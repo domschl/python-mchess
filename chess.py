@@ -2,6 +2,7 @@ import serial
 import serial.tools.list_ports
 import time
 import threading
+import chess
 
 
 class MillenniumChess:
