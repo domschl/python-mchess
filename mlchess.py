@@ -223,25 +223,31 @@ class MillenniumChess:
         for y in range(8):
             for x in range(8):
                 if pos[y][x] != self.refpos[y][x]:
-                    dpos[y][x] = 1
+                    if self.refpos[y][x] != 0:
+                        dpos[y][x] = 1
+                    else:
+                        dpos[y][x] = 2
         self.set_led(dpos)
 
     def set_led(self, pos):
         leds = [[0 for x in range(9)] for y in range(9)]
-        cmd = "L10"
+        cmd = "L20"
         for y in range(8):
             for x in range(8):
                 if pos[y][x] != 0:
-                    leds[7-x][y] = 1
-                    leds[7-x+1][y] = 1
-                    leds[7-x][y+1] = 1
-                    leds[7-x+1][y+1] = 1
+                    leds[7-x][y] = pos[y][x]
+                    leds[7-x+1][y] = pos[y][x]
+                    leds[7-x][y+1] = pos[y][x]
+                    leds[7-x+1][y+1] = pos[y][x]
         for y in range(9):
             for x in range(9):
-                if leds[y][x] != 0:
+                if leds[y][x] == 0:
+                    cmd = cmd + "00"
+                elif leds[y][x] == 1:
                     cmd = cmd + "0F"
                 else:
-                    cmd = cmd + "00"
+                    cmd = cmd + "F0"
+
         board.write(cmd)
         board.read(3)
 
