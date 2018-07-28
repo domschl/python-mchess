@@ -215,6 +215,41 @@ class MillenniumChess:
             return None
         return position
 
+    def set_reference(self):
+        self.refpos = self.get_position()
+
+    def show_delta(self, pos):
+        dpos = [[0 for x in range(8)] for y in range(8)]
+        for y in range(8):
+            for x in range(8):
+                if pos[y][x] != self.refpos[y][x]:
+                    dpos[y][x] = 1
+        self.set_led(dpos)
+
+    def set_led(self, pos):
+        leds = [[0 for x in range(9)] for y in range(9)]
+        cmd = "L10"
+        for y in range(8):
+            for x in range(8):
+                if pos[y][x] != 0:
+                    leds[7-x][y] = 1
+                    leds[7-x+1][y] = 1
+                    leds[7-x][y+1] = 1
+                    leds[7-x+1][y+1] = 1
+        for y in range(9):
+            for x in range(9):
+                if leds[y][x] != 0:
+                    cmd = cmd + "0F"
+                else:
+                    cmd = cmd + "00"
+        board.write(cmd)
+        board.read(3)
+
+    def set_led_off(self):
+        cmd = "X"
+        board.write(cmd)
+        board.read(3)
+
     def position_to_fen(self, position):
         fen = ""
         blanks = 0
@@ -227,8 +262,9 @@ class MillenniumChess:
                         c = self.figrep['ascii'][i]
                         break
                 if c == '?':
-                    print("Internal FEN error")
-                    return "bad algorithm"
+                    print(
+                        "Internal FEN error, could not translation {} at {}{}".format(c, y, x))
+                    return ""
                 if c == '.':
                     blanks = blanks + 1
                 else:
@@ -263,7 +299,7 @@ class MillenniumChess:
                         break
                 if ci == -99:
                     print("Internal FEN2 error decoding {} at {}{}".format(c, y, x))
-                    return "bad algorithm"
+                    return []
                 position[7-y][x] = ci
                 x += 1
             if y < 7 and fenp[fi] != '/':
@@ -317,7 +353,7 @@ class MillenniumChess:
             self.event_thread.start()
         else:
             if self.event_thread != None:
-                self.event_thread.stop()
+                # self.event_thread.stop()
                 self.thread_active = False
                 self.event_thread = None
 
@@ -330,38 +366,22 @@ class MillenniumChess:
 def board_event(board, position, fen):
     board.print_position_ascii(position)
     print("FEN: {}".format(fen))
-    pos = board.fen_to_position(fen)
-    board.print_position_ascii(pos)
-    fen2 = board.position_to_fen(pos)
-    if fen == fen2:
-        print("Conversion ok")
-    else:
-        print("FEN error: {} != {}".format(fen, fen2))
+    board.show_delta(position)
+    # pos = board.fen_to_position(fen)
+    # board.print_position_ascii(pos)
+    # fen2 = board.position_to_fen(pos)
+    # if fen == fen2:
+    #     print("Conversion ok")
+    # else:
+    #     print("FEN error: {} != {}".format(fen, fen2))
 
 
 if __name__ == '__main__':
     board = MillenniumChess(verbose=True)
-
-    '''
-        cmd = "L50"
-        for _ in range(81):
-            cmd = cmd + "C4"
-        board.write(cmd)
-        # board.write("V")
-        # time.sleep(0.1)
-        board.read(3)
-        # board.write("S")
-        # board.read(10)
-
-        time.sleep(5)
-        cmd = "X"
-        board.write(cmd)
-        board.read(3)
-    '''
     if board.init:
         version = board.get_version()
         print("Millenium board version {} at {}".format(version, board.port))
-
+        board.set_reference()
         board.event_mon(board_event)
         time.sleep(100)
 
