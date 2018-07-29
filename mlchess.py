@@ -3,6 +3,8 @@ import serial.tools.list_ports
 import time
 import threading
 import chess
+import chess.uci
+import os
 
 
 class MillenniumChess:
@@ -372,24 +374,67 @@ class MillenniumChess:
 def board_event(board, position, fen):
     board.print_position_ascii(position)
     print("FEN: {}".format(fen))
-    board.show_delta(position)
-    # pos = board.fen_to_position(fen)
-    # board.print_position_ascii(pos)
-    # fen2 = board.position_to_fen(pos)
-    # if fen == fen2:
-    #     print("Conversion ok")
-    # else:
-    #     print("FEN error: {} != {}".format(fen, fen2))
+    # board.show_delta(position)
+    engine.stop()
+    engine.position(fen)
+    engine.go()
+
+
+class SubHandler(chess.uci.InfoHandler):
+    def post_info(self):
+        # Called whenever a complete info line has been processed.
+        # print(self.info)
+        super().post_info()  # Release the lock
+
+    def on_bestmove(self, bestmove, ponder):
+        print("Best: {}".format(bestmove))
+        super().on_bestmove(bestmove, ponder)
+
+    def pv(self, move):
+        print("PV: {}".format(move))
+        super().pv(move)
+
+
+class UciEngine:
+    def __init__(self, engine_name):
+        locations = ['/usr/bin', '/usr/local/bin', '/home/dsc/git/AI/LeelaChessZero/lc0/build/release',
+                     '/Users/dsc/git/AI/LeelaChessZero/lc0/build/release']
+        self.init = False
+        for loc in locations:
+            eng = os.path.join(loc, engine_name)
+            if os.path.isfile(eng):
+                self.engine = chess.uci.popen_engine(eng)
+                self.engine.uci()
+                self.info_handler = SubHandler()
+                self.engine.info_handlers.append(self.info_handler)
+                self.init = True
+                return
+
+    def go(self):
+        ft = self.engine.go(infinite=True, async_callback=True)
+
+    def stop(self):
+        self.engine.stop()
+
+    def position(self, fen):
+        self.engine.position(chess.Board(fen))
+
+    def name(self):
+        return self.engine.name
 
 
 if __name__ == '__main__':
+    # engine = UciEngine('lc0')
+    engine = UciEngine('stockfish')
+    print(engine.name())
+
     board = MillenniumChess(verbose=True)
     if board.init:
         version = board.get_version()
         print("Millenium board version {} at {}".format(version, board.port))
         board.set_reference()
         board.event_mon(board_event)
-        time.sleep(100)
+        time.sleep(10000)
 
         board.disconnect()
     else:
