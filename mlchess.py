@@ -5,6 +5,7 @@ import threading
 import chess
 import chess.uci
 import os
+import queue
 
 
 class MillenniumChess:
@@ -15,6 +16,7 @@ class MillenniumChess:
                        "ascii": "PNBRQK.pnbrqk"}
         self.mode = mode
         self.verbose = verbose
+        self.valpos = {}
         if port == "":
             ports = self.port_search()
             if len(ports) > 0:
@@ -227,8 +229,11 @@ class MillenniumChess:
             return None
         return position
 
-    def set_reference(self):
-        self.refpos = self.get_position()
+    def set_reference(self, pos=None):
+        if pos == None:
+            self.refpos = self.get_position()
+        else:
+            self.refpos = pos
 
     def show_delta(self, pos):
         dpos = [[0 for x in range(8)] for y in range(8)]
@@ -358,7 +363,7 @@ class MillenniumChess:
             fen = self.position_to_fen(position)
             if fen != oldfen:
                 oldfen = fen
-                callback(self, position, fen)
+                callback(self, position, fen, self.valpos)
             time.sleep(0.2)
 
     def event_mon(self, callback):
@@ -381,16 +386,15 @@ class MillenniumChess:
             self.init = False
 
 
-def board_event(board, position, fen):
+def board_event(board, position, fen, valpos):
     eboard.print_position_ascii(position)
     print("FEN: {}".format(fen))
     fens = fen[:fen.find(' ')]
     print(fens)
     if fens in valpos:
         board.set_led_off()
-        engine.stop()
-        engine.position(valpos[fens][1])
-        engine.go(15)
+        evque.put(valpos[fens])
+        valpos = {}
     else:
         board.show_delta(position)
 
@@ -403,10 +407,11 @@ class SubHandler(chess.uci.InfoHandler):
 
     def on_bestmove(self, bestmove, ponder):
         print("Best: {}".format(bestmove))
+        ucique.put(bestmove)
         super().on_bestmove(bestmove, ponder)
 
     def pv(self, move):
-        print("PV: {}".format(move))
+        print("PV: {}\r".format(move[0]), end="")
         super().pv(move)
 
 
@@ -431,12 +436,13 @@ class UciEngine:
         else:
             ft = self.engine.go(
                 infinite=False, movetime=time*1000, async_callback=True)
+        return ft
 
     def stop(self):
         self.engine.stop()
 
-    def position(self, fen):
-        self.engine.position(chess.Board(fen))
+    def position(self, board):
+        self.engine.position(board)
 
     def name(self):
         return self.engine.name
@@ -444,6 +450,9 @@ class UciEngine:
 
 if __name__ == '__main__':
     # engine = UciEngine('lc0')
+    evque = queue.Queue()
+    ucique = queue.Queue()
+    valpos = {}
     engine = UciEngine('stockfish')
     mboard = chess.Board()
 
@@ -464,23 +473,46 @@ if __name__ == '__main__':
             else:
                 if warn is False:
                     warn = True
-                    print("No position from board, waiting...")
-                    time.sleep(1)
+                    print("No position from board, waiting..")
+                time.sleep(1)
+                print(".", end="")
 
-        eboard.set_reference()
-        valpos = {}
+    eboard.set_reference()
+    eboard.valpos = {}
+    for mv in mboard.legal_moves:
+        mboard.push(mv)
+        fen = mboard.fen()
+        mboard.pop()
+        fens = fen[:fen.find(' ')]
+        # print("v: {}", fens)
+        eboard.valpos[fens] = (mv, fen)
+    eboard.event_mon(board_event)
 
-        for mv in mboard.legal_moves:
+    evloop = True
+    while evloop:
+        if not evque.empty():
+            mv, fen = evque.get()
+            evque.task_done()
+
             mboard.push(mv)
-            fen = mboard.fen()
-            mboard.pop()
-            fens = fen[:fen.find(' ')]
-            print("v: {}", fens)
-            valpos[fens] = (mv, fen)
-        eboard.event_mon(board_event)
-        time.sleep(10000)
+            engine.stop()
+            engine.position(mboard)
+            cmd = engine.go(5)
 
-        eboard.disconnect()
-    else:
-        print("No board.")
-    print("closed.")
+        if not ucique.empty():
+            mv = ucique.get()
+            ucique.task_done()
+            mboard.push(cmd.result()[0])
+            eboard.set_reference(eboard.fen_to_position(mboard.fen()))
+            eboard.show_delta(eboard.get_position())
+
+            eboard.valpos = {}
+            for mv in mboard.legal_moves:
+                mboard.push(mv)
+                fen = mboard.fen()
+                mboard.pop()
+                fens = fen[:fen.find(' ')]
+                # print("v: {}", fens)
+                eboard.valpos[fens] = (mv, fen)
+
+    eboard.disconnect()
