@@ -77,6 +77,9 @@ class MillenniumChess:
         # if port[:9] == "/dev/ttyS" or 'Incoming' in port:
         #    return False
         try:
+            if self.verbose:
+                print("Testing port: {}".format(port))
+
             s = serial.Serial(port, 38400)  # , timeout=1)
             s.close()
             return True
@@ -342,7 +345,7 @@ class MillenniumChess:
         oldfen = ""
         while self.thread_active:
             for i in range(3):
-                position = board.get_position()
+                position = eboard.get_position()
                 if position != None:
                     break
             fen = self.position_to_fen(position)
@@ -372,12 +375,14 @@ class MillenniumChess:
 
 
 def board_event(board, position, fen):
-    board.print_position_ascii(position)
+    eboard.print_position_ascii(position)
     print("FEN: {}".format(fen))
-    # board.show_delta(position)
-    engine.stop()
-    engine.position(fen)
-    engine.go()
+    if fen in valpos:
+        engine.stop()
+        engine.position(fen)
+        engine.go(15)
+    else:
+        board.show_delta(position)
 
 
 class SubHandler(chess.uci.InfoHandler):
@@ -410,8 +415,12 @@ class UciEngine:
                 self.init = True
                 return
 
-    def go(self):
-        ft = self.engine.go(infinite=True, async_callback=True)
+    def go(self, time=0):
+        if time == 0:
+            ft = self.engine.go(infinite=True, async_callback=True)
+        else:
+            ft = self.engine.go(
+                infinite=False, movetime=time*1000, async_callback=True)
 
     def stop(self):
         self.engine.stop()
@@ -426,17 +435,25 @@ class UciEngine:
 if __name__ == '__main__':
     # engine = UciEngine('lc0')
     engine = UciEngine('stockfish')
+    mboard = chess.board()
+
     print(engine.name())
 
-    board = MillenniumChess(verbose=True)
-    if board.init:
-        version = board.get_version()
-        print("Millenium board version {} at {}".format(version, board.port))
-        board.set_reference()
-        board.event_mon(board_event)
+    eboard = MillenniumChess(verbose=True)
+    if eboard.init:
+        version = eboard.get_version()
+        print("Millenium board version {} at {}".format(version, eboard.port))
+        setup = False
+        warn = False
+        while not setup:
+            pos = eboard.get_position()
+            if eboard.position_to_fen(pos) != "":
+
+        eboard.set_reference()
+        eboard.event_mon(board_event)
         time.sleep(10000)
 
-        board.disconnect()
+        eboard.disconnect()
     else:
         print("No board.")
     print("closed.")
