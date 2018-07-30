@@ -191,24 +191,32 @@ class MillenniumChess:
         return rep
 
     def get_version(self):
+        evmutex.acquire()
         version = ""
         self.write("V")
         version = self.read('v', 7)
         if len(version) != 7:
+            evmutex.release()
             return ""
         if version[0] != 'v':
+            evmutex.release()
             return ""
         version = '{}.{}'.format(version[1]+version[2], version[3]+version[4])
+        evmutex.release()
         return version
 
     def get_position_raw_once(self):
+        evmutex.acquire()
         cmd = "S"
         self.write(cmd)
         rph = self.read('s', 67)
         if len(rph) != 67:
+            evmutex.release()
             return ""
         if rph[0] != 's':
+            evmutex.release()
             return ""
+        evmutex.release()
         return rph[1:65]
 
     def get_position_raw(self, reps=2):
@@ -263,6 +271,7 @@ class MillenniumChess:
         self.set_led(dpos)
 
     def set_led(self, pos):
+        evmutex.acquire()
         leds = [[0 for x in range(9)] for y in range(9)]
         cmd = "L20"
         for y in range(8):
@@ -283,11 +292,14 @@ class MillenniumChess:
 
         self.write(cmd)
         self.read('l', 3)
+        evmutex.release()
 
     def set_led_off(self):
+        evmutex.acquire()
         cmd = "X"
         self.write(cmd)
         self.read('x', 3)
+        evmutex.release()
 
     def position_to_fen(self, position):
         fen = ""
@@ -467,6 +479,7 @@ class UciEngine:
 if __name__ == '__main__':
     engine = UciEngine('lc0')
     # engine = UciEngine('stockfish')
+    evmutex = threading.Lock()
     evque = queue.Queue()
     ucique = queue.Queue()
     valpos = {}
