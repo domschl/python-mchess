@@ -435,7 +435,7 @@ class UciEngine:
 if __name__ == '__main__':
     # engine = UciEngine('lc0')
     engine = UciEngine('stockfish')
-    mboard = chess.board()
+    mboard = chess.Board()
 
     print(engine.name())
 
@@ -447,7 +447,15 @@ if __name__ == '__main__':
         warn = False
         while not setup:
             pos = eboard.get_position()
-            if eboard.position_to_fen(pos) != "":
+            fen = eboard.position_to_fen(pos)
+            if fen != "":
+                mboard = chess.Board(fen)
+                setup = True
+            else:
+                if warn is False:
+                    warn = True
+                    print("No position from board, waiting...")
+                    time.sleep(1)
 
         eboard.set_reference()
         eboard.event_mon(board_event)
