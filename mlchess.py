@@ -31,6 +31,7 @@ class MillenniumChess:
                         self.ser_port.dtr = 0
                     self.init = True
                     self.port = port
+                    self.position = self._get_position()
                 except (OSError, serial.SerialException) as e:
                     print("Can't open port {}, {}".format(port, e))
                     self.init = False
@@ -221,7 +222,7 @@ class MillenniumChess:
                 r = 0
         return pn
 
-    def get_position(self):
+    def _get_position(self):
         rp = self.get_position_raw()
         position = [[0 for x in range(8)] for y in range(8)]
         if len(rp) == 64:
@@ -238,7 +239,11 @@ class MillenniumChess:
         else:
             print("Error in board postion, received {}".format(len(rp)))
             return None
+        self.position = position
         return position
+
+    def get_position(self):
+        return self.position
 
     def set_reference(self, pos=None):
         if pos == None:
@@ -368,7 +373,7 @@ class MillenniumChess:
         oldfen = ""
         while self.thread_active:
             for i in range(3):
-                position = eboard.get_position()
+                position = eboard._get_position()
                 if position != None:
                     break
             fen = self.position_to_fen(position)
