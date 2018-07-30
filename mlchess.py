@@ -43,12 +43,12 @@ class MillenniumChess:
         try:
             if self.verbose is True:
                 print("Testing port: {}".format(port))
-            self.ser_port = serial.Serial(port, 38400, timeout=1)
+            self.ser_port = serial.Serial(port, 38400, timeout=2)
             if self.mode == 'USB':
                 self.ser_port.dtr = 0
             self.init = True
             self.write("V")
-            version = self.read(7)
+            version = self.read('v', 7)
             if len(version) != 7:
                 self.ser_port.close()
                 self.init = False
@@ -74,8 +74,8 @@ class MillenniumChess:
         return None
 
     def port_check(self, port):
-        # if port[:9] == "/dev/ttyS" or 'Incoming' in port:
-        #    return False
+        if port[:9] == "/dev/ttyS" or 'Incoming' in port:
+            return False
         try:
             if self.verbose:
                 print("Testing port: {}".format(port))
@@ -95,7 +95,7 @@ class MillenniumChess:
         for port in ports:
             if self.port_check(port):
                 verb = self.verbose
-                self.verbose = False
+                self.verbose = True  # False
                 version = self.version_quick_check(port)
                 self.verbose = verb
                 if version != None:
@@ -133,6 +133,7 @@ class MillenniumChess:
     def write(self, msg):
         if self.init:
             try:
+                self.ser_port.reset_output_buffer()
                 self.ser_port.reset_input_buffer()
             except (Exception) as e:
                 if self.verbose:
@@ -155,10 +156,16 @@ class MillenniumChess:
             if self.verbose:
                 print("No open port for write")
 
-    def read(self, num):
+    def read(self, cmd, num):
         rep = []
         if self.init:
-            for _ in range(num):
+            start = False
+            while start is False:
+                b = chr(ord(self.ser_port.read()) & 127)
+                if b == cmd:
+                    rep.append(b)
+                    start = True
+            for _ in range(num-1):
                 try:
                     b = chr(ord(self.ser_port.read()) & 127)
                     rep.append(b)
@@ -176,14 +183,14 @@ class MillenniumChess:
             if rep[-2]+rep[-1] != self.hex(gpar):
                 if self.verbose:
                     print("CRC error rep={} CRCs: {}!={}".format(rep,
-                                                                 rep[-2], self.hex(gpar)))
+                                                                 ord(rep[-2]), self.hex(gpar)))
                 return []
         return rep
 
     def get_version(self):
         version = ""
         self.write("V")
-        version = self.read(7)
+        version = self.read('v', 7)
         if len(version) != 7:
             return ""
         if version[0] != 'v':
@@ -194,7 +201,7 @@ class MillenniumChess:
     def get_position_raw(self):
         cmd = "S"
         self.write(cmd)
-        rph = self.read(67)
+        rph = self.read('s', 67)
         if len(rph) != 67:
             return ""
         if rph[0] != 's':
@@ -253,13 +260,13 @@ class MillenniumChess:
                 else:
                     cmd = cmd + "F0"
 
-        board.write(cmd)
-        board.read(3)
+        self.write(cmd)
+        self.read('l', 3)
 
     def set_led_off(self):
         cmd = "X"
-        board.write(cmd)
-        board.read(3)
+        self.write(cmd)
+        self.read('x', 3)
 
     def position_to_fen(self, position):
         fen = ""
@@ -377,9 +384,12 @@ class MillenniumChess:
 def board_event(board, position, fen):
     eboard.print_position_ascii(position)
     print("FEN: {}".format(fen))
-    if fen in valpos:
+    fens = fen[:fen.find(' ')]
+    print(fens)
+    if fens in valpos:
+        board.set_led_off()
         engine.stop()
-        engine.position(fen)
+        engine.position(valpos[fens][1])
         engine.go(15)
     else:
         board.show_delta(position)
@@ -458,6 +468,15 @@ if __name__ == '__main__':
                     time.sleep(1)
 
         eboard.set_reference()
+        valpos = {}
+
+        for mv in mboard.legal_moves:
+            mboard.push(mv)
+            fen = mboard.fen()
+            mboard.pop()
+            fens = fen[:fen.find(' ')]
+            print("v: {}", fens)
+            valpos[fens] = (mv, fen)
         eboard.event_mon(board_event)
         time.sleep(10000)
 
