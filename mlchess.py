@@ -200,7 +200,7 @@ class MillenniumChess:
         version = '{}.{}'.format(version[1]+version[2], version[3]+version[4])
         return version
 
-    def get_position_raw(self):
+    def get_position_raw_once(self):
         cmd = "S"
         self.write(cmd)
         rph = self.read('s', 67)
@@ -209,6 +209,17 @@ class MillenniumChess:
         if rph[0] != 's':
             return ""
         return rph[1:65]
+
+    def get_position_raw(self, reps=2):
+        r = 0
+        while r < reps:
+            pn = self.get_position_raw_once()
+            p2 = self.get_position_raw_once()
+            if pn == p2:
+                r += 2
+            else:
+                r = 0
+        return pn
 
     def get_position(self):
         rp = self.get_position_raw()
@@ -449,11 +460,11 @@ class UciEngine:
 
 
 if __name__ == '__main__':
-    # engine = UciEngine('lc0')
+    engine = UciEngine('lc0')
+    # engine = UciEngine('stockfish')
     evque = queue.Queue()
     ucique = queue.Queue()
     valpos = {}
-    engine = UciEngine('stockfish')
     mboard = chess.Board()
 
     print(engine.name())
