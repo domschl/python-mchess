@@ -39,7 +39,11 @@ class PeriDelegate(DefaultDelegate):
         # ... initialise here
 
     def handleNotification(self, cHandle, data):
-        print("Handle: {}, data: {}", cHandle, data)
+        # print("Handle: {}, data: {}", cHandle, data)
+        print("[", end='')
+        for b in data:
+            print("{}".format(chr(b & 127)), end='')
+        print(']')
         # ... perhaps check cHandle
         # ... process 'data'
 
