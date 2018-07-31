@@ -17,10 +17,14 @@ ADDRESS_TYPE = pygatt.BLEAddressType.random
 adapter = pygatt.GATTToolBackend()
 # adapter = pygatt.BGAPIBackend()
 adapter.start()
-print("Started adapter")
-device = adapter.connect(
-    YOUR_DEVICE_ADDRESS, timeout=10)
 
-for uuid in device.discover_characteristics().keys():
-    # print("Read UUID %s: %s" % (uuid, binascii.hexlify(device.char_read(uuid))))
-    print("UUID {}".format(uuid))
+print(adapter.devices)
+
+
+# print("Started adapter")
+# device = adapter.connect(
+#     YOUR_DEVICE_ADDRESS, timeout=10)
+
+# for uuid in device.discover_characteristics().keys():
+# print("Read UUID %s: %s" % (uuid, binascii.hexlify(device.char_read(uuid))))
+#     print("UUID {}".format(uuid))
