@@ -164,7 +164,10 @@ class MillenniumChess:
         if self.init:
             start = False
             while start is False:
-                b = chr(ord(self.ser_port.read()) & 127)
+                try:
+                    b = chr(ord(self.ser_port.read()) & 127)
+                except:
+                    return []
                 if b == cmd:
                     rep.append(b)
                     start = True
