@@ -98,7 +98,7 @@ class MillenniumChess:
         for port in ports:
             if self.port_check(port):
                 verb = self.verbose
-                self.verbose = True  # False
+                self.verbose = False
                 version = self.version_quick_check(port)
                 self.verbose = verb
                 if version != None:
@@ -490,7 +490,7 @@ if __name__ == '__main__':
 
     print(engine.name())
 
-    eboard = MillenniumChess(verbose=True)
+    eboard = MillenniumChess(verbose=False)
     if eboard.init:
         version = eboard.get_version()
         print("Millenium board version {} at {}".format(version, eboard.port))
