@@ -274,6 +274,26 @@ class MillenniumChess:
                 print("No port found.")
             self.init = False
 
+    def open_board(self):
+        if self.mill_config['connection'] == 'usb':
+        elif self.mill_config['connection'] == 'ble':
+        else:
+            print('Invalid connection type {}'.format(
+                self.mill_config['connection']))
+        return False
+
+    def close_board(self):
+        return True
+
 
 if __name__ == "__main__":
-    mlb = MillenniumChess(rescan=True, verbose=True)
+    mlb = MillenniumChess(rescan=False, verbose=False)
+    if mlb.open_board() is not True:
+        mlb = MilleniumChess(rescan=True, verbose=True)
+        if mlb.open_board() is not True:
+            print("Cannot access a Millennium board.")
+            exit(-1)
+    print("Connected to Millennium board via {} at {}".format(
+        mlb.mill_config['connection'], mlb.mill_config['address']))
+
+    mlb.close_board()
