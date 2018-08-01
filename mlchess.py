@@ -150,7 +150,7 @@ class MillenniumChess:
                 bo = self.add_odd_par(c)
                 bts.append(bo)
             try:
-                n = self.ser_port.write(bts)
+                _ = self.ser_port.write(bts)
                 self.ser_port.flush()
             except (Exception) as e:
                 if self.verbose:
@@ -387,7 +387,7 @@ class MillenniumChess:
     def event_worker_thread(self, callback):
         oldfen = ""
         while self.thread_active:
-            for i in range(3):
+            for _ in range(3):
                 position = eboard._get_position()
                 if position != None:
                     break

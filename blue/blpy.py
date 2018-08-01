@@ -25,7 +25,7 @@ def find_millennium(verbose=False):
                 dev.addr, dev.addrType, dev.rssi))
         for (adtype, desc, value) in dev.getScanData():
             if verbose is True:
-                print("  {} = {}".format(desc, value))
+                print("  {} ({})= {}".format(desc, adtype, value))
             if desc == "Complete Local Name":
                 if "MILLENNIUM CHESS" in value:
                     return dev
@@ -170,7 +170,7 @@ class BLE:
         # evmutex.acquire()
         version = ""
         self.write("V")
-        return
+
         time.sleep(0.2)
         version = self.read('v', 7)
         if len(version) != 7:
@@ -187,7 +187,7 @@ class BLE:
         # evmutex.acquire()
         cmd = "S"
         self.write(cmd)
-        return
+
         rph = self.read('s', 67)
         if len(rph) != 67:
             # evmutex.release()
