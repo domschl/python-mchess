@@ -66,7 +66,7 @@ class MillenniumChess:
                 return None
             version = '{}.{}'.format(version[1:2], version[3:4])
             if self.verbose is True:
-                print("Millenium {} at {}", version, port)
+                print("Millennium {} at {}", version, port)
             self.ser_port.close()
             self.init = False
             return version

@@ -50,13 +50,14 @@ class MillenniumChess:
         else:
             scan = True
 
+        skip_usb = False
         if scan is True and ble_support is True:
             bledev = self.ble_scan()
             if bledev is not None:
                 self.mill_config = {"connection": "ble", "address": bledev}
-                scan = False  # Don't look for USB, we found BLE.
+                skip_usb = True  # Don't look for USB, we found BLE.
 
-        if scan is True and usb_support is True:
+        if scan is True and skip_usb is False and usb_support is True:
             usbdev = self.usb_scan()
             if usbdev is not None:
                 self.mill_config = {"connection": "usb", "address": usbdev}
@@ -105,8 +106,9 @@ class MillenniumChess:
                     if "MILLENNIUM CHESS" in value:
                         if self.verbose is True:
                             print(
-                                "Autodetected Millennium board at Bluetooth LE address: {}".format(bledev))
-                        return bledev
+                                "Autodetected Millennium board at Bluetooth LE address: {}, signal strength (rssi): {}".format(
+                                    bledev.addr, bledev.rssi))
+                        return bledev.addr
         return None
 
     def usb_scan(self):
