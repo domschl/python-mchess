@@ -23,7 +23,7 @@ class Transport():
         logging.debug("USB init ok")
 
     def search_board(self):
-        logging.debug("USB: search for boards")
+        logging.debug("USB: searching for boards")
         port = None
         ports = self.usb_port_search()
         if len(ports) > 0:
