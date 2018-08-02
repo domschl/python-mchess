@@ -43,6 +43,8 @@ class MillenniumChess:
         self.mill_config = None
         found_board = False
 
+        logging.info("PHASE 1")
+
         try:
             with open("millennium_config.json", "r") as f:
                 self.mill_config = json.load(f)
@@ -61,6 +63,8 @@ class MillenniumChess:
             self.mill_config = None
             logging.debug(
                 'No valid default configuration, starting board-scan: {}'.format(e))
+
+        logging.info("PHASE 2")
 
         if found_board is False:
             address = None
