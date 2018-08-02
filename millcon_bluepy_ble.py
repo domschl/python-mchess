@@ -95,20 +95,21 @@ class Transport():
         if self.is_open is True:
             return True
         try:
-            mil = Peripheral(address)
+            self.mil = Peripheral(address)
         except Exception as e:
             logging.warning(
                 'Failed to create ble peripheral at {}'.format(address))
+                self.mil = None
             return False
         try:
-            mil.withDelegate(self.PeriDelegate(self.que))
+            self.mil.withDelegate(self.PeriDelegate(self.que))
         except Exception as e:
             logging.error(
                 'Failed to install peripheral delegate! {}'.format(e))
+            self.mil = None
             return False
-        self.mil = mil
         try:
-            services = mil.getServices()
+            services = self.mil.getServices()
         except:
             logging.error(
                 'Failed to enumerate services for {}, {}'.format(address, e))
@@ -122,7 +123,7 @@ class Transport():
                     self.rxh = chr.getHandle()
                     # Enable notification magic:
                     logging.debug('Enabling notifications')
-                    mil.writeCharacteristic(
+                    self.mil.writeCharacteristic(
                         self.rxh+1, (1).to_bytes(2, byteorder='little'))
                 if chr.uuid == "49535343-8841-43f4-a8d4-ecbe34729bb3":  # RX char, tx for us
                     self.tx = chr
