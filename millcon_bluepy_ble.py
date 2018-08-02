@@ -121,6 +121,7 @@ class Transport():
                     self.rx = chr
                     self.rxh = chr.getHandle()
                     # Enable notification magic:
+                    logging.debug('Enabling notifications')
                     mil.writeCharacteristic(
                         self.rxh+1, (1).to_bytes(2, byteorder='little'))
                 if chr.uuid == "49535343-8841-43f4-a8d4-ecbe34729bb3":  # RX char, tx for us
