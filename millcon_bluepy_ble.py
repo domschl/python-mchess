@@ -69,12 +69,28 @@ class Transport():
             # ... process 'data'
 
     def test_board(self, address):
-        mil = Peripheral(address)
-        mil.withDelegate(self.PeriDelegate(self.que))
+        logging.debug("Testing ble at {}".format(address))
+        try:
+            mil = Peripheral(address)
+        except Exception as e:
+            logging.warning(
+                'Failed to create ble peripheral at {}'.format(address))
+            return False
+        try:
+            mil.withDelegate(self.PeriDelegate(self.que))
+        except Exception as e:
+            logging.error(
+                'Failed to install peripheral delegate! {}'.format(e))
+            return False
         self.mil = mil
-        services = mil.getServices()
+        try:
+            services = mil.getServices()
+        except:
+            logging.error(
+                'Failed to enumerate services for {}, {}'.format(address, e))
+            return False
         for ser in services:
-            print(ser)
+            logging.debug('Service: {}'.format(ser))
             chrs = ser.getCharacteristics()
             for chr in chrs:
                 if chr.uuid == "49535343-1e4d-4bd9-ba61-23c647249616":  # TX char, rx for us
@@ -95,10 +111,10 @@ class Transport():
             cc = ser.getCharacteristics(
                 forUUID='00002902-0000-1000-8000-00805f9b34fb')
             if len(cc) > 0:
-                print("found the ccc")
+                logging.debug("Found characteric.")
                 self.ccc = cc[0]
             else:
-                print("no ccc")
+                logging.debug("no ccc characteristc")
         return True
 
     def get_name(self):
