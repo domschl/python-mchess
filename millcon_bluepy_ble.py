@@ -103,7 +103,6 @@ class Transport():
                 return False
         else:
             logging.debug('Peripheral already initialised')
-            return True
         try:
             logging.debug('Installing peripheral delegate')
             self.delegate = self.PeriDelegate()
