@@ -62,7 +62,7 @@ class Transport():
             # ... initialise here
 
         def handleNotification(self, cHandle, data):
-            # logging.debug("Handle: {}, data: {}", cHandle, data)
+            logging.debug("BLE: Handle: {}, data: {}".format(cHandle, data))
             rcv = ""
             for b in data:
                 rcv += chr(b & 127)
@@ -92,15 +92,14 @@ class Transport():
             return None
 
     def open_mt(self, address):
-        if self.is_open is True:
-            return True
-        try:
-            self.mil = Peripheral(address)
-        except Exception as e:
-            logging.warning(
-                'Failed to create ble peripheral at {}'.format(address))
-            self.mil = None
-            return False
+        if self.is_open is False:
+            try:
+                self.mil = Peripheral(address)
+            except Exception as e:
+                logging.warning(
+                    'Failed to create ble peripheral at {}'.format(address))
+                self.mil = None
+                return False
         try:
             self.mil.withDelegate(self.PeriDelegate(self.que))
         except Exception as e:
@@ -134,13 +133,13 @@ class Transport():
                 else:
                     logging.debug("  {} UUID={}{}".format(
                         chr, chr.uuid, chr.propertiesToString()))
-            cc = ser.getCharacteristics(
-                forUUID='00002902-0000-1000-8000-00805f9b34fb')
-            if len(cc) > 0:
-                logging.debug("Found characteric.")
-                self.ccc = cc[0]
-            else:
-                logging.debug("no ccc characteristc")
+            # cc = ser.getCharacteristics(
+            #     forUUID='00002902-0000-1000-8000-00805f9b34fb')
+            # if len(cc) > 0:
+            #     logging.debug("Found characteric.")
+            #     self.ccc = cc[0]
+            # else:
+            #     logging.debug("no ccc characteric")
         return True
 
     def write_mt(self, msg):
