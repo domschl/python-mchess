@@ -99,7 +99,7 @@ class Transport():
         except Exception as e:
             logging.warning(
                 'Failed to create ble peripheral at {}'.format(address))
-                self.mil = None
+            self.mil = None
             return False
         try:
             self.mil.withDelegate(self.PeriDelegate(self.que))
