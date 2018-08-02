@@ -84,6 +84,7 @@ class Transport():
                     self.chunks = self.chunks[mlen:]
 
     def test_board(self, address):
+        return "x.x"
         logging.debug("Testing ble at {}".format(address))
         if self.open_mt(address) is True:
             self.is_open = True
@@ -92,6 +93,7 @@ class Transport():
             return None
 
     def open_mt(self, address):
+        logging.debug("bluepy_ble open_mt {}".format(address))
         if self.is_open is False:
             try:
                 self.mil = Peripheral(address)
@@ -100,7 +102,10 @@ class Transport():
                     'Failed to create ble peripheral at {}'.format(address))
                 self.mil = None
                 return False
+        else:
+            logging.debug('Peripheral already initialised')
         try:
+            logging.debug('Installing peripheral delegate')
             self.mil.withDelegate(self.PeriDelegate(self.que))
         except Exception as e:
             logging.error(
