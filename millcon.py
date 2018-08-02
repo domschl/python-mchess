@@ -254,7 +254,7 @@ class MillenniumChess:
                 return []
         return rep
 
-    def usb_open(self, port):
+    def open_usb(self, port):
         if port and port != "":
             if self.usb_port_check(port):
                 try:
@@ -273,10 +273,21 @@ class MillenniumChess:
             if self.verbose is True:
                 print("No port found.")
             self.init = False
+        return self.init
+
+    def open_ble(self, address):
+        print("open_ble is not implemented!")
+        return False
 
     def open_board(self):
+        if self.mill_config is None:
+            if self.verbose is True:
+                print("No board hardware detected, can't open.")
+            return False
         if self.mill_config['connection'] == 'usb':
+            self.open_usb(self.mill_config['address'])
         elif self.mill_config['connection'] == 'ble':
+            return self.open_ble(self.mill_config['address'])
         else:
             print('Invalid connection type {}'.format(
                 self.mill_config['connection']))
@@ -289,7 +300,7 @@ class MillenniumChess:
 if __name__ == "__main__":
     mlb = MillenniumChess(rescan=False, verbose=False)
     if mlb.open_board() is not True:
-        mlb = MilleniumChess(rescan=True, verbose=True)
+        mlb = MillenniumChess(rescan=True, verbose=True)
         if mlb.open_board() is not True:
             print("Cannot access a Millennium board.")
             exit(-1)
