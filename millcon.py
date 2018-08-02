@@ -32,7 +32,9 @@ class MillenniumChess:
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
+        self.transports = {'usb': ['Darwin', 'Linux'], 'ble': ['Linux']}
         self.verbose = verbose
+
         if usb_support is False and ble_support is False:
             print(
                 "You need to either install pyserial or bluepy, currently no transport is available.")
