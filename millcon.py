@@ -46,11 +46,16 @@ class MillenniumChess:
         try:
             with open("millennium_config.json", "r") as f:
                 self.mill_config = json.load(f)
+                logging.debug('Checking default configuration for board via {} at {}'.format(
+                    self.mill_config['transport'], self.mill_config['address']))
                 trans = self._open_transport(self.mill_config['transport'])
                 if trans is not None:
                     if trans.test_board(self.mill_config['address']) is True:
+                        logging.debug('Default board operational.')
                         found_board = True
                     else:
+                        logging.warning(
+                            'Default board not available, start scan.')
                         self.mill_config = None
         except Exception as e:
             self.mill_config = None
@@ -84,9 +89,9 @@ class MillenniumChess:
                     else:
                         logging.warning("Transport {} failed to initialize".format(
                             tr.get_name()))
-                except:
-                    logging.warning("Internal error, import of {} failed, transport not available.".format(
-                        transport))
+                except Exception as e:
+                    logging.warning("Internal error, import of {} failed: {}".format(
+                        transport, e))
 
         if self.mill_config is None:
             logging.error(
