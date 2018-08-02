@@ -54,8 +54,8 @@ class Transport():
         return None
 
     class PeriDelegate(DefaultDelegate):
-        def __init__(self):
-            DefaultDelegate.__init__(self, que)
+        def __init__(self, que):
+            DefaultDelegate.__init__(self)
             self.que = que
             logging.debug("Init delegate for peri")
             self.chunks = ""
@@ -106,33 +106,32 @@ class Transport():
         try:
             logging.debug('Installing peripheral delegate')
             self.delegate = self.PeriDelegate(self.que)
-            self.mil.withDelegate(self.delegate
-
+            self.mil.withDelegate(self.delegate)
         except Exception as e:
             logging.error(
                 'Failed to install peripheral delegate! {}'.format(e))
-            self.mil=None
+            self.mil = None
             return False
         try:
-            services=self.mil.getServices()
+            services = self.mil.getServices()
         except:
             logging.error(
                 'Failed to enumerate services for {}, {}'.format(address, e))
             return False
         for ser in services:
             logging.debug('Service: {}'.format(ser))
-            chrs=ser.getCharacteristics()
+            chrs = ser.getCharacteristics()
             for chr in chrs:
                 if chr.uuid == "49535343-1e4d-4bd9-ba61-23c647249616":  # TX char, rx for us
-                    self.rx=chr
-                    self.rxh=chr.getHandle()
+                    self.rx = chr
+                    self.rxh = chr.getHandle()
                     # Enable notification magic:
                     logging.debug('Enabling notifications')
                     self.mil.writeCharacteristic(
                         self.rxh+1, (1).to_bytes(2, byteorder='little'))
                 if chr.uuid == "49535343-8841-43f4-a8d4-ecbe34729bb3":  # RX char, tx for us
-                    self.tx=chr
-                    self.txh=chr.getHandle()
+                    self.tx = chr
+                    self.txh = chr.getHandle()
                 if chr.supportsRead():
                     logging.debug("  {} UUID={} {} -> {}".format(chr, chr.uuid,
                                                                  chr.propertiesToString(), chr.read()))
@@ -150,17 +149,17 @@ class Transport():
 
     def write_mt(self, msg):
         if self.mil is not None:
-            gpar=0
+            gpar = 0
             for b in msg:
-                gpar=gpar ^ ord(b)
-            msg=msg+mill_prot.hex2(gpar)
+                gpar = gpar ^ ord(b)
+            msg = msg+mill_prot.hex2(gpar)
             logging.debug("blue_ble write: <{}>".format(msg))
-            bts=""
+            bts = ""
             for c in msg:
-                bo=chr(mill_prot.add_odd_par(c))
+                bo = chr(mill_prot.add_odd_par(c))
                 bts += bo
             try:
-                btsx=bts.encode('latin1')
+                btsx = bts.encode('latin1')
                 logging.debug("Sending: <{}>".format(btsx))
                 self.tx.write(btsx, withResponse=True)
             except Exception as e:
