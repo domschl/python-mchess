@@ -61,7 +61,7 @@ class Transport():
             # ... initialise here
 
         def handleNotification(self, cHandle, data):
-            # print("Handle: {}, data: {}", cHandle, data)
+            # logging.debug("Handle: {}, data: {}", cHandle, data)
             rcv = ""
             for b in data:
                 rcv += chr(b & 127)
@@ -150,7 +150,7 @@ class Transport():
                 bts += bo
             try:
                 btsx = bts.encode('latin1')
-                print("Sending: <{}>".format(btsx))
+                logging.debug("Sending: <{}>".format(btsx))
                 self.tx.write(btsx, withResponse=True)
             except Exception as e:
                 logging.error(

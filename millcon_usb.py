@@ -145,6 +145,7 @@ class Transport():
         cmd_size = 0
         cmd = ""
         while self.thread_active:
+            b = ""
             try:
                 if cmd_started == False:
                     usb_dev.timeout = None
@@ -152,7 +153,7 @@ class Transport():
                     usb_dev.timeout = 2
                 by = self.usb_dev.read()
                 if len(by) > 0:
-                    b = chr(ord() & 127)
+                    b = chr(ord(by) & 127)
                 else:
                     continue
             except Exception as e:
@@ -164,21 +165,23 @@ class Transport():
                 cmd_size = 0
                 cmd = ""
                 continue
-            if cmd_started is False:
-                if b in mill_prot.millennium_protocol_replies:
-                    cmd_started = True
-                    cmd_size = mill_prot.millennium_protocol_replies[b]
-                    cmd = b
-            else:
-                cmd += b
-                cmd_size -= 1
-                if cmd_size == 0:
-                    cmd_started = False
-                    cmd_size = 0
-                    logging.debug("USB received cmd: {}".format(cmd))
-                    if mill_prot.check_block_crc(cmd):
-                        que.put(cmd)
-                    cmd = ""
+            if len(b) > 0:
+                if cmd_started is False:
+                    if b in mill_prot.millennium_protocol_replies:
+                        cmd_started = True
+                        cmd_size = mill_prot.millennium_protocol_replies[b]
+                        cmd = b
+                        cmd_size -= 1
+                else:
+                    cmd += b
+                    cmd_size -= 1
+                    if cmd_size == 0:
+                        cmd_started = False
+                        cmd_size = 0
+                        logging.debug("USB received cmd: {}".format(cmd))
+                        if mill_prot.check_block_crc(cmd):
+                            que.put(cmd)
+                        cmd = ""
 
     def get_name(self):
         return "millcon_usb"

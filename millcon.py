@@ -6,6 +6,7 @@ import sys
 import struct
 import threading
 import asyncio
+import queue
 import json
 import importlib
 
@@ -39,7 +40,7 @@ class MillenniumChess:
             exit(-1)
 
         self.trans = None
-        self.que = asyncio.Queue()
+        self.que = queue.Queue()  # asyncio.Queue()
         self.mill_config = None
         found_board = False
 
@@ -127,9 +128,19 @@ class MillenniumChess:
     def get_version(self):
         version = ""
         self.trans.write_mt("V")
+        repl = self.que.get()
+        logging.debug("Reply: {}".format(repl))
+        if repl[0] != 'v':
+            logging.error(
+                "We are currently not correctly handling out-of-order replies!")
+        else:
+            version = '{}.{}'.format(repl[1]+repl[2], repl[3]+repl[4])
+            return version
+        return '?'
 
-        # version = '{}.{}'.format(version[1]+version[2], version[3]+version[4])
-        # return version
+
+# async def testme():
+#     await
 
 
 if __name__ == '__main__':
@@ -138,4 +149,5 @@ if __name__ == '__main__':
     brd = MillenniumChess()
     brd.get_version()
 
-    time.sleep(5)
+    time.sleep(100)
+   #  testme()
