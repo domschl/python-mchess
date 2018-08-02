@@ -50,9 +50,10 @@ class MillenniumChess:
                     self.mill_config['transport'], self.mill_config['address']))
                 trans = self._open_transport(self.mill_config['transport'])
                 if trans is not None:
-                    if trans.test_board(self.mill_config['address']) is True:
+                    if trans.test_board(self.mill_config['address']) is not None:
                         logging.debug('Default board operational.')
                         found_board = True
+                        self.trans = trans
                     else:
                         logging.warning(
                             'Default board not available, start scan.')
@@ -79,6 +80,7 @@ class MillenniumChess:
                                 tr.get_name(), address))
                             self.mill_config = {
                                 'transport': tr.get_name(), 'address': address}
+                            self.trans = tr
                             try:
                                 with open("millennium_config.json", "w") as f:
                                     json.dump(self.mill_config, f)
@@ -103,6 +105,7 @@ class MillenniumChess:
             if os.geteuid() == 0:
                 logging.warning(
                     'Do not run as root, once intial BLE scan is done.')
+            self.trans.open_mt(self.mill_config['address'])
 
     def _open_transport(self, transport):
         try:
@@ -121,8 +124,18 @@ class MillenniumChess:
                 transport))
         return None
 
+    def get_version(self):
+        version = ""
+        self.trans.write_mt("V")
+
+        # version = '{}.{}'.format(version[1]+version[2], version[3]+version[4])
+        # return version
+
 
 if __name__ == '__main__':
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     brd = MillenniumChess()
+    brd.get_version()
+
+    time.sleep(5)

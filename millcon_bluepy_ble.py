@@ -84,7 +84,10 @@ class Transport():
 
     def test_board(self, address):
         logging.debug("Testing ble at {}".format(address))
-        return self.open_mt(address)
+        if self.open_mt(address) is True:
+            return "1.0"
+        else:
+            return None
 
     def open_mt(self, address):
         try:

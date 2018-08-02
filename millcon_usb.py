@@ -38,28 +38,29 @@ class Transport():
     def test_board(self, port):
         logging.debug("Testing port: {}".format(port))
         try:
-            usbdev = serial.Serial(port, 38400, timeout=2)
-            usbdev.dtr = 0
-            self.write_mt(usbdev, "V")
-            version = self.usb_read_synchr(usbdev, 'v', 7)
+            self.usb_dev = serial.Serial(port, 38400, timeout=2)
+            self.usb_dev.dtr = 0
+            self.write_mt("V")
+            version = self.usb_read_synchr(self.usb_dev, 'v', 7)
             if len(version) != 7:
-                usbdev.close()
+                self.usb_dev.close()
                 logging.debug(
                     "Message length {} instead of 7".format(len(version)))
                 return None
             if version[0] != 'v':
                 logging.debug("Unexpected reply {}".format(version))
-                usbdev.close()
+                self.usb_dev.close()
                 return None
-            version = '{}.{}'.format(version[1:2], version[3:4])
-            logging.debug("Millennium {} at {}".format(version, port))
-            usbdev.close()
-            return version
+            verstring = '{}.{}'.format(
+                version[1]+version[2], version[3]+version[4])
+            logging.debug("Millennium {} at {}".format(verstring, port))
+            self.usb_dev.close()
+            return verstring
         except (OSError, serial.SerialException) as e:
             logging.debug(
                 'Board detection on {} resulted in error {}'.format(port, e))
         try:
-            usbdev.close()
+            self.usb_dev.close()
         except Exception:
             pass
         return None
@@ -86,17 +87,21 @@ class Transport():
                     vports.append(port)
         return vports
 
-    def write_mt(self, usbdev, msg):
+    def write_mt(self, msg):
         msg = mill_prot.add_block_crc(msg)
         bts = []
         for c in msg:
             bo = mill_prot.add_odd_par(c)
             bts.append(bo)
         try:
-            usbdev.write(bts)
-            usbdev.flush()
+            logging.debug('Trying write <{}>'.format(bts))
+            self.usb_dev.write(bts)
+            self.usb_dev.flush()
         except Exception as e:
             logging.error("Failed to write {}: {}".format(msg, e))
+            return False
+        logging.debug("Written '{}' as < {} > ok".format(msg, bts))
+        return True
 
     def usb_read_synchr(self, usbdev, cmd, num):
         rep = []
@@ -127,6 +132,7 @@ class Transport():
         except Exception as e:
             logging.error('USB cannot open port {}, {}'.format(port, e))
             return False
+        logging.debug('USB port {} open'.format(port))
         self.thread_active = True
         self.event_thread = threading.Thread(
             target=self.event_worker_thread, args=(self.usb_dev, self.que))
@@ -134,16 +140,21 @@ class Transport():
         self.event_thread.start()
 
     def event_worker_thread(self, usb_dev, que):
+        logging.debug('USB worker thread started.')
         cmd_started = False
         cmd_size = 0
         cmd = ""
         while self.thread_active:
             try:
                 if cmd_started == False:
-                    usb_dev.timeout = 0
+                    usb_dev.timeout = None
                 else:
                     usb_dev.timeout = 2
-                b = chr(ord(self.usb_dev.read()) & 127)
+                by = self.usb_dev.read()
+                if len(by) > 0:
+                    b = chr(ord() & 127)
+                else:
+                    continue
             except Exception as e:
                 if len(cmd) > 0:
                     logging.debug(
@@ -152,7 +163,7 @@ class Transport():
                 cmd_started = False
                 cmd_size = 0
                 cmd = ""
-                pass
+                continue
             if cmd_started is False:
                 if b in mill_prot.millennium_protocol_replies:
                     cmd_started = True
