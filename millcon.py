@@ -148,7 +148,7 @@ if __name__ == '__main__':
         format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     brd = MillenniumChess()
     brd.get_version()
-    while True
+    while True:
         brd.trans.mil.waitForNotifications(1.0)
     time.sleep(100)
    #  testme()
