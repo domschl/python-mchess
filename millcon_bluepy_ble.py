@@ -1,5 +1,6 @@
 import logging
 
+import mill_prot
 try:
     from bluepy.btle import Scanner, DefaultDelegate, Peripheral
     bluepy_ble_support = True
@@ -56,6 +57,7 @@ class Transport():
             DefaultDelegate.__init__(self)
             self.que = que
             logging.debug("Init delegate for peri")
+            self.chunks = ""
             # ... initialise here
 
         def handleNotification(self, cHandle, data):
@@ -64,12 +66,27 @@ class Transport():
             for b in data:
                 rcv += chr(b & 127)
             logging.debug('BLE received [{}]'.format(rcv))
-            self.que.put(rcv)
-            # ... perhaps check cHandle
-            # ... process 'data'
+            self.chunks += rcv
+            if self.chunks[0] not in mill_prot.millennium_protocol_replies:
+                logging.warning(
+                    "Illegal reply start '{}' received, discarding".format(self.chunks[0]))
+                while len(self.chunks) > 0 and self.chunks[0] not in mill_prot.millennium_protocol_replies:
+                    self.chunks = self.chunks[1:]
+            if len(self.chunks) > 0:
+                mlen = mill_prot.millennium_protocol_replies[self.chunks[0]]
+                if len(self.chunks) >= mlen:
+                    valmsg = self.chunks[:mlen]
+                    logging.debug(
+                        'bluepy_ble received complete msg: {}'.format(valmsg))
+                    if mill_prot.check_block_crc(valmsg):
+                        self.que.put(valmsg)
+                    self.chunks = self.chunks[mlen:]
 
     def test_board(self, address):
         logging.debug("Testing ble at {}".format(address))
+        return self.open_mt(address)
+
+    def open_mt(self, address):
         try:
             mil = Peripheral(address)
         except Exception as e:
@@ -116,6 +133,27 @@ class Transport():
             else:
                 logging.debug("no ccc characteristc")
         return True
+
+    def write_mt(self, msg):
+        if self.mil is not None:
+            gpar = 0
+            for b in msg:
+                gpar = gpar ^ ord(b)
+            msg = msg+mill_prot.hex2(gpar)
+            logging.debug("blue_ble write: <{}>".format(msg))
+            bts = ""
+            for c in msg:
+                bo = chr(mill_prot.add_odd_par(c))
+                bts += bo
+            try:
+                btsx = bts.encode('latin1')
+                print("Sending: <{}>".format(btsx))
+                self.tx.write(btsx, withResponse=True)
+            except Exception as e:
+                logging.error(
+                    "bluepy_ble: failed to write {}: {}".format(msg, e))
+        else:
+            logging.error("No open pheripheral for write")
 
     def get_name(self):
         return "millcon_bluepy_ble"

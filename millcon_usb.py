@@ -86,11 +86,8 @@ class Transport():
                     vports.append(port)
         return vports
 
-    def write(self, usbdev, msg):
-        gpar = 0
-        for b in msg:
-            gpar = gpar ^ ord(b)
-        msg = msg+mill_prot.hex2(gpar)
+    def write_mt(self, usbdev, msg):
+        msg = mill_prot.add_block_crc(msg)
         bts = []
         for c in msg:
             bo = mill_prot.add_odd_par(c)
@@ -119,17 +116,11 @@ class Transport():
             except (Exception) as e:
                 logging.error("Read error {}".format(e))
                 break
-        if len(rep) > 2:
-            gpar = 0
-            for b in rep[:-2]:
-                gpar = gpar ^ ord(b)
-            if rep[-2]+rep[-1] != mill_prot.hex2(gpar):
-                logging.warning("CRC error rep={} CRCs: {}!={}".format(rep,
-                                                                       ord(rep[-2]), mill_prot.hex2(gpar)))
-                return []
+        if mill_prot.check_block_crc(rep) is False:
+            return []
         return rep
 
-    def open(self, port):
+    def open_mt(self, port):
         try:
             self.usb_dev = serial.Serial(port, 38400)  # , timeout=1)
             self.usb_dev.dtr = 0
@@ -174,7 +165,8 @@ class Transport():
                     cmd_started = False
                     cmd_size = 0
                     logging.debug("USB received cmd: {}".format(cmd))
-                    que.put(cmd)
+                    if mill_prot.check_block_crc(cmd):
+                        que.put(cmd)
                     cmd = ""
 
     def get_name(self):

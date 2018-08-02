@@ -1,4 +1,6 @@
 
+import logging
+
 millennium_protocol_replies = {'v': 7, 's': 67, 'l': 3, 'x': 3, 'w': 7, 'r': 7}
 
 
@@ -29,3 +31,27 @@ def hex2(num):
     d2 = num % 16
     s = hexd(d1)+hexd(d2)
     return s
+
+
+def check_block_crc(msg):
+    if len(msg) > 2:
+        gpar = 0
+        for b in msg[:-2]:
+            gpar = gpar ^ ord(b)
+        if msg[-2]+msg[-1] != hex2(gpar):
+            logging.warning("CRC error rep={} CRCs: {}!={}".format(msg,
+                                                                   ord(msg[-2]), hex2(gpar)))
+            return False
+        else:
+            return True
+    else:
+        logging.warning("Message {} too short for CRC check".format(msg))
+        return False
+
+
+def add_block_crc(msg):
+    gpar = 0
+    for b in msg:
+        gpar = gpar ^ ord(b)
+    msg = msg+hex2(gpar)
+    return msg
