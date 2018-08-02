@@ -163,6 +163,8 @@ class Transport():
                 btsx = bts.encode('latin1')
                 logging.debug("Sending: <{}>".format(btsx))
                 self.tx.write(btsx, withResponse=True)
+                logging.debug("Receiving...")
+                self.rx.read()
             except Exception as e:
                 logging.error(
                     "bluepy_ble: failed to write {}: {}".format(msg, e))
