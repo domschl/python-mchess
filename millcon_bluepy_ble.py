@@ -54,9 +54,9 @@ class Transport():
         return None
 
     class PeriDelegate(DefaultDelegate):
-        def __init__(self, que):
+        def __init__(self):
             DefaultDelegate.__init__(self)
-            self.que = que
+            # self.que = que
             logging.debug("Init delegate for peri")
             self.chunks = ""
             # ... initialise here
@@ -105,7 +105,8 @@ class Transport():
             logging.debug('Peripheral already initialised')
         try:
             logging.debug('Installing peripheral delegate')
-            self.delegate = self.PeriDelegate(self.que)
+            self.delegate = self.PeriDelegate()
+            self.delegate.que = self.que
             self.mil.withDelegate(self.delegate)
         except Exception as e:
             logging.error(
