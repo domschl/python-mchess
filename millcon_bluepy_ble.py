@@ -15,6 +15,7 @@ class Transport():
             return
         self.que = que  # asyncio.Queue()
         self.init = True
+        self.is_open = False
         logging.debug("bluepy_ble init ok")
 
     def search_board(self):
@@ -85,11 +86,14 @@ class Transport():
     def test_board(self, address):
         logging.debug("Testing ble at {}".format(address))
         if self.open_mt(address) is True:
+            self.is_open = True
             return "1.0"
         else:
             return None
 
     def open_mt(self, address):
+        if self.is_open is True:
+            return True
         try:
             mil = Peripheral(address)
         except Exception as e:
