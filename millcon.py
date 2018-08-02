@@ -18,13 +18,12 @@ except:
 
 
 class MillenniumChess:
-    def __init__(self, rescan=False, verbose=False):
+    def __init__(self):
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
         self.transports = {'Darwin': ['millcon_usb', 'millcon_bluepy_ble'], 'Linux': [
             'millcon_bluepy_ble', 'millcon_usb']}
-        self.verbose = verbose
 
         if sys.version_info[0] < 3:
             logging.critical("FATAL: You need Python 3.x to run this module.")
@@ -51,7 +50,10 @@ class MillenniumChess:
                 if trans is not None:
                     if trans.test_board(self.mill_config['address']) is True:
                         found_board = True
+                    else:
+                        self.mill_config = None
         except Exception as e:
+            self.mill_config = None
             logging.debug(
                 'No valid default configuration, starting board-scan: {}'.format(e))
 
@@ -64,9 +66,8 @@ class MillenniumChess:
                     tr = tri.Transport(self.que)
                     logging.debug("created obj")
                     if tr.is_init() is True:
-                        if self.verbose:
-                            logging.debug(
-                                "Transport {} loaded.".format(tr.get_name()))
+                        logging.debug(
+                            "Transport {} loaded.".format(tr.get_name()))
                         address = tr.search_board()
                         if address is not None:
                             logging.info("Found board on transport {} at address {}".format(
@@ -81,9 +82,8 @@ class MillenniumChess:
                                     self.mill_config, "millennium_config.json", e))
                             break
                     else:
-                        if self.verbose:
-                            logging.warning("Transport {} failed to initialize".format(
-                                tr.get_name()))
+                        logging.warning("Transport {} failed to initialize".format(
+                            tr.get_name()))
                 except:
                     logging.warning("Internal error, import of {} failed, transport not available.".format(
                         transport))
@@ -103,13 +103,11 @@ class MillenniumChess:
             tr = tri.Transport(self.que)
             logging.debug("created obj")
             if tr.is_init() is True:
-                if self.verbose:
-                    logging.debug("Transport {} loaded.".format(tr.name()))
+                logging.debug("Transport {} loaded.".format(tr.name()))
                 return tr
             else:
-                if self.verbose:
-                    logging.warning("Transport {} failed to initialize".format(
-                        tr.get_name()))
+                logging.warning("Transport {} failed to initialize".format(
+                    tr.get_name()))
         except:
             logging.warning("Internal error, import of {} failed, transport not available.".format(
                 transport))
@@ -119,4 +117,4 @@ class MillenniumChess:
 if __name__ == '__main__':
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
-    brd = MillenniumChess(rescan=True, verbose=True)
+    brd = MillenniumChess()
