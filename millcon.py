@@ -39,43 +39,81 @@ class MillenniumChess:
             logging.info(msg)
             exit(-1)
 
-        trans = []
+        self.trans = None
         self.que = asyncio.Queue()
+        self.mill_config = None
+        found_board = False
 
-        for transport in self.transports[platform.system()]:
-            try:
-                tri = importlib.import_module(transport)
-                logging.debug("imported {}".format(transport))
-                tr = tri.Transport(self.que)
-                logging.debug("created obj")
-                if tr.is_init() is True:
-                    if self.verbose:
-                        logging.debug("Transport {} loaded.".format(tr.name()))
-                    trans.append(tr)
-                else:
-                    if self.verbose:
-                        logging.warning("Transport {} failed to initialize".format(
-                            tr.get_name()))
-            except:
-                logging.warning("Internal error, import of {} failed, transport not available.".format(
-                    transport))
+        try:
+            with open("millennium_config.json", "r") as f:
+                self.mill_config = json.load(f)
+                trans = self._open_transport(self.mill_config['transport'])
+                if trans is not None:
+                    if trans.test_board(self.mill_config['address']) is True:
+                        found_board = True
+        except Exception as e:
+            logging.debug(
+                'No valid default configuration, starting board-scan: {}'.format(e))
 
-        if len(trans) == 0:
+        if found_board is False:
+            address = None
+            for transport in self.transports[platform.system()]:
+                try:
+                    tri = importlib.import_module(transport)
+                    logging.debug("imported {}".format(transport))
+                    tr = tri.Transport(self.que)
+                    logging.debug("created obj")
+                    if tr.is_init() is True:
+                        if self.verbose:
+                            logging.debug(
+                                "Transport {} loaded.".format(tr.get_name()))
+                        address = tr.search_board()
+                        if address is not None:
+                            logging.info("Found board on transport {} at address {}".format(
+                                tr.get_name(), address))
+                            self.mill_config = {
+                                'transport': tr.get_name(), 'address': address}
+                            try:
+                                with open("millennium_config.json", "w") as f:
+                                    json.dump(self.mill_config, f)
+                            except Exception as e:
+                                logging.error("Failed to save default configuration {} to {}: {}".format(
+                                    self.mill_config, "millennium_config.json", e))
+                            break
+                    else:
+                        if self.verbose:
+                            logging.warning("Transport {} failed to initialize".format(
+                                tr.get_name()))
+                except:
+                    logging.warning("Internal error, import of {} failed, transport not available.".format(
+                        transport))
+
+        if self.mill_config is None:
             logging.error(
                 "No transport available, cannot connect.")
             return
-
-        scan = False
-        self.mill_config = None
-
-        if rescan is False:
-            try:
-                with open("millennium_config.json", "r") as f:
-                    self.mill_config = json.load(f)
-            except:
-                scan = True
         else:
-            scan = True
+            logging.info('Valid board available on {} at {}'.format(
+                self.mill_config['transport'], self.mill_config['address']))
+
+    def _open_transport(self, transport):
+        try:
+            tri = importlib.import_module(transport)
+            logging.debug("imported {}".format(transport))
+            tr = tri.Transport(self.que)
+            logging.debug("created obj")
+            if tr.is_init() is True:
+                if self.verbose:
+                    logging.debug("Transport {} loaded.".format(tr.name()))
+                return tr
+            else:
+                if self.verbose:
+                    logging.warning("Transport {} failed to initialize".format(
+                        tr.get_name()))
+        except:
+            logging.warning("Internal error, import of {} failed, transport not available.".format(
+                transport))
+        return None
 
 
 if __name__ == '__main__':
