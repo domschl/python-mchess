@@ -40,7 +40,7 @@ class Transport():
         try:
             usbdev = serial.Serial(port, 38400, timeout=2)
             usbdev.dtr = 0
-            self.write(usbdev, "V")
+            self.write_mt(usbdev, "V")
             version = self.usb_read_synchr(usbdev, 'v', 7)
             if len(version) != 7:
                 usbdev.close()
