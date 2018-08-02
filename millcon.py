@@ -112,7 +112,7 @@ class MillenniumChess:
             tr = tri.Transport(self.que)
             logging.debug("created obj")
             if tr.is_init() is True:
-                logging.debug("Transport {} loaded.".format(tr.name()))
+                logging.debug("Transport {} loaded.".format(tr.get_name()))
                 return tr
             else:
                 logging.warning("Transport {} failed to initialize".format(
