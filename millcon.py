@@ -24,7 +24,7 @@ class MillenniumChess:
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
         self.transports = {'Darwin': ['millcon_usb', 'millcon_bluepy_ble'], 'Linux': [
-            'millcon_bluepy_ble', 'millcon_usb']}
+            'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}
 
         if sys.version_info[0] < 3:
             logging.critical("FATAL: You need Python 3.x to run this module.")
@@ -42,6 +42,7 @@ class MillenniumChess:
         self.trans = None
         self.que = queue.Queue()  # asyncio.Queue()
         self.mill_config = None
+        self.connected = False
         found_board = False
 
         try:
@@ -96,17 +97,18 @@ class MillenniumChess:
                     logging.warning("Internal error, import of {} failed: {}".format(
                         transport, e))
 
-        if self.mill_config is None:
+        if self.mill_config is None or self.trans is None:
             logging.error(
                 "No transport available, cannot connect.")
             return
         else:
             logging.info('Valid board available on {} at {}'.format(
                 self.mill_config['transport'], self.mill_config['address']))
-            if os.geteuid() == 0:
-                logging.warning(
-                    'Do not run as root, once intial BLE scan is done.')
-            self.trans.open_mt(self.mill_config['address'])
+            if platform.system() != 'Windows':
+                if os.geteuid() == 0:
+                    logging.warning(
+                        'Do not run as root, once intial BLE scan is done.')
+            self.connected = self.trans.open_mt(self.mill_config['address'])
 
     def _open_transport(self, transport):
         try:
@@ -147,8 +149,10 @@ if __name__ == '__main__':
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
     brd = MillenniumChess()
-    brd.get_version()
-    while True:
-        brd.trans.mil.waitForNotifications(1.0)
-    time.sleep(100)
+    if brd.connected is True:
+        brd.get_version()
+        while True:
+            pass
+            # brd.trans.mil.waitForNotifications(1.0)
+        time.sleep(100)
    #  testme()

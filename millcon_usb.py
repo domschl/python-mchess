@@ -138,6 +138,7 @@ class Transport():
             target=self.event_worker_thread, args=(self.usb_dev, self.que))
         self.event_thread.setDaemon(True)
         self.event_thread.start()
+        return True
 
     def event_worker_thread(self, usb_dev, que):
         logging.debug('USB worker thread started.')
