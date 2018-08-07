@@ -127,7 +127,7 @@ class Transport():
 
     def open_mt(self, port):
         try:
-            self.usb_dev = serial.Serial(port, 38400)  # , timeout=1)
+            self.usb_dev = serial.Serial(port, 38400, timeout=0.1)
             self.usb_dev.dtr = 0
         except Exception as e:
             logging.error('USB cannot open port {}, {}'.format(port, e))
@@ -147,11 +147,12 @@ class Transport():
         cmd = ""
         while self.thread_active:
             b = ""
+            # time.sleep(0.2)
             try:
                 if cmd_started == False:
-                    usb_dev.timeout = None
+                    self.usb_dev.timeout = None
                 else:
-                    usb_dev.timeout = 2
+                    self.usb_dev.timeout = 0.2
                 by = self.usb_dev.read()
                 if len(by) > 0:
                     b = chr(ord(by) & 127)
