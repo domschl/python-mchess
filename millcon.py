@@ -11,6 +11,8 @@ import json
 import importlib
 import copy
 
+import mill_prot
+
 try:
     import chess
     import chess.uci
@@ -227,12 +229,17 @@ class MillenniumChess:
             self.set_led_off()
         return True
 
-    def move_from(self, fen, legal_moves):
-        self.legal_moves = legal_moves
-        self.reference_position = self.fen_to_position(fen)
-        self.show_delta(self.reference_position, self.position)
+    def move_from(self, fen, legal_moves, eval_only=False):
+        if eval_only is False:
+            self.legal_moves = legal_moves
+            self.reference_position = self.fen_to_position(fen)
+            self.show_delta(self.reference_position, self.position)
+        else:
+            eval_position = self.fen_to_position(fen)
+            self.show_delta(self.position, eval_position,
+                            freq=0x07, ontime1=0x01, ontime2=0x10)
 
-    def show_delta(self, pos1, pos2):
+    def show_delta(self, pos1, pos2, freq=0x20, ontime1=0x0f, ontime2=0xf0):
         dpos = [[0 for x in range(8)] for y in range(8)]
         for y in range(8):
             for x in range(8):
@@ -241,12 +248,12 @@ class MillenniumChess:
                         dpos[y][x] = 1
                     else:
                         dpos[y][x] = 2
-        self.set_led(dpos)
+        self.set_led(dpos, freq, ontime1, ontime2)
 
-    def set_led(self, pos):
+    def set_led(self, pos, freq, ontime1, ontime2):
         if self.connected is True:
             leds = [[0 for x in range(9)] for y in range(9)]
-            cmd = "L20"
+            cmd = "L"+mill_prot.hex2(freq)
             for y in range(8):
                 for x in range(8):
                     if pos[y][x] != 0:
@@ -266,9 +273,9 @@ class MillenniumChess:
                     if leds[y][x] == 0:
                         cmd = cmd + "00"
                     elif leds[y][x] == 1:
-                        cmd = cmd + "0F"
+                        cmd = cmd + mill_prot.hex2(ontime1)
                     else:
-                        cmd = cmd + "F0"
+                        cmd = cmd + mill_prot.hex2(ontime2)
 
             self.trans.write_mt(cmd)
         else:
@@ -455,13 +462,16 @@ class ChessBoardHelper:
                 'actor': 'uci-engine'
             }})
             self.last_pv_move = ""
-            super().on_bestmove(bestmove, ponder)
 
         def pv(self, move):
+            super().pv(move)
             if self.last_pv_move != move[0]:
                 self.log.info("PV: {}".format(move[0]))
                 self.last_pv_move = move[0]
-            super().pv(move)
+                self.que.put({'curmove': {
+                    'uci': move[0].uci(),
+                    'actor': 'uci-engine'
+                }})
 
     def uci_handler(self, engine):
         self.info_handler = self.UciHandler()
@@ -486,7 +496,7 @@ class ChessBoardHelper:
                     log.info('requesting new game')
                     appque.put({'new game': '', 'actor': 'keyboard'})
                 elif cmd[:4] == 'fen ':
-                    appque.put('set position': {'fen': cmd[4:]})
+                    appque.put({'set position': {'fen': cmd[4:]}})
                 elif cmd == 'help':
                     log.info('n - new game')
                     log.info('e2e4 - valid move')
@@ -565,15 +575,24 @@ if __name__ == '__main__':
                             brd.move_from(cbrd.fen(), vals)
                             bhlp.set_keyboard_valid(None)
                             engine.position(cbrd)
-                            engine.go(movetime=5000)
+                            engine.go(movetime=15000, async_callback=True)
                         if msg['move']['actor'] == 'eboard':
                             bhlp.set_keyboard_valid(None)
                             engine.position(cbrd)
-                            engine.go(movetime=5000)
+                            engine.go(movetime=15000, async_callback=True)
                         if msg['move']['actor'] == 'uci-engine':
                             vals = bhlp.valid_moves(cbrd)
                             bhlp.set_keyboard_valid(vals)
                             brd.move_from(cbrd.fen(), vals)
+                if 'curmove' in msg:
+                    uci = msg['curmove']['uci']
+                    logging.info("=> {} eval: {}".format(
+                        msg['curmove']['actor'], uci))
+                    mv = chess.Move.from_uci(uci)
+                    cbrd.push(mv)
+                    brd.move_from(cbrd.fen(), [], eval_only=True)
+                    cbrd.pop()
+
             else:
                 time.sleep(0.1)
             # brd.trans.mil.waitForNotifications(1.0)
