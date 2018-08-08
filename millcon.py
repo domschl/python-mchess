@@ -184,7 +184,7 @@ class MillenniumChess:
                             sfen = self.short_fen(fen)
 
                             if sfen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
-                                cmd = {'new game': ''}
+                                cmd = {'new game': '', 'actor': 'eboard'}
                                 self.new_game(position)
                                 self.appque.put(cmd)
 
@@ -418,6 +418,8 @@ class MillenniumChess:
 class ChessBoardHelper:
     def __init__(self, appque):
         self.appque = appque
+        self.log = logging.getLogger('ChessBoardHelper')
+        self.kbd_moves = []
 
     def valid_moves(self, cbrd):
         vals = {}
@@ -461,10 +463,43 @@ class ChessBoardHelper:
                 self.last_pv_move = move[0]
             super().pv(move)
 
-    def handler(self, engine):
+    def uci_handler(self, engine):
         self.info_handler = self.UciHandler()
         self.info_handler.que = self.appque
         engine.info_handlers.append(self.info_handler)
+
+    def set_keyboard_valid(self, vals):
+        self.kbd_moves = []
+        if vals != None:
+            for v in vals:
+                self.kbd_moves.append(vals[v])
+
+    def kdb_event_worker_thread(self, appque, log):
+        while self.kdb_thread_active:
+            cmd = input()
+            log.info("keyboard: <{}>".format(cmd))
+            if len(cmd) >= 1:
+                if cmd in self.kbd_moves:
+                    appque.put(
+                        {'move': {'uci': cmd, 'actor': 'keyboard'}})
+                elif cmd[0] == 'n':
+                    log.info('requesting new game')
+                    appque.put({'new game': '', 'actor': 'keyboard'})
+                elif cmd[:4] == 'fen ':
+                    appque.put('set position': {'fen': cmd[4:]})
+                elif cmd == 'help':
+                    log.info('n - new game')
+                    log.info('e2e4 - valid move')
+                else:
+                    log.info(
+                        'Unknown keyboard cmd <{}>, enter "help" for a list of valid commands.'.format(cmd))
+
+    def keyboard_handler(self):
+        self.kdb_thread_active = True
+        self.kbd_event_thread = threading.Thread(
+            target=self.kdb_event_worker_thread, args=(self.appque, self.log))
+        self.kbd_event_thread.setDaemon(True)
+        self.kbd_event_thread.start()
 
 
 if __name__ == '__main__':
@@ -484,6 +519,7 @@ if __name__ == '__main__':
     appque = queue.Queue()
     brd = MillenniumChess(appque)
     bhlp = ChessBoardHelper(appque)
+    bhlp.keyboard_handler()
 
     bhlp.load_engines()
     logging.info('{} engines loaded.'.format(len(bhlp.engines)))
@@ -493,7 +529,7 @@ if __name__ == '__main__':
         engine.uci()
         # options
         engine.isready()
-        bhlp.handler(engine)
+        bhlp.uci_handler(engine)
 
     else:
         engine = None
@@ -506,9 +542,10 @@ if __name__ == '__main__':
                 msg = appque.get()
                 logging.debug("App received msg: {}".format(msg))
                 if 'new game' in msg:
-                    logging.info("New Game")
+                    logging.info("New Game (by: {})".format(msg['actor']))
                     cbrd = chess.Board()
                     vals = bhlp.valid_moves(cbrd)
+                    bhlp.set_keyboard_valid(vals)
                     brd.move_from(cbrd.fen(), vals)
                 if 'move' in msg:
                     uci = msg['move']['uci']
@@ -520,15 +557,22 @@ if __name__ == '__main__':
                         logging.info("Check!")
                     if cbrd.is_checkmate():
                         logging.info("Checkmate!")
-                        if msg['move']['actor'] == 'uci-engine':
+                        if msg['move']['actor'] != 'eboard':
                             brd.move_from(cbrd.fen(), {})
-
                     else:
+                        if msg['move']['actor'] == 'keyboard':
+                            vals = bhlp.valid_moves(cbrd)
+                            brd.move_from(cbrd.fen(), vals)
+                            bhlp.set_keyboard_valid(None)
+                            engine.position(cbrd)
+                            engine.go(movetime=5000)
                         if msg['move']['actor'] == 'eboard':
+                            bhlp.set_keyboard_valid(None)
                             engine.position(cbrd)
                             engine.go(movetime=5000)
                         if msg['move']['actor'] == 'uci-engine':
                             vals = bhlp.valid_moves(cbrd)
+                            bhlp.set_keyboard_valid(vals)
                             brd.move_from(cbrd.fen(), vals)
             else:
                 time.sleep(0.1)
