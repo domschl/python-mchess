@@ -462,9 +462,13 @@ class ChessBoardHelper:
                 'actor': 'uci-engine'
             }})
             self.last_pv_move = ""
+            super().on_bestmove(bestmove, ponder)
+
+        def score(self, cp, mate, lowerbound, upperbound):
+            self.que.put({'score': {'cp': cp, 'mate': mate}})
+            super().score(cp, mate, lowerbound, upperbound)
 
         def pv(self, move):
-            super().pv(move)
             if self.last_pv_move != move[0]:
                 self.log.info("PV: {}".format(move[0]))
                 self.last_pv_move = move[0]
@@ -472,6 +476,7 @@ class ChessBoardHelper:
                     'uci': move[0].uci(),
                     'actor': 'uci-engine'
                 }})
+            super().pv(move)
 
     def uci_handler(self, engine):
         self.info_handler = self.UciHandler()
@@ -592,6 +597,11 @@ if __name__ == '__main__':
                     cbrd.push(mv)
                     brd.move_from(cbrd.fen(), [], eval_only=True)
                     cbrd.pop()
+                if 'score' in msg:
+                    if msg['score']['mate'] is not None:
+                        logging.info('Mate in {}'.format(msg['score']['mate']))
+                    else:
+                        logging.info('Score {}'.format(msg['score']['cp']))
 
             else:
                 time.sleep(0.1)
