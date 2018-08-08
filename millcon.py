@@ -222,7 +222,7 @@ class MillenniumChess:
         fen = self.short_fen(self.position_to_fen(pos))
         if self.legal_moves is not None and fen in self.legal_moves:
             self.appque.put(
-                {'move': {'uci': self.legal_moves[fen], 'fen': fen}})
+                {'move': {'uci': self.legal_moves[fen], 'fen': fen, 'actor': 'eboard'}})
             self.reference_position = pos
             self.set_led_off()
         return True
@@ -415,6 +415,58 @@ class MillenniumChess:
         return self.board_inverted
 
 
+class ChessBoardHelper:
+    def __init__(self, appque):
+        self.appque = appque
+
+    def valid_moves(self, cbrd):
+        vals = {}
+        for mv in cbrd.legal_moves:
+            cbrd.push(mv)
+            vals[brd.short_fen(cbrd.fen())] = mv.uci()
+            cbrd.pop()
+        logging.debug("valid moves: {}".format(vals))
+        return vals
+
+    def load_engines(self):
+        with open('uci_engines.json', 'r') as f:
+            self.engines = json.load(f)['engines']
+            logging.debug(self.engines)
+            return self.engines
+
+    class UciHandler(chess.uci.InfoHandler):
+        def __init__(self):
+            self.que = None
+            self.last_pv_move = ""
+            self.log = logging.getLogger('UciHandler')
+            super().__init__()
+
+        def post_info(self):
+            # Called whenever a complete info line has been processed.
+            # print(self.info)
+            super().post_info()  # Release the lock
+
+        def on_bestmove(self, bestmove, ponder):
+            self.log.info("Best: {}".format(bestmove))
+            self.que.put({'move': {
+                'uci': bestmove.uci(),
+                'actor': 'uci-engine'
+            }})
+            self.last_pv_move = ""
+            super().on_bestmove(bestmove, ponder)
+
+        def pv(self, move):
+            if self.last_pv_move != move[0]:
+                self.log.info("PV: {}".format(move[0]))
+                self.last_pv_move = move[0]
+            super().pv(move)
+
+    def handler(self, engine):
+        self.info_handler = self.UciHandler()
+        self.info_handler.que = self.appque
+        engine.info_handlers.append(self.info_handler)
+
+
 if __name__ == '__main__':
     import chess
     import chess.uci
@@ -428,9 +480,24 @@ if __name__ == '__main__':
         windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
 
     logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
+        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
     appque = queue.Queue()
     brd = MillenniumChess(appque)
+    bhlp = ChessBoardHelper(appque)
+
+    bhlp.load_engines()
+    logging.info('{} engines loaded.'.format(len(bhlp.engines)))
+
+    if len(bhlp.engines) > 0:
+        engine = chess.uci.popen_engine(bhlp.engines[0]['path'])
+        engine.uci()
+        # options
+        engine.isready()
+        bhlp.handler(engine)
+
+    else:
+        engine = None
+
     if brd.connected is True:
         brd.get_version()
         brd.get_position()
@@ -439,28 +506,30 @@ if __name__ == '__main__':
                 msg = appque.get()
                 logging.debug("App received msg: {}".format(msg))
                 if 'new game' in msg:
+                    logging.info("New Game")
                     cbrd = chess.Board()
-                    vals = {}
-                    for mv in cbrd.legal_moves:
-                        cbrd.push(mv)
-                        vals[brd.short_fen(cbrd.fen())] = mv.uci()
-                        cbrd.pop()
-                    logging.debug("valid moves: {}".format(vals))
+                    vals = bhlp.valid_moves(cbrd)
                     brd.move_from(cbrd.fen(), vals)
                 if 'move' in msg:
                     uci = msg['move']['uci']
-                    logging.info("Board move: {}".format(uci))
-                    for mv in cbrd.legal_moves:
-                        if mv.uci() == uci:
-                            cbrd.push(mv)
-                            vals = {}
-                            for mv in cbrd.legal_moves:
-                                cbrd.push(mv)
-                                vals[brd.short_fen(cbrd.fen())] = mv.uci()
-                                cbrd.pop()
-                            brd.move_from(cbrd.fen(), vals)
+                    logging.info("{} move: {}".format(
+                        msg['move']['actor'], uci))
+                    mv = chess.Move.from_uci(uci)
+                    cbrd.push(mv)
+                    if cbrd.is_check() and not cbrd.is_checkmate():
+                        logging.info("Check!")
+                    if cbrd.is_checkmate():
+                        logging.info("Checkmate!")
+                        if msg['move']['actor'] == 'uci-engine':
+                            brd.move_from(cbrd.fen(), {})
 
+                    else:
+                        if msg['move']['actor'] == 'eboard':
+                            engine.position(cbrd)
+                            engine.go(movetime=5000)
+                        if msg['move']['actor'] == 'uci-engine':
+                            vals = bhlp.valid_moves(cbrd)
+                            brd.move_from(cbrd.fen(), vals)
             else:
                 time.sleep(0.1)
             # brd.trans.mil.waitForNotifications(1.0)
-        time.sleep(100)
