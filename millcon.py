@@ -225,6 +225,7 @@ class MillenniumChess:
         if self.legal_moves is not None and fen in self.legal_moves:
             self.appque.put(
                 {'move': {'uci': self.legal_moves[fen], 'fen': fen, 'actor': 'eboard'}})
+            self.legal_moves = None
             self.reference_position = pos
             self.set_led_off()
         return True
@@ -495,6 +496,7 @@ class ChessBoardHelper:
             log.info("keyboard: <{}>".format(cmd))
             if len(cmd) >= 1:
                 if cmd in self.kbd_moves:
+                    self.kbd_moves = []
                     appque.put(
                         {'move': {'uci': cmd, 'actor': 'keyboard'}})
                 elif cmd[0] == 'n':
