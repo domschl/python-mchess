@@ -48,6 +48,7 @@ class MillenniumChess:
         self.mill_config = None
         self.connected = False
         self.board_inverted = False
+        self.valid_moves = None
         found_board = False
 
         self.thread_active = True
@@ -182,11 +183,15 @@ class MillenniumChess:
 
                             if sfen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
                                 cmd = {'new game': ''}
+                                self.new_game(position)
                                 self.appque.put(cmd)
 
                             self.position = position
-                            self.print_position_ascii(position)
+                            self.show_delta(
+                                self.reference_position, self.position)
+                            # self.print_position_ascii(position)
                             self.appque.put({'fen': fen})
+                            self.check_move(position)
                     if msg[0] == 'v':
                         self.log.debug('got version reply')
                         if len(msg) == 7:
@@ -203,6 +208,24 @@ class MillenniumChess:
                         self.log.debug('got led-off reply')
             else:
                 time.sleep(0.1)
+
+    def new_game(self, pos):
+        self.reference_position = pos
+        self.set_led_off()
+        self.valid_moves = None
+
+    def check_move(self, pos):
+        fen = self.position_to_fen(pos)
+        if self.valid_moves is not None and fen in self.valid_moves:
+            self.appque.put({'move': {'uci': valid_moves[fen], 'fen': fen}})
+            self.reference_position = pos
+            self.set_led_off()
+        return True
+
+    def move_from(self, fen, valid_moves):
+        self.valid_moves = valid_moves
+        self.reference_position = self.position_to_fen(pos)
+        self.show_delta(self.reference_position, self.position)
 
     def show_delta(self, pos1, pos2):
         dpos = [[0 for x in range(8)] for y in range(8)]
@@ -222,10 +245,17 @@ class MillenniumChess:
             for y in range(8):
                 for x in range(8):
                     if pos[y][x] != 0:
-                        leds[7-x][y] = pos[y][x]
-                        leds[7-x+1][y] = pos[y][x]
-                        leds[7-x][y+1] = pos[y][x]
-                        leds[7-x+1][y+1] = pos[y][x]
+                        if self.board_inverted == False:
+                            leds[7-x][y] = pos[y][x]
+                            leds[7-x+1][y] = pos[y][x]
+                            leds[7-x][y+1] = pos[y][x]
+                            leds[7-x+1][y+1] = pos[y][x]
+                        else:
+                            leds[x][7-y] = pos[y][x]
+                            leds[x+1][7-y] = pos[y][x]
+                            leds[x][7-y+1] = pos[y][x]
+                            leds[x+1][7-y+1] = pos[y][x]
+
             for y in range(9):
                 for x in range(9):
                     if leds[y][x] == 0:
