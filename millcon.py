@@ -47,8 +47,10 @@ class MillenniumChess:
         self.trque = queue.Queue()  # asyncio.Queue()
         self.mill_config = None
         self.connected = False
+        self.position = None
+        self.reference_position = None
         self.board_inverted = False
-        self.valid_moves = None
+        self.legal_moves = None
         found_board = False
 
         self.thread_active = True
@@ -187,6 +189,8 @@ class MillenniumChess:
                                 self.appque.put(cmd)
 
                             self.position = position
+                            if self.reference_position == None:
+                                self.reference_position = position
                             self.show_delta(
                                 self.reference_position, self.position)
                             # self.print_position_ascii(position)
@@ -212,19 +216,20 @@ class MillenniumChess:
     def new_game(self, pos):
         self.reference_position = pos
         self.set_led_off()
-        self.valid_moves = None
+        self.legal_moves = None
 
     def check_move(self, pos):
-        fen = self.position_to_fen(pos)
-        if self.valid_moves is not None and fen in self.valid_moves:
-            self.appque.put({'move': {'uci': valid_moves[fen], 'fen': fen}})
+        fen = self.short_fen(self.position_to_fen(pos))
+        if self.legal_moves is not None and fen in self.legal_moves:
+            self.appque.put(
+                {'move': {'uci': self.legal_moves[fen], 'fen': fen}})
             self.reference_position = pos
             self.set_led_off()
         return True
 
-    def move_from(self, fen, valid_moves):
-        self.valid_moves = valid_moves
-        self.reference_position = self.position_to_fen(pos)
+    def move_from(self, fen, legal_moves):
+        self.legal_moves = legal_moves
+        self.reference_position = self.fen_to_position(fen)
         self.show_delta(self.reference_position, self.position)
 
     def show_delta(self, pos1, pos2):
@@ -318,7 +323,7 @@ class MillenniumChess:
 
     def fen_to_position(self, fen):
         position = [[0 for x in range(8)] for y in range(8)]
-        fenp = fen[:fen.find(' ')]
+        fenp = self.short_fen(fen)
         fi = 0
         for y in range(8):
             x = 0
@@ -400,21 +405,19 @@ class MillenniumChess:
                 "Not connected to Millennium board, can't get position.")
         return '?'
 
-    def set_board_orientation(cable_right):
+    def set_board_orientation(self, cable_right):
         if cable_right is True:
             self.board_inverted = False
         else:
             self.board_inverted = True
 
-    def get_board_orientation():
+    def get_board_orientation(self):
         return self.board_inverted
 
 
-# async def testme():
-#     await
-
-
 if __name__ == '__main__':
+    import chess
+    import chess.uci
 
     if platform.system().lower() == 'windows':
         from ctypes import windll, c_int, byref
@@ -434,9 +437,30 @@ if __name__ == '__main__':
         while True:
             if appque.empty() is False:
                 msg = appque.get()
-                logging.info(msg)
+                logging.debug("App received msg: {}".format(msg))
+                if 'new game' in msg:
+                    cbrd = chess.Board()
+                    vals = {}
+                    for mv in cbrd.legal_moves:
+                        cbrd.push(mv)
+                        vals[brd.short_fen(cbrd.fen())] = mv.uci()
+                        cbrd.pop()
+                    logging.debug("valid moves: {}".format(vals))
+                    brd.move_from(cbrd.fen(), vals)
+                if 'move' in msg:
+                    uci = msg['move']['uci']
+                    logging.info("Board move: {}".format(uci))
+                    for mv in cbrd.legal_moves:
+                        if mv.uci() == uci:
+                            cbrd.push(mv)
+                            vals = {}
+                            for mv in cbrd.legal_moves:
+                                cbrd.push(mv)
+                                vals[brd.short_fen(cbrd.fen())] = mv.uci()
+                                cbrd.pop()
+                            brd.move_from(cbrd.fen(), vals)
+
             else:
                 time.sleep(0.1)
             # brd.trans.mil.waitForNotifications(1.0)
         time.sleep(100)
-   #  testme()
