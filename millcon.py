@@ -9,6 +9,7 @@ import asyncio
 import queue
 import json
 import importlib
+import copy
 
 try:
     import chess
@@ -46,6 +47,7 @@ class MillenniumChess:
         self.trque = queue.Queue()  # asyncio.Queue()
         self.mill_config = None
         self.connected = False
+        self.board_inverted = False
         found_board = False
 
         self.thread_active = True
@@ -143,7 +145,10 @@ class MillenniumChess:
                                             continue
                                         else:
                                             f = self.figrep['int'][i]
-                                            position[y][x] = f
+                                            if self.board_inverted == False:
+                                                position[y][x] = f
+                                            else:
+                                                position[7-y][7-x] = f
                             else:
                                 val_pos = False
                                 self.log.warning(
@@ -154,9 +159,33 @@ class MillenniumChess:
                             self.log.error(
                                 'Incomplete board position, {}'.format(msg))
                         if val_pos is True:
+                            fen = self.position_to_fen(position)
+                            sfen = self.short_fen(fen)
+                            if sfen == "RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr":
+                                if self.board_inverted == False:
+                                    self.log.info("Cable-left board detected.")
+                                    self.board_inverted = True
+                                    position_inv = copy.deepcopy(position)
+                                    for x in range(8):
+                                        for y in range(8):
+                                            position[x][y] = position_inv[7-x][7-y]
+                                else:
+                                    self.log.info(
+                                        "Cable-right board detected.")
+                                    self.board_inverted = False
+                                    position_inv = copy.deepcopy(position)
+                                    for x in range(8):
+                                        for y in range(8):
+                                            position[x][y] = position_inv[7-x][7-y]
+                            fen = self.position_to_fen(position)
+                            sfen = self.short_fen(fen)
+
+                            if sfen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
+                                cmd = {'new game': ''}
+                                self.appque.put(cmd)
+
                             self.position = position
                             self.print_position_ascii(position)
-                            fen = self.position_to_fen(position)
                             self.appque.put({'fen': fen})
                     if msg[0] == 'v':
                         self.log.debug('got version reply')
@@ -217,6 +246,15 @@ class MillenniumChess:
         else:
             self.log.warning(
                 "Not connected to Millennium board.")
+
+    def short_fen(self, fen):
+        i = fen.find(' ')
+        if i == -1:
+            self.log.error(
+                'Invalid fen position <{}> in short_fen'.format(fen))
+            return None
+        else:
+            return fen[:i]
 
     def position_to_fen(self, position):
         fen = ""
@@ -317,13 +355,29 @@ class MillenniumChess:
         return None
 
     def get_version(self):
-        version = ""
         if self.connected is True:
             self.trans.write_mt("V")
         else:
             self.log.warning(
                 "Not connected to Millennium board, can't get version.")
         return '?'
+
+    def get_position(self):
+        if self.connected is True:
+            self.trans.write_mt("S")
+        else:
+            self.log.warning(
+                "Not connected to Millennium board, can't get position.")
+        return '?'
+
+    def set_board_orientation(cable_right):
+        if cable_right is True:
+            self.board_inverted = False
+        else:
+            self.board_inverted = True
+
+    def get_board_orientation():
+        return self.board_inverted
 
 
 # async def testme():
@@ -346,6 +400,7 @@ if __name__ == '__main__':
     brd = MillenniumChess(appque)
     if brd.connected is True:
         brd.get_version()
+        brd.get_position()
         while True:
             if appque.empty() is False:
                 msg = appque.get()
