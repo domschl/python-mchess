@@ -158,8 +158,65 @@ class MillenniumChess:
                             self.print_position_ascii(position)
                             fen = self.position_to_fen(position)
                             self.appque.put({'fen': fen})
+                    if msg[0] == 'v':
+                        self.log.debug('got version reply')
+                        if len(msg) == 7:
+                            version = '{}.{}'.format(
+                                msg[1]+msg[2], msg[3]+msg[4])
+                            self.appque.put({'version': version})
+                        else:
+                            self.log.warning(
+                                "Bad length of version-reply: {}".format(len(version)))
+
+                    if msg[0] == 'l':
+                        self.log.debug('got led-set reply')
+                    if msg[0] == 'x':
+                        self.log.debug('got led-off reply')
             else:
                 time.sleep(0.1)
+
+    def show_delta(self, pos1, pos2):
+        dpos = [[0 for x in range(8)] for y in range(8)]
+        for y in range(8):
+            for x in range(8):
+                if pos2[y][x] != pos1[y][x]:
+                    if pos1[y][x] != 0:
+                        dpos[y][x] = 1
+                    else:
+                        dpos[y][x] = 2
+        self.set_led(dpos)
+
+    def set_led(self, pos):
+        if self.connected is True:
+            leds = [[0 for x in range(9)] for y in range(9)]
+            cmd = "L20"
+            for y in range(8):
+                for x in range(8):
+                    if pos[y][x] != 0:
+                        leds[7-x][y] = pos[y][x]
+                        leds[7-x+1][y] = pos[y][x]
+                        leds[7-x][y+1] = pos[y][x]
+                        leds[7-x+1][y+1] = pos[y][x]
+            for y in range(9):
+                for x in range(9):
+                    if leds[y][x] == 0:
+                        cmd = cmd + "00"
+                    elif leds[y][x] == 1:
+                        cmd = cmd + "0F"
+                    else:
+                        cmd = cmd + "F0"
+
+            self.trans.write_mt(cmd)
+        else:
+            self.log.warning(
+                "Not connected to Millennium board.")
+
+    def set_led_off(self):
+        if self.connected is True:
+            self.trans.write_mt("X")
+        else:
+            self.log.warning(
+                "Not connected to Millennium board.")
 
     def position_to_fen(self, position):
         fen = ""
@@ -261,15 +318,11 @@ class MillenniumChess:
 
     def get_version(self):
         version = ""
-        self.trans.write_mt("V")
-        repl = self.trque.get()
-        self.log.debug("Reply: {}".format(repl))
-        if repl[0] != 'v':
-            self.log.error(
-                "We are currently not correctly handling out-of-order replies!")
+        if self.connected is True:
+            self.trans.write_mt("V")
         else:
-            version = '{}.{}'.format(repl[1]+repl[2], repl[3]+repl[4])
-            return version
+            self.log.warning(
+                "Not connected to Millennium board, can't get version.")
         return '?'
 
 
