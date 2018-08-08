@@ -19,7 +19,7 @@ except:
 
 
 class MillenniumChess:
-    def __init__(self):
+    def __init__(self, appque):
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
@@ -41,11 +41,18 @@ class MillenniumChess:
             self.log.info(msg)
             exit(-1)
 
+        self.appque = appque
         self.trans = None
-        self.que = queue.Queue()  # asyncio.Queue()
+        self.trque = queue.Queue()  # asyncio.Queue()
         self.mill_config = None
         self.connected = False
         found_board = False
+
+        self.thread_active = True
+        self.event_thread = threading.Thread(
+            target=self.event_worker_thread, args=(self.trque,))
+        self.event_thread.setDaemon(True)
+        self.event_thread.start()
 
         try:
             with open("millennium_config.json", "r") as f:
@@ -73,7 +80,7 @@ class MillenniumChess:
                 try:
                     tri = importlib.import_module(transport)
                     self.log.debug("imported {}".format(transport))
-                    tr = tri.Transport(self.que)
+                    tr = tri.Transport(self.trque)
                     self.log.debug("created obj")
                     if tr.is_init() is True:
                         self.log.debug(
@@ -112,11 +119,22 @@ class MillenniumChess:
                         'Do not run as root, once intial BLE scan is done.')
             self.connected = self.trans.open_mt(self.mill_config['address'])
 
+    def event_worker_thread(self, que):
+        self.log.debug('Millenium worker thread started.')
+        while self.thread_active:
+            if self.trque.empty() is False:
+                msg = self.trque.get()
+                self.log.debug(
+                    'Millenium received {}'.format(msg))
+                self.appque.put(msg)
+            else:
+                time.sleep(0.1)
+
     def _open_transport(self, transport):
         try:
             tri = importlib.import_module(transport)
             self.log.debug("imported {}".format(transport))
-            tr = tri.Transport(self.que)
+            tr = tri.Transport(self.trque)
             self.log.debug("created obj")
             if tr.is_init() is True:
                 self.log.debug("Transport {} loaded.".format(tr.get_name()))
@@ -132,7 +150,7 @@ class MillenniumChess:
     def get_version(self):
         version = ""
         self.trans.write_mt("V")
-        repl = self.que.get()
+        repl = self.trque.get()
         self.log.debug("Reply: {}".format(repl))
         if repl[0] != 'v':
             self.log.error(
@@ -150,11 +168,16 @@ class MillenniumChess:
 if __name__ == '__main__':
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
-    brd = MillenniumChess()
+    appque = queue.Queue()
+    brd = MillenniumChess(appque)
     if brd.connected is True:
         brd.get_version()
         while True:
-            pass
+            if appque.empty() is False:
+                msg = appque.get()
+                logging.info(msg)
+            else:
+                time.sleep(0.1)
             # brd.trans.mil.waitForNotifications(1.0)
         time.sleep(100)
    #  testme()
