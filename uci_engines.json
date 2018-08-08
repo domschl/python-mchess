@@ -1,0 +1,7 @@
+{
+    "engines": [{
+        "name": "Stockfish 9",
+        "path": "c:\\Program Files\\Stockfish\\stockfish_9_x64_popcnt.exe",
+        "uci-options": {}
+    }]
+}
