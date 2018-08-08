@@ -18,25 +18,26 @@ class Transport():
         if usb_support == False:
             self.init = False
             return
+        self.log = logging.getLogger("MilleniumUSB")
         self.que = que  # asyncio.Queue()
         self.init = True
-        logging.debug("USB init ok")
+        self.log.debug("USB init ok")
 
     def search_board(self):
-        logging.debug("USB: searching for boards")
+        self.log.debug("USB: searching for boards")
         port = None
         ports = self.usb_port_search()
         if len(ports) > 0:
             if len(ports) > 1:
-                logging.warning(
+                self.log.warning(
                     "Found {} Millennium boards, using first found.".format(len(ports)))
             port = ports[0]
-            logging.info(
+            self.log.info(
                 "Autodetected Millennium board at USB port: {}".format(port))
         return port
 
     def test_board(self, port):
-        logging.debug("Testing port: {}".format(port))
+        self.log.debug("Testing port: {}".format(port))
         try:
             self.usb_dev = serial.Serial(port, 38400, timeout=2)
             self.usb_dev.dtr = 0
@@ -44,20 +45,20 @@ class Transport():
             version = self.usb_read_synchr(self.usb_dev, 'v', 7)
             if len(version) != 7:
                 self.usb_dev.close()
-                logging.debug(
+                self.log.debug(
                     "Message length {} instead of 7".format(len(version)))
                 return None
             if version[0] != 'v':
-                logging.debug("Unexpected reply {}".format(version))
+                self.log.debug("Unexpected reply {}".format(version))
                 self.usb_dev.close()
                 return None
             verstring = '{}.{}'.format(
                 version[1]+version[2], version[3]+version[4])
-            logging.debug("Millennium {} at {}".format(verstring, port))
+            self.log.debug("Millennium {} at {}".format(verstring, port))
             self.usb_dev.close()
             return verstring
         except (OSError, serial.SerialException) as e:
-            logging.debug(
+            self.log.debug(
                 'Board detection on {} resulted in error {}'.format(port, e))
         try:
             self.usb_dev.close()
@@ -66,13 +67,13 @@ class Transport():
         return None
 
     def usb_port_check(self, port):
-        logging.debug("Testing port: {}".format(port))
+        self.log.debug("Testing port: {}".format(port))
         try:
             s = serial.Serial(port, 38400)
             s.close()
             return True
         except (OSError, serial.SerialException) as e:
-            logging.debug("Can't open port {}, {}".format(port, e))
+            self.log.debug("Can't open port {}, {}".format(port, e))
             return False
 
     def usb_port_search(self):
@@ -83,7 +84,7 @@ class Transport():
             if self.usb_port_check(port):
                 version = self.test_board(port)
                 if version != None:
-                    logging.info("Found board at: {}".format(port))
+                    self.log.info("Found board at: {}".format(port))
                     vports.append(port)
         return vports
 
@@ -94,13 +95,13 @@ class Transport():
             bo = mill_prot.add_odd_par(c)
             bts.append(bo)
         try:
-            logging.debug('Trying write <{}>'.format(bts))
+            self.log.debug('Trying write <{}>'.format(bts))
             self.usb_dev.write(bts)
             self.usb_dev.flush()
         except Exception as e:
-            logging.error("Failed to write {}: {}".format(msg, e))
+            self.log.error("Failed to write {}: {}".format(msg, e))
             return False
-        logging.debug("Written '{}' as < {} > ok".format(msg, bts))
+        self.log.debug("Written '{}' as < {} > ok".format(msg, bts))
         return True
 
     def usb_read_synchr(self, usbdev, cmd, num):
@@ -119,7 +120,7 @@ class Transport():
                 b = chr(ord(usbdev.read()) & 127)
                 rep.append(b)
             except (Exception) as e:
-                logging.error("Read error {}".format(e))
+                self.log.error("Read error {}".format(e))
                 break
         if mill_prot.check_block_crc(rep) is False:
             return []
@@ -130,9 +131,9 @@ class Transport():
             self.usb_dev = serial.Serial(port, 38400, timeout=0.1)
             self.usb_dev.dtr = 0
         except Exception as e:
-            logging.error('USB cannot open port {}, {}'.format(port, e))
+            self.log.error('USB cannot open port {}, {}'.format(port, e))
             return False
-        logging.debug('USB port {} open'.format(port))
+        self.log.debug('USB port {} open'.format(port))
         self.thread_active = True
         self.event_thread = threading.Thread(
             target=self.event_worker_thread, args=(self.usb_dev, self.que))
@@ -141,7 +142,7 @@ class Transport():
         return True
 
     def event_worker_thread(self, usb_dev, que):
-        logging.debug('USB worker thread started.')
+        self.log.debug('USB worker thread started.')
         cmd_started = False
         cmd_size = 0
         cmd = ""
@@ -160,7 +161,7 @@ class Transport():
                     continue
             except Exception as e:
                 if len(cmd) > 0:
-                    logging.debug(
+                    self.log.debug(
                         "USB command '{}' interrupted: {}".format(cmd[0], e))
                 time.sleep(0.1)
                 cmd_started = False
@@ -180,7 +181,7 @@ class Transport():
                     if cmd_size == 0:
                         cmd_started = False
                         cmd_size = 0
-                        logging.debug("USB received cmd: {}".format(cmd))
+                        self.log.debug("USB received cmd: {}".format(cmd))
                         if mill_prot.check_block_crc(cmd):
                             que.put(cmd)
                         cmd = ""
@@ -189,5 +190,5 @@ class Transport():
         return "millcon_usb"
 
     def is_init(self):
-        logging.debug("Ask for init")
+        self.log.debug("Ask for init")
         return self.init
