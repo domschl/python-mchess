@@ -582,15 +582,25 @@ if __name__ == '__main__':
                             brd.move_from(cbrd.fen(), vals)
                             bhlp.set_keyboard_valid(None)
                             engine.position(cbrd)
-                            engine.go(movetime=15000, async_callback=True)
+                            engine.go(movetime=100, async_callback=True)
                         if msg['move']['actor'] == 'eboard':
                             bhlp.set_keyboard_valid(None)
                             engine.position(cbrd)
-                            engine.go(movetime=15000, async_callback=True)
+                            engine.go(movetime=100, async_callback=True)
                         if msg['move']['actor'] == 'uci-engine':
                             vals = bhlp.valid_moves(cbrd)
                             bhlp.set_keyboard_valid(vals)
                             brd.move_from(cbrd.fen(), vals)
+                if 'go' in msg:
+                    bhlp.set_keyboard_valid(None)
+                    engine.position(cbrd)
+                    engine.go(movetime=100, async_callback=True)
+                if 'analyze' in msg:
+                    bhlp.set_keyboard_valid(None)
+                    engine.position(cbrd)
+                    engine.go(movetime=100, async_callback=True)
+                if 'back' in msg:
+                    pass
                 if 'curmove' in msg:
                     uci = msg['curmove']['uci']
                     logging.info("=> {} eval: {}".format(
