@@ -86,6 +86,7 @@ class Transport():
                 if version != None:
                     self.log.info("Found board at: {}".format(port))
                     vports.append(port)
+                    break  # only one port necessary
         return vports
 
     def write_mt(self, msg):
