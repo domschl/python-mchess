@@ -543,6 +543,7 @@ if __name__ == '__main__':
 
     if len(bhlp.engines) > 0:
         engine = chess.uci.popen_engine(bhlp.engines[1]['path'])
+        logging.info('Engine {} active.'.format(bhlp.engines[1]['name']))
         engine.uci()
         # options
         engine.isready()
