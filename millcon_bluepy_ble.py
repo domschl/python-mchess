@@ -23,7 +23,8 @@ class Transport():
         self.log.debug("bluepy_ble: searching for boards")
 
         class ScanDelegate(DefaultDelegate):
-            def __init__(self):
+            def __init__(self, log):
+                self.log = log
                 DefaultDelegate.__init__(self)
 
             def handleDiscovery(self, dev, isNewDev, isNewData):
@@ -33,7 +34,7 @@ class Transport():
                     self.log.debug(
                         "Received new data from {}".format(dev.addr))
 
-        scanner = Scanner().withDelegate(ScanDelegate())
+        scanner = Scanner().withDelegate(ScanDelegate(self.log))
 
         try:
             devices = scanner.scan(10.0)
@@ -56,12 +57,11 @@ class Transport():
         return None
 
     class PeriDelegate(DefaultDelegate):
-        def __init__(self):
-            DefaultDelegate.__init__(self)
-            # self.que = que
+        def __init__(self, log):
+            self.log = log
             self.log.debug("Init delegate for peri")
             self.chunks = ""
-            # ... initialise here
+            DefaultDelegate.__init__(self)
 
         def handleNotification(self, cHandle, data):
             self.log.debug("BLE: Handle: {}, data: {}".format(cHandle, data))
@@ -107,7 +107,7 @@ class Transport():
             self.log.debug('Peripheral already initialised')
         try:
             self.log.debug('Installing peripheral delegate')
-            self.delegate = self.PeriDelegate()
+            self.delegate = self.PeriDelegate(self.log)
             self.delegate.que = self.que
             self.mil.withDelegate(self.delegate)
         except Exception as e:

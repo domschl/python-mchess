@@ -27,7 +27,7 @@ class MillenniumChess:
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
         self.transports = {'Darwin': ['millcon_usb', 'millcon_bluepy_ble'], 'Linux': [
-            'millcon_usb'], 'Windows': ['millcon_usb']}
+            'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}
 
         self.log = logging.getLogger('Millenium')
         self.log.info("Millenium starting")
@@ -616,5 +616,7 @@ if __name__ == '__main__':
                         logging.info('Score {}'.format(msg['score']['cp']))
 
             else:
+                if brd.trans.get_name() == 'millcon_bluepy_ble':
+                    brd.trans.mil.waitForNotifications(1.0)
+
                 time.sleep(0.1)
-            # brd.trans.mil.waitForNotifications(1.0)
