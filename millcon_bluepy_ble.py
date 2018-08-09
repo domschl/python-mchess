@@ -13,6 +13,7 @@ class Transport():
         if bluepy_ble_support == False:
             self.init = False
             return
+        self.blemutex = threading.Lock()
         self.log = logging.getLogger("MilleniumBluePyBLE")
         self.que = que  # asyncio.Queue()
         self.init = True
@@ -34,7 +35,9 @@ class Transport():
                     self.log.debug(
                         "Received new data from {}".format(dev.addr))
 
+        self.blemutex.acquire()
         scanner = Scanner().withDelegate(ScanDelegate(self.log))
+        self.blemutex.release()
 
         try:
             devices = scanner.scan(10.0)
@@ -164,9 +167,11 @@ class Transport():
             try:
                 btsx = bts.encode('latin1')
                 self.log.debug("Sending: <{}>".format(btsx))
+                self.blemutex.acquire()
                 self.tx.write(btsx, withResponse=True)
                 self.log.debug("Receiving...")
                 self.rx.read()
+                self.blemutex.release()
             except Exception as e:
                 self.log.error(
                     "bluepy_ble: failed to write {}: {}".format(msg, e))

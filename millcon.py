@@ -617,6 +617,8 @@ if __name__ == '__main__':
 
             else:
                 if brd.trans.get_name() == 'millcon_bluepy_ble':
-                    brd.trans.mil.waitForNotifications(1.0)
-
+                    if brd.trans.blemtex.locked() is False:
+                        brd.trans.blemutex.acquire()
+                        brd.trans.mil.waitForNotifications(1.0)
+                        brd.trans.blemutex.release()
                 time.sleep(0.1)
