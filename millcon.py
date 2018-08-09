@@ -27,7 +27,7 @@ class MillenniumChess:
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
         self.transports = {'Darwin': ['millcon_usb', 'millcon_bluepy_ble'], 'Linux': [
-            'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}
+            'millcon_usb'], 'Windows': ['millcon_usb']}
 
         self.log = logging.getLogger('Millenium')
         self.log.info("Millenium starting")
@@ -542,7 +542,7 @@ if __name__ == '__main__':
     logging.info('{} engines loaded.'.format(len(bhlp.engines)))
 
     if len(bhlp.engines) > 0:
-        engine = chess.uci.popen_engine(bhlp.engines[0]['path'])
+        engine = chess.uci.popen_engine(bhlp.engines[1]['path'])
         engine.uci()
         # options
         engine.isready()
