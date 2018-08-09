@@ -1,4 +1,5 @@
 import logging
+import threading
 
 import mill_prot
 try:
@@ -35,12 +36,12 @@ class Transport():
                     self.log.debug(
                         "Received new data from {}".format(dev.addr))
 
-        self.blemutex.acquire()
         scanner = Scanner().withDelegate(ScanDelegate(self.log))
-        self.blemutex.release()
 
         try:
+            self.blemutex.acquire()
             devices = scanner.scan(10.0)
+            self.blemutex.release()
         except Exception as e:
             self.log.error(
                 "BLE scanning failed. You might need to excecute the scan with root rights: {}".format(e))
