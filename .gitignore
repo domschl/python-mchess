@@ -3,4 +3,4 @@ __pycache__/
 .ipynb_checkpoints/
 leelaz_opencl_tuning
 millennium_config.json
-uci_engine.json
+uci_engines.json
