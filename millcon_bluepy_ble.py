@@ -13,7 +13,7 @@ class Transport():
         if bluepy_ble_support == False:
             self.init = False
             return
-        self.log = logging.getLogger("MilleniumBluePyBTE")
+        self.log = logging.getLogger("MilleniumBluePyBLE")
         self.que = que  # asyncio.Queue()
         self.init = True
         self.is_open = False
