@@ -638,6 +638,9 @@ class ChessBoardHelper:
                 elif cmd == 'a':
                     log.info('analyze')
                     appque.put({'analyze': '', 'actor': 'keyboard'})
+                elif cmd == 'p':
+                    log.info('position')
+                    appque.put({'position': '', 'actor': 'keyboard'})
                 elif cmd == 'g':
                     log.info('go')
                     appque.put({'go': '', 'actor': 'keyboard'})
@@ -653,6 +656,7 @@ class ChessBoardHelper:
                     log.info('b - take back move')
                     log.info('g - go')
                     log.info('n - new game')
+                    log.info('p - import eboard position')
                     log.info('s - stop')
                     log.info('e2e4 - valid move')
                 else:
@@ -808,6 +812,9 @@ if __name__ == '__main__':
                                 'Invalid FEN position {}, starting new game.'.format(msg['fen']))
                             appque.put(
                                 {'new game': '', 'actor': 'bad position error'})
+                if 'position' in msg:
+                    init_position = True
+                    brd.get_position()
                 if 'turn eboard orientation' in msg:
                     if brd.get_orientation() is False:
                         brd.set_orientation(True)  # inverted
