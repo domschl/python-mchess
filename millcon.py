@@ -212,6 +212,27 @@ class MillenniumChess:
                         self.log.debug('got led-set reply')
                     if msg[0] == 'x':
                         self.log.debug('got led-off reply')
+                    if msg[0] == 'w':
+                        self.log.debug('got write-register reply')
+                        if len(msg) == 7:
+                            reg_cont = '{}->{}'.format(
+                                msg[1]+msg[2], msg[3]+msg[4])
+                            self.log.info(
+                                'Register written: {}'.format(reg_cont))
+                        else:
+                            self.log.warning(
+                                'Invalid length {} for write-register reply'.format(len(msg)))
+                    if msg[0] == 'r':
+                        self.log.debug('got read-register reply')
+                        if len(msg) == 7:
+                            reg_cont = '{}->{}'.format(
+                                msg[1]+msg[2], msg[3]+msg[4])
+                            self.log.info(
+                                'Register content: {}'.format(reg_cont))
+                        else:
+                            self.log.warning(
+                                'Invalid length {} for read-register reply'.format(len(msg)))
+
             else:
                 time.sleep(0.1)
 
@@ -238,7 +259,51 @@ class MillenniumChess:
         else:
             eval_position = self.fen_to_position(fen)
             self.show_delta(self.position, eval_position,
-                            freq=0x07, ontime1=0x01, ontime2=0x10)
+                            freq=0x15, ontime1=0x02, ontime2=0x01)
+
+    def show_deltas(self, positions, freq):
+        if len(positions) > 5:
+            npos = 5
+        else:
+            npos = len(positions)
+        dpos = [[0 for x in range(8)] for y in range(8)]
+        for ply in range(npos-1):
+            frame = ply*2
+            self.log.info('deltas: {} {}'.format(ply, frame))
+            for y in range(8):
+                for x in range(8):
+                    if positions[ply+1][y][x] != positions[ply][y][x]:
+                        if positions[ply][y][x] != 0:
+                            dpos[y][x] |= 1 << (7 - frame)
+                        else:
+                            dpos[y][x] |= 1 << (7 - (frame + 1))
+        self.set_mv_led(dpos, freq)
+
+    def set_mv_led(self, pos, freq):
+        if self.connected is True:
+            leds = [[0 for x in range(9)] for y in range(9)]
+            cmd = "L"+mill_prot.hex2(freq)
+            for y in range(8):
+                for x in range(8):
+                    if pos[y][x] != 0:
+                        if self.board_inverted == False:
+                            leds[7-x][y] = pos[y][x]
+                            leds[7-x+1][y] = pos[y][x]
+                            leds[7-x][y+1] = pos[y][x]
+                            leds[7-x+1][y+1] = pos[y][x]
+                        else:
+                            leds[x][7-y] = pos[y][x]
+                            leds[x+1][7-y] = pos[y][x]
+                            leds[x][7-y+1] = pos[y][x]
+                            leds[x+1][7-y+1] = pos[y][x]
+
+            for y in range(9):
+                for x in range(9):
+                    cmd = cmd + mill_prot.hex2(leds[y][x])
+            self.trans.write_mt(cmd)
+        else:
+            self.log.warning(
+                "Not connected to Millennium board.")
 
     def show_delta(self, pos1, pos2, freq=0x20, ontime1=0x0f, ontime2=0xf0):
         dpos = [[0 for x in range(8)] for y in range(8)]
@@ -289,6 +354,25 @@ class MillenniumChess:
         else:
             self.log.warning(
                 "Not connected to Millennium board.")
+
+    def get_debounce(self):
+        cmd = "R"+mill_prot.hex2(2)
+        if self.connected is True:
+            self.trans.write_mt(cmd)
+        else:
+            self.log.warning(
+                "Not connected to Millennium board.")
+
+    def set_debounce(self, count):
+        cmd = "W02"
+        if count < 0 or count > 4:
+            self.log.error(
+                'Invalid debounce count {}, should be 0: no debounce, 1 .. 4: 1-4  scan times debounce'.format(count))
+        else:
+            # 3: no debounce, 4: 2 scans debounce, -> 7: 4 scans
+            cmd += mill_prot.hex2(count+3)
+            self.trans.write_mt(cmd)
+            self.log.debug("Setting board scan debounce to {}".format(count))
 
     def short_fen(self, fen):
         i = fen.find(' ')
@@ -359,18 +443,24 @@ class MillenniumChess:
             fi += 1
         return position
 
-    def print_position_ascii(self, position):
+    def print_position_ascii(self, position, use_unicode_chess_figures=True):
         print("  +------------------------+")
         for y in range(8):
             print("{} |".format(8-y), end="")
             for x in range(8):
                 f = position[7-y][x]
-                if (x+y) % 2 == 0:
-                    f = f*-1
+                if use_unicode_chess_figures is True:
+                    if (x+y) % 2 == 0:
+                        f = f*-1
                 c = '?'
                 for i in range(len(self.figrep['int'])):
                     if self.figrep['int'][i] == f:
-                        c = self.figrep['unic'][i]
+                        if use_unicode_chess_figures is True:
+                            c = self.figrep['unic'][i]
+                        else:
+                            c = self.figrep['ascii'][i]
+                            if c == '.':
+                                c = ' '
                         break
                 if (x+y) % 2 == 0:
                     print("\033[7m {} \033[m".format(c), end="")
@@ -413,13 +503,13 @@ class MillenniumChess:
                 "Not connected to Millennium board, can't get position.")
         return '?'
 
-    def set_board_orientation(self, cable_right):
+    def set_orientation(self, cable_right):
         if cable_right is True:
             self.board_inverted = False
         else:
             self.board_inverted = True
 
-    def get_board_orientation(self):
+    def get_orientation(self):
         return self.board_inverted
 
 
@@ -437,6 +527,28 @@ class ChessBoardHelper:
             cbrd.pop()
         logging.debug("valid moves: {}".format(vals))
         return vals
+
+    def variant_to_positions(self, ebrd, cbrd, variant, plys):
+        pos = []
+        mvs = len(variant)
+        if mvs > plys:
+            mvs = plys
+
+        pos.append(ebrd.fen_to_position(cbrd.fen()))
+        for i in range(mvs):
+            cbrd.push(chess.Move.from_uci(variant[i]))
+            pos.append(ebrd.fen_to_position(cbrd.fen()))
+        for i in range(mvs):
+            cbrd.pop()
+        self.log.info('poslist: {}'.format(len(pos)))
+        return pos
+
+    def visualize_variant(self, ebrd, cbrd, variant, plys=1, freq=80):
+        if plys > 4:
+            plys = 4
+        self.log.info('Vis {} {} {}'.format(len(variant), plys, freq))
+        pos = self.variant_to_positions(ebrd, cbrd, variant, plys)
+        ebrd.show_deltas(pos, freq)
 
     def load_engines(self):
         with open('uci_engines.json', 'r') as f:
@@ -469,15 +581,20 @@ class ChessBoardHelper:
             self.que.put({'score': {'cp': cp, 'mate': mate}})
             super().score(cp, mate, lowerbound, upperbound)
 
-        def pv(self, move):
-            if self.last_pv_move != move[0]:
-                self.log.info("PV: {}".format(move[0]))
-                self.last_pv_move = move[0]
-                self.que.put({'curmove': {
-                    'uci': move[0].uci(),
-                    'actor': 'uci-engine'
-                }})
-            super().pv(move)
+        def pv(self, moves):
+            variant = []
+            svar = ""
+            for m in moves:
+                variant.append(m.uci())
+                svar += m.uci()+" "
+            if svar[-1] == " ":
+                svar = svar[:-1]
+            self.que.put({'curmove': {
+                'variant': variant,
+                'variant string': svar,
+                'actor': 'uci-engine'
+            }})
+            super().pv(moves)
 
     def uci_handler(self, engine):
         self.info_handler = self.UciHandler()
@@ -523,6 +640,9 @@ if __name__ == '__main__':
     import chess
     import chess.uci
 
+    think_ms = 15000
+    use_unicode_figures = True
+
     if platform.system().lower() == 'windows':
         from ctypes import windll, c_int, byref
         stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
@@ -542,8 +662,10 @@ if __name__ == '__main__':
     logging.info('{} engines loaded.'.format(len(bhlp.engines)))
 
     if len(bhlp.engines) > 0:
-        engine = chess.uci.popen_engine(bhlp.engines[1]['path'])
-        logging.info('Engine {} active.'.format(bhlp.engines[1]['name']))
+        engine_no = 0
+        engine = chess.uci.popen_engine(bhlp.engines[engine_no]['path'])
+        logging.info('Engine {} active.'.format(
+            bhlp.engines[engine_no]['name']))
         engine.uci()
         # options
         engine.isready()
@@ -554,6 +676,8 @@ if __name__ == '__main__':
 
     if brd.connected is True:
         brd.get_version()
+        brd.set_debounce(2)
+        brd.get_debounce()
         brd.get_position()
         while True:
             if appque.empty() is False:
@@ -562,6 +686,8 @@ if __name__ == '__main__':
                 if 'new game' in msg:
                     logging.info("New Game (by: {})".format(msg['actor']))
                     cbrd = chess.Board()
+                    brd.print_position_ascii(brd.fen_to_position(
+                        cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
                     vals = bhlp.valid_moves(cbrd)
                     bhlp.set_keyboard_valid(vals)
                     brd.move_from(cbrd.fen(), vals)
@@ -571,6 +697,8 @@ if __name__ == '__main__':
                         msg['move']['actor'], uci))
                     mv = chess.Move.from_uci(uci)
                     cbrd.push(mv)
+                    brd.print_position_ascii(brd.fen_to_position(
+                        cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
                     if cbrd.is_check() and not cbrd.is_checkmate():
                         logging.info("Check!")
                     if cbrd.is_checkmate():
@@ -583,11 +711,11 @@ if __name__ == '__main__':
                             brd.move_from(cbrd.fen(), vals)
                             bhlp.set_keyboard_valid(None)
                             engine.position(cbrd)
-                            engine.go(movetime=100, async_callback=True)
+                            engine.go(movetime=think_ms, async_callback=True)
                         if msg['move']['actor'] == 'eboard':
                             bhlp.set_keyboard_valid(None)
                             engine.position(cbrd)
-                            engine.go(movetime=100, async_callback=True)
+                            engine.go(movetime=think_ms, async_callback=True)
                         if msg['move']['actor'] == 'uci-engine':
                             vals = bhlp.valid_moves(cbrd)
                             bhlp.set_keyboard_valid(vals)
@@ -603,13 +731,17 @@ if __name__ == '__main__':
                 if 'back' in msg:
                     pass
                 if 'curmove' in msg:
-                    uci = msg['curmove']['uci']
+                    uci = msg['curmove']['variant']
                     logging.info("=> {} eval: {}".format(
-                        msg['curmove']['actor'], uci))
-                    mv = chess.Move.from_uci(uci)
-                    cbrd.push(mv)
-                    brd.move_from(cbrd.fen(), [], eval_only=True)
-                    cbrd.pop()
+                        msg['curmove']['actor'], msg['curmove']['variant string']))
+                    logging.info(msg['curmove']['variant'])
+                    bhlp.visualize_variant(
+                        brd, cbrd, msg['curmove']['variant'], 4, 100)
+
+                    # mv = chess.Move.from_uci(msg['curmove']['variant'][0])
+                    # cbrd.push(mv)
+                    # brd.move_from(cbrd.fen(), [], eval_only=True)
+                    # cbrd.pop()
                 if 'score' in msg:
                     if msg['score']['mate'] is not None:
                         logging.info('Mate in {}'.format(msg['score']['mate']))
