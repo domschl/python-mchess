@@ -269,7 +269,6 @@ class MillenniumChess:
         dpos = [[0 for x in range(8)] for y in range(8)]
         for ply in range(npos-1):
             frame = ply*2
-            self.log.info('deltas: {} {}'.format(ply, frame))
             for y in range(8):
                 for x in range(8):
                     if positions[ply+1][y][x] != positions[ply][y][x]:
@@ -287,15 +286,15 @@ class MillenniumChess:
                 for x in range(8):
                     if pos[y][x] != 0:
                         if self.board_inverted == False:
-                            leds[7-x][y] = pos[y][x]
-                            leds[7-x+1][y] = pos[y][x]
-                            leds[7-x][y+1] = pos[y][x]
-                            leds[7-x+1][y+1] = pos[y][x]
+                            leds[7-x][y] |= pos[y][x]
+                            leds[7-x+1][y] |= pos[y][x]
+                            leds[7-x][y+1] |= pos[y][x]
+                            leds[7-x+1][y+1] |= pos[y][x]
                         else:
-                            leds[x][7-y] = pos[y][x]
-                            leds[x+1][7-y] = pos[y][x]
-                            leds[x][7-y+1] = pos[y][x]
-                            leds[x+1][7-y+1] = pos[y][x]
+                            leds[x][7-y] |= pos[y][x]
+                            leds[x+1][7-y] |= pos[y][x]
+                            leds[x][7-y+1] |= pos[y][x]
+                            leds[x+1][7-y+1] |= pos[y][x]
 
             for y in range(9):
                 for x in range(9):
@@ -640,7 +639,7 @@ if __name__ == '__main__':
     import chess
     import chess.uci
 
-    think_ms = 15000
+    think_ms = 30000
     use_unicode_figures = True
 
     if platform.system().lower() == 'windows':
@@ -723,11 +722,11 @@ if __name__ == '__main__':
                 if 'go' in msg:
                     bhlp.set_keyboard_valid(None)
                     engine.position(cbrd)
-                    engine.go(movetime=100, async_callback=True)
+                    engine.go(movetime=think_ms, async_callback=True)
                 if 'analyze' in msg:
                     bhlp.set_keyboard_valid(None)
                     engine.position(cbrd)
-                    engine.go(movetime=100, async_callback=True)
+                    engine.go(movetime=think_ms, async_callback=True)
                 if 'back' in msg:
                     pass
                 if 'curmove' in msg:
@@ -736,7 +735,7 @@ if __name__ == '__main__':
                         msg['curmove']['actor'], msg['curmove']['variant string']))
                     logging.info(msg['curmove']['variant'])
                     bhlp.visualize_variant(
-                        brd, cbrd, msg['curmove']['variant'], 4, 100)
+                        brd, cbrd, msg['curmove']['variant'], 4, 75)
 
                     # mv = chess.Move.from_uci(msg['curmove']['variant'][0])
                     # cbrd.push(mv)
