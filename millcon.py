@@ -539,13 +539,11 @@ class ChessBoardHelper:
             pos.append(ebrd.fen_to_position(cbrd.fen()))
         for i in range(mvs):
             cbrd.pop()
-        self.log.info('poslist: {}'.format(len(pos)))
         return pos
 
     def visualize_variant(self, ebrd, cbrd, variant, plys=1, freq=80):
         if plys > 4:
             plys = 4
-        self.log.info('Vis {} {} {}'.format(len(variant), plys, freq))
         pos = self.variant_to_positions(ebrd, cbrd, variant, plys)
         ebrd.show_deltas(pos, freq)
 
@@ -731,16 +729,10 @@ if __name__ == '__main__':
                     pass
                 if 'curmove' in msg:
                     uci = msg['curmove']['variant']
-                    logging.info("=> {} eval: {}".format(
+                    logging.info("{} variant: {}".format(
                         msg['curmove']['actor'], msg['curmove']['variant string']))
-                    logging.info(msg['curmove']['variant'])
                     bhlp.visualize_variant(
                         brd, cbrd, msg['curmove']['variant'], 4, 75)
-
-                    # mv = chess.Move.from_uci(msg['curmove']['variant'][0])
-                    # cbrd.push(mv)
-                    # brd.move_from(cbrd.fen(), [], eval_only=True)
-                    # cbrd.pop()
                 if 'score' in msg:
                     if msg['score']['mate'] is not None:
                         logging.info('Mate in {}'.format(msg['score']['mate']))
