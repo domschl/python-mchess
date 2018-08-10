@@ -409,7 +409,19 @@ class MillenniumChess:
                 blanks = 0
             if y < 7:
                 fen += '/'
-        fen += ' w KQkq - 0 1'
+        fen += ' w '
+        castle = ''
+        if position[0][4] == 6 and position[0][7] == 4:
+            castle += "K"
+        if position[0][4] == 6 and position[0][0] == 4:
+            castle += "Q"
+        if position[7][4] == -6 and position[7][7] == -4:
+            castle += "k"
+        if position[7][4] == -6 and position[7][0] == -4:
+            castle += "q"
+        if castle == '':
+            castle = '-'
+        fen += castle+' - 0 1'
         return fen
 
     def fen_to_position(self, fen):
@@ -799,10 +811,10 @@ if __name__ == '__main__':
                 if 'turn eboard orientation' in msg:
                     if brd.get_orientation() is False:
                         brd.set_orientation(True)  # inverted
-                        logging.info("eboard cable on left side.")
+                        logging.info("eboard cable on right side.")
                     else:
                         brd.set_orientation(False)  # not inverted
-                        logging.info("eboard cable on right side.")
+                        logging.info("eboard cable on left side.")
                     init_position = True
                     brd.get_position()
             else:
