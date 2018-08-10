@@ -196,7 +196,7 @@ class MillenniumChess:
                             self.show_delta(
                                 self.reference_position, self.position)
                             # self.print_position_ascii(position)
-                            self.appque.put({'fen': fen})
+                            self.appque.put({'fen': fen, 'actor': 'eboard'})
                             self.check_move(position)
                     if msg[0] == 'v':
                         self.log.debug('got version reply')
@@ -509,7 +509,7 @@ class MillenniumChess:
             self.board_inverted = True
 
     def get_orientation(self):
-        return self.board_inverted
+        return not self.board_inverted
 
 
 class ChessBoardHelper:
@@ -613,13 +613,35 @@ class ChessBoardHelper:
                     self.kbd_moves = []
                     appque.put(
                         {'move': {'uci': cmd, 'actor': 'keyboard'}})
-                elif cmd[0] == 'n':
+                elif cmd == 'n':
                     log.info('requesting new game')
                     appque.put({'new game': '', 'actor': 'keyboard'})
+                elif cmd == 'b':
+                    log.info('move back')
+                    appque.put({'back': '', 'actor': 'keyboard'})
+                elif cmd == 'c':
+                    log.info('change board orientation')
+                    appque.put(
+                        {'turn eboard orientation': '', 'actor': 'keyboard'})
+                elif cmd == 'a':
+                    log.info('analyze')
+                    appque.put({'analyze': '', 'actor': 'keyboard'})
+                elif cmd == 'g':
+                    log.info('go')
+                    appque.put({'go': '', 'actor': 'keyboard'})
+                elif cmd == 's':
+                    log.info('stop')
+                    appque.put({'stop': '', 'actor': 'keyboard'})
                 elif cmd[:4] == 'fen ':
-                    appque.put({'set position': {'fen': cmd[4:]}})
+                    appque.put({'fen': cmd[4:], 'actor': 'keyboard'})
                 elif cmd == 'help':
+                    log.info('a - analyze current position')
+                    log.info(
+                        'c - change cable orientation (eboard cable left/right')
+                    log.info('b - take back move')
+                    log.info('g - go')
                     log.info('n - new game')
+                    log.info('s - stop')
                     log.info('e2e4 - valid move')
                 else:
                     log.info(
@@ -637,7 +659,8 @@ if __name__ == '__main__':
     import chess
     import chess.uci
 
-    think_ms = 30000
+    think_ms = 300
+    analyze_ms = 3600000
     use_unicode_figures = True
 
     if platform.system().lower() == 'windows':
@@ -673,9 +696,12 @@ if __name__ == '__main__':
 
     if brd.connected is True:
         brd.get_version()
-        brd.set_debounce(2)
-        brd.get_debounce()
+        time.sleep(0.1)
+        brd.set_debounce(3)
+        time.sleep(0.1)
+        init_position = True
         brd.get_position()
+
         while True:
             if appque.empty() is False:
                 msg = appque.get()
@@ -708,37 +734,77 @@ if __name__ == '__main__':
                             brd.move_from(cbrd.fen(), vals)
                             bhlp.set_keyboard_valid(None)
                             engine.position(cbrd)
-                            engine.go(movetime=think_ms, async_callback=True)
+                            engine.go(movetime=think_ms,
+                                      async_callback=True)
                         if msg['move']['actor'] == 'eboard':
                             bhlp.set_keyboard_valid(None)
                             engine.position(cbrd)
-                            engine.go(movetime=think_ms, async_callback=True)
+                            engine.go(movetime=think_ms,
+                                      async_callback=True)
                         if msg['move']['actor'] == 'uci-engine':
                             vals = bhlp.valid_moves(cbrd)
                             bhlp.set_keyboard_valid(vals)
+                            time.sleep(0.1)
                             brd.move_from(cbrd.fen(), vals)
                 if 'go' in msg:
                     bhlp.set_keyboard_valid(None)
                     engine.position(cbrd)
                     engine.go(movetime=think_ms, async_callback=True)
                 if 'analyze' in msg:
-                    bhlp.set_keyboard_valid(None)
+                    vals = bhlp.valid_moves(cbrd)
+                    brd.move_from(cbrd.fen(), vals)
+                    bhlp.set_keyboard_valid(vals)
                     engine.position(cbrd)
-                    engine.go(movetime=think_ms, async_callback=True)
+                    engine.go(movetime=analyze_ms, async_callback=True)
+                if 'stop' in msg:
+                    engine.stop()
+                    vals = bhlp.valid_moves(cbrd)
+                    brd.move_from(cbrd.fen(), vals)
+                    bhlp.set_keyboard_valid(vals)
                 if 'back' in msg:
-                    pass
+                    cbrd.pop()
+                    brd.print_position_ascii(brd.fen_to_position(
+                        cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
+                    if cbrd.is_check() and not cbrd.is_checkmate():
+                        logging.info("Check!")
+                    vals = bhlp.valid_moves(cbrd)
+                    brd.move_from(cbrd.fen(), vals)
+                    bhlp.set_keyboard_valid(vals)
                 if 'curmove' in msg:
                     uci = msg['curmove']['variant']
                     logging.info("{} variant: {}".format(
                         msg['curmove']['actor'], msg['curmove']['variant string']))
                     bhlp.visualize_variant(
-                        brd, cbrd, msg['curmove']['variant'], 4, 75)
+                        brd, cbrd, msg['curmove']['variant'], 3, 50)
                 if 'score' in msg:
                     if msg['score']['mate'] is not None:
                         logging.info('Mate in {}'.format(msg['score']['mate']))
                     else:
                         logging.info('Score {}'.format(msg['score']['cp']))
-
+                if 'fen' in msg:
+                    if msg['actor'] == 'keyboard' or (msg['actor'] == 'eboard' and init_position is True):
+                        init_position = False
+                        cbrd = chess.Board(msg['fen'])
+                        if cbrd.is_valid() is True:
+                            brd.print_position_ascii(brd.fen_to_position(
+                                cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
+                            vals = bhlp.valid_moves(cbrd)
+                            bhlp.set_keyboard_valid(vals)
+                            brd.move_from(cbrd.fen(), vals)
+                        else:
+                            logging.error(
+                                'Invalid FEN position {}, starting new game.'.format(msg['fen']))
+                            appque.put(
+                                {'new game': '', 'actor': 'bad position error'})
+                if 'turn eboard orientation' in msg:
+                    if brd.get_orientation() is False:
+                        brd.set_orientation(True)  # inverted
+                        logging.info("eboard cable on left side.")
+                    else:
+                        brd.set_orientation(False)  # not inverted
+                        logging.info("eboard cable on right side.")
+                    init_position = True
+                    brd.get_position()
             else:
                 if brd.trans.get_name() == 'millcon_bluepy_ble':
                     if brd.trans.blemutex.locked() is False:
