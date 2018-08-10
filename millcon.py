@@ -45,6 +45,7 @@ class MillenniumChess:
             exit(-1)
 
         self.appque = appque
+        self.is_new_game = False
         self.trans = None
         self.trque = queue.Queue()  # asyncio.Queue()
         self.mill_config = None
@@ -186,9 +187,13 @@ class MillenniumChess:
                             sfen = self.short_fen(fen)
 
                             if sfen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
-                                cmd = {'new game': '', 'actor': 'eboard'}
-                                self.new_game(position)
-                                self.appque.put(cmd)
+                                if self.is_new_game is False:
+                                    self.is_new_game is True
+                                    cmd = {'new game': '', 'actor': 'eboard'}
+                                    self.new_game(position)
+                                    self.appque.put(cmd)
+                            else:
+                                self.is_new_game = False
 
                             self.position = position
                             if self.reference_position == None:
@@ -277,6 +282,7 @@ class MillenniumChess:
                         else:
                             dpos[y][x] |= 1 << (7 - (frame + 1))
         self.set_mv_led(dpos, freq)
+        time.sleep(0.05)
 
     def set_mv_led(self, pos, freq):
         if self.connected is True:
@@ -638,12 +644,25 @@ class ChessBoardHelper:
                 elif cmd == 'a':
                     log.info('analyze')
                     appque.put({'analyze': '', 'actor': 'keyboard'})
+                elif cmd[:2] == 'l ':
+                    log.info('level')
+                    movetime = float(cmd[2:])
+                    appque.put({'level': '', 'movetime': movetime})
                 elif cmd == 'p':
                     log.info('position')
                     appque.put({'position': '', 'actor': 'keyboard'})
                 elif cmd == 'g':
                     log.info('go')
                     appque.put({'go': '', 'actor': 'keyboard'})
+                elif cmd[:2] == 'h ':
+                    log.info('show analysis for n plys (max 4) on board.')
+                    ply = int(cmd[2:])
+                    if ply < 0:
+                        ply = 0
+                    if ply > 4:
+                        ply = 4
+                    appque.put({'hint': '', 'ply': ply})
+
                 elif cmd == 's':
                     log.info('stop')
                     appque.put({'stop': '', 'actor': 'keyboard'})
@@ -655,6 +674,8 @@ class ChessBoardHelper:
                         'c - change cable orientation (eboard cable left/right')
                     log.info('b - take back move')
                     log.info('g - go')
+                    log.info('h <ply> - show hints for <ply> levels on board')
+                    log.info('l <n> - level: engine think-time in sec (float)')
                     log.info('n - new game')
                     log.info('p - import eboard position')
                     log.info('s - stop')
@@ -706,27 +727,29 @@ if __name__ == '__main__':
         # options
         engine.isready()
         bhlp.uci_handler(engine)
-
     else:
         engine = None
 
     if brd.connected is True:
         brd.get_version()
         time.sleep(0.1)
-        brd.set_debounce(3)
+        brd.set_debounce(4)
         time.sleep(0.1)
         init_position = True
         brd.get_position()
+        ana_mode = False
+        hint_ply = 1
 
         while True:
             if appque.empty() is False:
                 msg = appque.get()
                 logging.debug("App received msg: {}".format(msg))
                 if 'new game' in msg:
+                    ana_mode = False
                     logging.info("New Game (by: {})".format(msg['actor']))
                     cbrd = chess.Board()
-                    brd.print_position_ascii(brd.fen_to_position(
-                        cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
+                    # brd.print_position_ascii(brd.fen_to_position(
+                    #    cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
                     vals = bhlp.valid_moves(cbrd)
                     bhlp.set_keyboard_valid(vals)
                     brd.move_from(cbrd.fen(), vals)
@@ -734,8 +757,12 @@ if __name__ == '__main__':
                     uci = msg['move']['uci']
                     logging.info("{} move: {}".format(
                         msg['move']['actor'], uci))
-                    mv = chess.Move.from_uci(uci)
-                    cbrd.push(mv)
+                    ft = engine.stop(async_callback=True)
+                    ft.result()
+                    time.sleep(0.2)
+                    if ana_mode is False or msg['move']['actor'] != 'uci-engine':
+                        mv = chess.Move.from_uci(uci)
+                        cbrd.push(mv)
                     brd.print_position_ascii(brd.fen_to_position(
                         cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
                     if cbrd.is_check() and not cbrd.is_checkmate():
@@ -762,18 +789,27 @@ if __name__ == '__main__':
                             bhlp.set_keyboard_valid(vals)
                             time.sleep(0.1)
                             brd.move_from(cbrd.fen(), vals)
+                            if ana_mode is True:
+                                vals = bhlp.valid_moves(cbrd)
+                                brd.move_from(cbrd.fen(), vals)
+                                bhlp.set_keyboard_valid(vals)
+                                engine.position(cbrd)
+                                engine.go(infinite=True, async_callback=True)
                 if 'go' in msg:
                     bhlp.set_keyboard_valid(None)
                     engine.position(cbrd)
                     engine.go(movetime=think_ms, async_callback=True)
                 if 'analyze' in msg:
+                    ana_mode = True
                     vals = bhlp.valid_moves(cbrd)
                     brd.move_from(cbrd.fen(), vals)
                     bhlp.set_keyboard_valid(vals)
                     engine.position(cbrd)
-                    engine.go(movetime=analyze_ms, async_callback=True)
+                    engine.go(infinite=True, async_callback=True)
                 if 'stop' in msg:
                     engine.stop()
+                    time.sleep(0.2)
+                    ana_mode = False
                     vals = bhlp.valid_moves(cbrd)
                     brd.move_from(cbrd.fen(), vals)
                     bhlp.set_keyboard_valid(vals)
@@ -786,12 +822,15 @@ if __name__ == '__main__':
                     vals = bhlp.valid_moves(cbrd)
                     brd.move_from(cbrd.fen(), vals)
                     bhlp.set_keyboard_valid(vals)
+                    if ana_mode:
+                        engine.position(cbrd)
+                        engine.go(infinite=True, async_callback=True)
                 if 'curmove' in msg:
                     uci = msg['curmove']['variant']
                     logging.info("{} variant: {}".format(
                         msg['curmove']['actor'], msg['curmove']['variant string']))
                     bhlp.visualize_variant(
-                        brd, cbrd, msg['curmove']['variant'], 3, 50)
+                        brd, cbrd, msg['curmove']['variant'], hint_ply, 50)
                 if 'score' in msg:
                     if msg['score']['mate'] is not None:
                         logging.info('Mate in {}'.format(msg['score']['mate']))
@@ -815,6 +854,14 @@ if __name__ == '__main__':
                 if 'position' in msg:
                     init_position = True
                     brd.get_position()
+                if 'level' in msg:
+                    if 'movetime' in msg:
+                        think_ms = int(msg['movetime']*1000)
+                        logging.info(
+                            'Engine move time is {} ms'.format(think_ms))
+                if 'hint' in msg:
+                    if 'ply' in msg:
+                        hint_ply = msg['ply']
                 if 'turn eboard orientation' in msg:
                     if brd.get_orientation() is False:
                         brd.set_orientation(True)  # inverted
