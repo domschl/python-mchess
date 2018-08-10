@@ -644,6 +644,9 @@ class ChessBoardHelper:
                 elif cmd == 'a':
                     log.info('analyze')
                     appque.put({'analyze': '', 'actor': 'keyboard'})
+                elif cmd == 'e':
+                    log.info('board encoding switch')
+                    appque.put({'encoding': '', 'actor': 'keyboard'})
                 elif cmd[:2] == 'l ':
                     log.info('level')
                     movetime = float(cmd[2:])
@@ -854,6 +857,11 @@ if __name__ == '__main__':
                 if 'position' in msg:
                     init_position = True
                     brd.get_position()
+                if 'encoding' in msg:
+                    use_unicode_figures = not use_unicode_figures
+                    brd.print_position_ascii(brd.fen_to_position(
+                        cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
+
                 if 'level' in msg:
                     if 'movetime' in msg:
                         think_ms = int(msg['movetime']*1000)
