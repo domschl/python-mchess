@@ -656,7 +656,13 @@ class ChessBoardHelper:
                     appque.put({'position': '', 'actor': 'keyboard'})
                 elif cmd == 'g':
                     log.info('go')
-                    appque.put({'go': '', 'actor': 'keyboard'})
+                    appque.put({'go': 'current', 'actor': 'keyboard'})
+                elif cmd == 'gw':
+                    log.info('go')
+                    appque.put({'go': 'white', 'actor': 'keyboard'})
+                elif cmd == 'gb':
+                    log.info('go, black')
+                    appque.put({'go': 'black', 'actor': 'keyboard'})
                 elif cmd[:2] == 'h ':
                     log.info('show analysis for n plys (max 4) on board.')
                     ply = int(cmd[2:])
@@ -676,7 +682,9 @@ class ChessBoardHelper:
                     log.info(
                         'c - change cable orientation (eboard cable left/right')
                     log.info('b - take back move')
-                    log.info('g - go')
+                    log.info('g - go, current player (default white)')
+                    log.info('gw - go, force white move')
+                    log.info('gb - go, force black move')
                     log.info('h <ply> - show hints for <ply> levels on board')
                     log.info('l <n> - level: engine think-time in sec (float)')
                     log.info('n - new game')
@@ -799,6 +807,10 @@ if __name__ == '__main__':
                                 engine.position(cbrd)
                                 engine.go(infinite=True, async_callback=True)
                 if 'go' in msg:
+                    if msg['go']=='white':
+                        cbrd.turn(chess.WHITE)
+                    if msg['go']=='black'
+                        cbrd.turn(chess.BLACK)
                     bhlp.set_keyboard_valid(None)
                     engine.position(cbrd)
                     engine.go(movetime=think_ms, async_callback=True)
