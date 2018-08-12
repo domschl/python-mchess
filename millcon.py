@@ -29,8 +29,8 @@ class MillenniumChess:
         self.transports = {'Darwin': ['millcon_usb', 'millcon_bluepy_ble'], 'Linux': [
             'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}
 
-        self.log = logging.getLogger('Millenium')
-        self.log.info("Millenium starting")
+        self.log = logging.getLogger('Millennium')
+        self.log.info("Millennium starting")
         if sys.version_info[0] < 3:
             self.log.critical("FATAL: You need Python 3.x to run this module.")
             exit(-1)
@@ -128,7 +128,7 @@ class MillenniumChess:
             self.connected = self.trans.open_mt(self.mill_config['address'])
 
     def event_worker_thread(self, que):
-        self.log.debug('Millenium worker thread started.')
+        self.log.debug('Millennium worker thread started.')
         while self.thread_active:
             if self.trque.empty() is False:
                 msg = self.trque.get()
@@ -189,7 +189,8 @@ class MillenniumChess:
                             if sfen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
                                 if self.is_new_game is False:
                                     self.is_new_game is True
-                                    cmd = {'new game': '', 'actor': 'eboard'}
+                                    cmd = {'new game': '', 'actor': 'eboard',
+                                           'cable_right': not self.board_inverted}
                                     self.new_game(position)
                                     self.appque.put(cmd)
                             else:
@@ -703,13 +704,28 @@ class ChessBoardHelper:
         self.kbd_event_thread.start()
 
 
+def write_preferences(prefs):
+    try:
+        with open("preferences.json", "w") as f:
+            json.dump(prefs, f)
+    except Exception as e:
+        logging.error("Failed to write preferences.json, {}".format(e))
+
+
 if __name__ == '__main__':
     import chess
     import chess.uci
 
-    think_ms = 300
-    analyze_ms = 3600000
-    use_unicode_figures = True
+    try:
+        with open("preferences.json", "r") as f:
+            prefs = json.load(f)
+    except:
+        prefs = {
+            'think_ms': 3000,
+            'use_unicode_figures': True,
+            'millennium_board_orientation': True
+        }
+        write_preferences(prefs)
 
     if platform.system().lower() == 'windows':
         from ctypes import windll, c_int, byref
@@ -758,6 +774,10 @@ if __name__ == '__main__':
                 if 'new game' in msg:
                     ana_mode = False
                     logging.info("New Game (by: {})".format(msg['actor']))
+                    if msg['actor'] == 'eboard':
+                        if prefs['millennium_board_orientation'] != msg['cable_right']:
+                            prefs['millennium_board_orientation'] = msg['cable_right']
+                            write_preferences(prefs)
                     cbrd = chess.Board()
                     # brd.print_position_ascii(brd.fen_to_position(
                     #    cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
@@ -775,7 +795,7 @@ if __name__ == '__main__':
                         mv = chess.Move.from_uci(uci)
                         cbrd.push(mv)
                     brd.print_position_ascii(brd.fen_to_position(
-                        cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
+                        cbrd.fen()), use_unicode_chess_figures=prefs['use_unicode_figures'])
                     if cbrd.is_check() and not cbrd.is_checkmate():
                         logging.info("Check!")
                     if cbrd.is_checkmate():
@@ -788,12 +808,12 @@ if __name__ == '__main__':
                             brd.move_from(cbrd.fen(), vals)
                             bhlp.set_keyboard_valid(None)
                             engine.position(cbrd)
-                            engine.go(movetime=think_ms,
+                            engine.go(movetime=prefs['think_ms'],
                                       async_callback=True)
                         if msg['move']['actor'] == 'eboard':
                             bhlp.set_keyboard_valid(None)
                             engine.position(cbrd)
-                            engine.go(movetime=think_ms,
+                            engine.go(movetime=prefs['think_ms'],
                                       async_callback=True)
                         if msg['move']['actor'] == 'uci-engine':
                             vals = bhlp.valid_moves(cbrd)
@@ -807,13 +827,13 @@ if __name__ == '__main__':
                                 engine.position(cbrd)
                                 engine.go(infinite=True, async_callback=True)
                 if 'go' in msg:
-                    if msg['go']=='white':
-                        cbrd.turn(chess.WHITE)
-                    if msg['go']=='black'
-                        cbrd.turn(chess.BLACK)
+                    if msg['go'] == 'white':
+                        cbrd.turn = chess.WHITE
+                    if msg['go'] == 'black':
+                        cbrd.turn = chess.BLACK
                     bhlp.set_keyboard_valid(None)
                     engine.position(cbrd)
-                    engine.go(movetime=think_ms, async_callback=True)
+                    engine.go(movetime=prefs['think_ms'], async_callback=True)
                 if 'analyze' in msg:
                     ana_mode = True
                     vals = bhlp.valid_moves(cbrd)
@@ -831,7 +851,7 @@ if __name__ == '__main__':
                 if 'back' in msg:
                     cbrd.pop()
                     brd.print_position_ascii(brd.fen_to_position(
-                        cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
+                        cbrd.fen()), use_unicode_chess_figures=prefs['use_unicode_figures'])
                     if cbrd.is_check() and not cbrd.is_checkmate():
                         logging.info("Check!")
                     vals = bhlp.valid_moves(cbrd)
@@ -857,7 +877,7 @@ if __name__ == '__main__':
                         cbrd = chess.Board(msg['fen'])
                         if cbrd.is_valid() is True:
                             brd.print_position_ascii(brd.fen_to_position(
-                                cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
+                                cbrd.fen()), use_unicode_chess_figures=prefs['use_unicode_figures'])
                             vals = bhlp.valid_moves(cbrd)
                             bhlp.set_keyboard_valid(vals)
                             brd.move_from(cbrd.fen(), vals)
@@ -870,15 +890,17 @@ if __name__ == '__main__':
                     init_position = True
                     brd.get_position()
                 if 'encoding' in msg:
-                    use_unicode_figures = not use_unicode_figures
+                    prefs['use_unicode_figures'] = not prefs['use_unicode_figures']
+                    write_preferences(prefs)
                     brd.print_position_ascii(brd.fen_to_position(
-                        cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
+                        cbrd.fen()), use_unicode_chess_figures=prefs['use_unicode_figures'])
 
                 if 'level' in msg:
                     if 'movetime' in msg:
-                        think_ms = int(msg['movetime']*1000)
+                        prefs['think_ms'] = int(msg['movetime']*1000)
                         logging.info(
-                            'Engine move time is {} ms'.format(think_ms))
+                            'Engine move time is {} ms'.format(prefs['think_ms']))
+                        write_preferences(prefs)
                 if 'hint' in msg:
                     if 'ply' in msg:
                         hint_ply = msg['ply']

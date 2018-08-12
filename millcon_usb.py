@@ -18,7 +18,7 @@ class Transport():
         if usb_support == False:
             self.init = False
             return
-        self.log = logging.getLogger("MilleniumUSB")
+        self.log = logging.getLogger("MillenniumUSB")
         self.que = que  # asyncio.Queue()
         self.init = True
         self.log.debug("USB init ok")

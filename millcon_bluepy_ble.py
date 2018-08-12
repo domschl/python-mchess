@@ -15,7 +15,7 @@ class Transport():
             self.init = False
             return
         self.blemutex = threading.Lock()
-        self.log = logging.getLogger("MilleniumBluePyBLE")
+        self.log = logging.getLogger("MillenniumBluePyBLE")
         self.que = que  # asyncio.Queue()
         self.init = True
         self.is_open = False
