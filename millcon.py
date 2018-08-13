@@ -55,7 +55,7 @@ class MillenniumChess:
         self.connected = False
         self.position = None
         self.reference_position = None
-        self.board_inverted = False
+        self.orientation = True
         self.legal_moves = None
         found_board = False
 
@@ -68,8 +68,11 @@ class MillenniumChess:
         try:
             with open("millennium_config.json", "r") as f:
                 self.mill_config = json.load(f)
+                if 'orientation' not in self.mill_config:
+                    self.mill_config['orientation'] = True
                 self.log.debug('Checking default configuration for board via {} at {}'.format(
                     self.mill_config['transport'], self.mill_config['address']))
+                self.orientation = self.mill_config['orientation']
                 trans = self._open_transport(self.mill_config['transport'])
                 if trans is not None:
                     if trans.test_board(self.mill_config['address']) is not None:
@@ -103,12 +106,7 @@ class MillenniumChess:
                             self.mill_config = {
                                 'transport': tr.get_name(), 'address': address}
                             self.trans = tr
-                            try:
-                                with open("millennium_config.json", "w") as f:
-                                    json.dump(self.mill_config, f)
-                            except Exception as e:
-                                self.log.error("Failed to save default configuration {} to {}: {}".format(
-                                    self.mill_config, "millennium_config.json", e))
+                            self.write_configuration()
                             break
                     else:
                         self.log.warning("Transport {} failed to initialize".format(
@@ -129,6 +127,15 @@ class MillenniumChess:
                     self.log.warning(
                         'Do not run as root, once intial BLE scan is done.')
             self.connected = self.trans.open_mt(self.mill_config['address'])
+
+    def write_configuration(self):
+        self.mill_config['orientation'] = self.orientation
+        try:
+            with open("millennium_config.json", "w") as f:
+                json.dump(self.mill_config, f)
+        except Exception as e:
+            self.log.error("Failed to save default configuration {} to {}: {}".format(
+                self.mill_config, "millennium_config.json", e))
 
     def event_worker_thread(self, que):
         self.log.debug('Millennium worker thread started.')
@@ -154,7 +161,7 @@ class MillenniumChess:
                                             continue
                                         else:
                                             f = self.figrep['int'][i]
-                                            if self.board_inverted == False:
+                                            if self.orientation == True:
                                                 position[y][x] = f
                                             else:
                                                 position[7-y][7-x] = f
@@ -171,9 +178,10 @@ class MillenniumChess:
                             fen = self.position_to_fen(position)
                             sfen = self.short_fen(fen)
                             if sfen == "RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr":
-                                if self.board_inverted == False:
+                                if self.orientation == True:
                                     self.log.info("Cable-left board detected.")
-                                    self.board_inverted = True
+                                    self.orientation = False
+                                    self.write_configuration()
                                     position_inv = copy.deepcopy(position)
                                     for x in range(8):
                                         for y in range(8):
@@ -181,7 +189,8 @@ class MillenniumChess:
                                 else:
                                     self.log.info(
                                         "Cable-right board detected.")
-                                    self.board_inverted = False
+                                    self.orientation = True
+                                    self.write_configuration()
                                     position_inv = copy.deepcopy(position)
                                     for x in range(8):
                                         for y in range(8):
@@ -193,7 +202,7 @@ class MillenniumChess:
                                 if self.is_new_game is False:
                                     self.is_new_game is True
                                     cmd = {'new game': '', 'actor': 'eboard',
-                                           'cable_right': not self.board_inverted}
+                                           'orientation': self.orientation}
                                     self.new_game(position)
                                     self.appque.put(cmd)
                             else:
@@ -296,7 +305,7 @@ class MillenniumChess:
             for y in range(8):
                 for x in range(8):
                     if pos[y][x] != 0:
-                        if self.board_inverted == False:
+                        if self.orientation == True:
                             leds[7-x][y] |= pos[y][x]
                             leds[7-x+1][y] |= pos[y][x]
                             leds[7-x][y+1] |= pos[y][x]
@@ -333,7 +342,7 @@ class MillenniumChess:
             for y in range(8):
                 for x in range(8):
                     if pos[y][x] != 0:
-                        if self.board_inverted == False:
+                        if self.orientation == True:
                             leds[7-x][y] = pos[y][x]
                             leds[7-x+1][y] = pos[y][x]
                             leds[7-x][y+1] = pos[y][x]
@@ -383,6 +392,25 @@ class MillenniumChess:
             cmd += mill_prot.hex2(count+3)
             self.trans.write_mt(cmd)
             self.log.debug("Setting board scan debounce to {}".format(count))
+
+    def get_led_brightness_precent(self):
+        cmd = "R"+mill_prot.hex2(4)
+        if self.connected is True:
+            self.trans.write_mt(cmd)
+        else:
+            self.log.warning(
+                "Not connected to Millennium board.")
+
+    def set_led_brightness(self, level=1.0):
+        cmd = "W04"
+        if level<0.0 or level>1.0:
+            self.log.error(
+                'Invalid brightness level {}, shouldbe between 0(darkest)..1.0(brightest)'.format(level))
+        else:
+            ilevel=int(level*15)
+            cmd += mill_prot.hex2(ilevel)
+            self.trans.write_mt(cmd)
+            self.log.debug("Setting led brightness to {} (bri={})".format(ilevel,level))
 
     def short_fen(self, fen):
         i = fen.find(' ')
@@ -477,7 +505,7 @@ class MillenniumChess:
             if cable_pos is True:
                 prf = fil
                 if y == 4:
-                    if self.board_inverted == True:
+                    if self.orientation == False:
                         prf = "=="
                     else:
                         pof = "=="
@@ -527,6 +555,16 @@ class MillenniumChess:
                 transport))
         return None
 
+    def reset(self):
+        if self.connected is True:
+            self.trans.write_mt("T")
+            self.log.warning(
+                "Millennium board reset initiated, will take 3 secs.")
+        else:
+            self.log.warning(
+                "Not connected to Millennium board, can't reset.")
+        return '?'
+
     def get_version(self):
         if self.connected is True:
             self.trans.write_mt("V")
@@ -543,14 +581,12 @@ class MillenniumChess:
                 "Not connected to Millennium board, can't get position.")
         return '?'
 
-    def set_orientation(self, cable_right):
-        if cable_right is True:
-            self.board_inverted = False
-        else:
-            self.board_inverted = True
+    def set_orientation(self, orientation):
+        self.orientation = orientation
+        self.write_configuration()
 
     def get_orientation(self):
-        return not self.board_inverted
+        return self.orientation
 
 
 class ChessBoardHelper:
@@ -759,7 +795,6 @@ if __name__ == '__main__':
         prefs = {
             'think_ms': 3000,
             'use_unicode_figures': True,
-            'millennium_board_orientation': True
         }
         write_preferences(prefs)
 
@@ -775,7 +810,6 @@ if __name__ == '__main__':
         format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
     appque = queue.Queue()
     brd = MillenniumChess(appque)
-    brd.set_orientation(prefs['millennium_board_orientation'])
     bhlp = ChessBoardHelper(appque)
     bhlp.keyboard_handler()
 
@@ -811,10 +845,6 @@ if __name__ == '__main__':
                 if 'new game' in msg:
                     ana_mode = False
                     logging.info("New Game (by: {})".format(msg['actor']))
-                    if msg['actor'] == 'eboard':
-                        if prefs['millennium_board_orientation'] != msg['cable_right']:
-                            prefs['millennium_board_orientation'] = msg['cable_right']
-                            write_preferences(prefs)
                     cbrd = chess.Board()
                     # brd.print_position_ascii(brd.fen_to_position(
                     #    cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
@@ -963,10 +993,10 @@ if __name__ == '__main__':
                         hint_ply = msg['ply']
                 if 'turn eboard orientation' in msg:
                     if brd.get_orientation() is False:
-                        brd.set_orientation(True)  # inverted
+                        brd.set_orientation(True)
                         logging.info("eboard cable on right side.")
                     else:
-                        brd.set_orientation(False)  # not inverted
+                        brd.set_orientation(False)
                         logging.info("eboard cable on left side.")
                     init_position = True
                     brd.get_position()
