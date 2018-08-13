@@ -1,5 +1,7 @@
 import logging
 import threading
+import queue
+import time
 
 import mill_prot
 try:
@@ -19,7 +21,14 @@ class Transport():
         self.que = que  # asyncio.Queue()
         self.init = True
         self.is_open = False
+        self.mil = None
+        self.rx = None
         self.log.debug("bluepy_ble init ok")
+        self.worker_thread_active = True
+        self.worker_threader = threading.Thread(
+            target=self.worker_thread, args=(self.blemutex, self.mil))
+        self.worker_threader.setDaemon(True)
+        self.worker_threader.start()
 
     def search_board(self):
         self.log.debug("bluepy_ble: searching for boards")
@@ -170,10 +179,14 @@ class Transport():
                 self.log.debug("Sending: <{}>".format(btsx))
                 self.blemutex.acquire()
                 self.tx.write(btsx, withResponse=True)
+                self.blemutex.release()
                 self.log.debug("Receiving...")
+                self.blemutex.acquire()
                 self.rx.read()
                 self.blemutex.release()
             except Exception as e:
+                if self.blemutex.locked() is True:
+                    self.blemutex.release()
                 self.log.error(
                     "bluepy_ble: failed to write {}: {}".format(msg, e))
         else:
@@ -184,3 +197,12 @@ class Transport():
 
     def is_init(self):
         return self.init
+
+    def worker_thread(self, mutex, mil):
+        while self.worker_thread_active is True:
+            # if mutex.locked() is False:
+                # mutex.acquire()
+            if mil is not None:
+                mil.blewaitForNotifications(1.0)
+                # mutex.release()
+            time.sleep(0.05)

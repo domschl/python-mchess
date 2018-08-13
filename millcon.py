@@ -5,7 +5,7 @@ import platform
 import sys
 import struct
 import threading
-import asyncio
+# import asyncio
 import queue
 import json
 import importlib
@@ -403,14 +403,40 @@ class MillenniumChess:
 
     def set_led_brightness(self, level=1.0):
         cmd = "W04"
-        if level<0.0 or level>1.0:
+        if level < 0.0 or level > 1.0:
             self.log.error(
                 'Invalid brightness level {}, shouldbe between 0(darkest)..1.0(brightest)'.format(level))
         else:
-            ilevel=int(level*15)
+            ilevel = int(level*15)
             cmd += mill_prot.hex2(ilevel)
             self.trans.write_mt(cmd)
-            self.log.debug("Setting led brightness to {} (bri={})".format(ilevel,level))
+            self.log.debug(
+                "Setting led brightness to {} (bri={})".format(ilevel, level))
+
+    def get_scan_time_ms(self):
+        cmd = "R"+mill_prot.hex2(1)
+        if self.connected is True:
+            self.trans.write_mt(cmd)
+        else:
+            self.log.warning(
+                "Not connected to Millennium board.")
+
+    # default is scan every 40.96 ms, 24.4 scans per second.
+    def set_scan_time_ms(self, scan_ms=41):
+        cmd = "W01"
+        if scan_ms < 2.048 * 15.0 or scan_ms > 255.0 * 2.048:
+            self.log.error(
+                'Invalid scan_ms {}, shouldbe between 30.72(fastest, might not work)..522.24(slowest, about 2 scans per sec))'.format(scan_ms))
+        else:
+            iscans = int(scan_ms/2.048)
+            if iscans < 15:
+                iscans = 15
+            if iscans > 255:
+                iscans = 255
+            cmd += mill_prot.hex2(iscans)
+            self.trans.write_mt(cmd)
+            self.log.info(
+                "Setting scan_ms intervall to {} -> {}ms ({} scans per sec)".format(iscans, scan_ms, 1000.0/scan_ms))
 
     def short_fen(self, fen):
         i = fen.find(' ')
@@ -807,7 +833,7 @@ if __name__ == '__main__':
         windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
 
     logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
+        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
     appque = queue.Queue()
     brd = MillenniumChess(appque)
     bhlp = ChessBoardHelper(appque)
@@ -832,6 +858,12 @@ if __name__ == '__main__':
         brd.get_version()
         time.sleep(0.1)
         brd.set_debounce(4)
+        time.sleep(0.1)
+        brd.get_scan_time_ms()
+        time.sleep(0.1)
+        brd.set_scan_time_ms(100.0)
+        time.sleep(0.1)
+        brd.get_scan_time_ms()
         time.sleep(0.1)
         init_position = True
         brd.get_position()
@@ -1001,9 +1033,9 @@ if __name__ == '__main__':
                     init_position = True
                     brd.get_position()
             else:
-                if brd.trans.get_name() == 'millcon_bluepy_ble':
-                    if brd.trans.blemutex.locked() is False:
-                        brd.trans.blemutex.acquire()
-                        brd.trans.mil.waitForNotifications(1.0)
-                        brd.trans.blemutex.release()
+                # if brd.trans.get_name() == 'millcon_bluepy_ble':
+                #     if brd.trans.blemutex.locked() is False:
+                #         brd.trans.blemutex.acquire()
+                #         brd.trans.mil.waitForNotifications(1.0)
+                #         brd.trans.blemutex.release()
                 time.sleep(0.1)
