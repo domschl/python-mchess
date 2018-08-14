@@ -27,7 +27,8 @@ class MillenniumChess:
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
         self.transports = {'Darwin': ['millcon_usb'], 'Linux': [
-            'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}  #
+                        'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}  #
+            # 'millcon_usb'], 'Windows': ['millcon_usb']}  #
 
         self.log = logging.getLogger('Millennium')
         self.log.info("Millennium starting")
@@ -847,7 +848,6 @@ if __name__ == '__main__':
     appque = queue.Queue()
     brd = MillenniumChess(appque)
     bhlp = ChessBoardHelper(appque)
-    bhlp.keyboard_handler()
 
     bhlp.load_engines()
     logging.info('{} engines loaded.'.format(len(bhlp.engines)))
@@ -880,6 +880,8 @@ if __name__ == '__main__':
         ana_mode = False
         hint_ply = 1
         last_variant = time.time()
+
+        bhlp.keyboard_handler()
 
         while True:
             if appque.empty() is False:
