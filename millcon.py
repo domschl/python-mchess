@@ -833,7 +833,7 @@ if __name__ == '__main__':
         windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
 
     logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
+        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
     appque = queue.Queue()
     brd = MillenniumChess(appque)
     bhlp = ChessBoardHelper(appque)
@@ -873,13 +873,14 @@ if __name__ == '__main__':
         while True:
             if appque.empty() is False:
                 msg = appque.get()
+                appque.task_done()
                 logging.debug("App received msg: {}".format(msg))
                 if 'new game' in msg:
                     ana_mode = False
                     logging.info("New Game (by: {})".format(msg['actor']))
                     cbrd = chess.Board()
-                    # brd.print_position_ascii(brd.fen_to_position(
-                    #    cbrd.fen()), use_unicode_chess_figures=use_unicode_figures)
+                    brd.print_position_ascii(brd.fen_to_position(
+                        cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'])
                     vals = bhlp.valid_moves(cbrd)
                     bhlp.set_keyboard_valid(vals)
                     brd.move_from(cbrd.fen(), vals, bhlp.color(brd, cbrd.turn))

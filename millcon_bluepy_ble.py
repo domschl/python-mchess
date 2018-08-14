@@ -17,6 +17,7 @@ class Transport():
             self.init = False
             return
         self.blemutex = threading.Lock()
+        self.wrque = queue.Queue()
         self.log = logging.getLogger("MillenniumBluePyBLE")
         self.que = que  # asyncio.Queue()
         self.init = True
@@ -24,11 +25,6 @@ class Transport():
         self.mil = None
         self.rx = None
         self.log.debug("bluepy_ble init ok")
-        self.worker_thread_active = True
-        self.worker_threader = threading.Thread(
-            target=self.worker_thread, args=(self.blemutex, self.mil))
-        self.worker_threader.setDaemon(True)
-        self.worker_threader.start()
 
     def search_board(self):
         self.log.debug("bluepy_ble: searching for boards")
@@ -69,35 +65,6 @@ class Transport():
                         return bledev.addr
         return None
 
-    class PeriDelegate(DefaultDelegate):
-        def __init__(self, log):
-            self.log = log
-            self.log.debug("Init delegate for peri")
-            self.chunks = ""
-            DefaultDelegate.__init__(self)
-
-        def handleNotification(self, cHandle, data):
-            self.log.debug("BLE: Handle: {}, data: {}".format(cHandle, data))
-            rcv = ""
-            for b in data:
-                rcv += chr(b & 127)
-            self.log.debug('BLE received [{}]'.format(rcv))
-            self.chunks += rcv
-            if self.chunks[0] not in mill_prot.millennium_protocol_replies:
-                self.log.warning(
-                    "Illegal reply start '{}' received, discarding".format(self.chunks[0]))
-                while len(self.chunks) > 0 and self.chunks[0] not in mill_prot.millennium_protocol_replies:
-                    self.chunks = self.chunks[1:]
-            if len(self.chunks) > 0:
-                mlen = mill_prot.millennium_protocol_replies[self.chunks[0]]
-                if len(self.chunks) >= mlen:
-                    valmsg = self.chunks[:mlen]
-                    self.log.debug(
-                        'bluepy_ble received complete msg: {}'.format(valmsg))
-                    if mill_prot.check_block_crc(valmsg):
-                        self.que.put(valmsg)
-                    self.chunks = self.chunks[mlen:]
-
     def test_board(self, address):
         self.log.debug("Testing ble at {}".format(address))
         if self.open_mt(address) is True:
@@ -107,90 +74,18 @@ class Transport():
             return None
 
     def open_mt(self, address):
-        self.log.debug("bluepy_ble open_mt {}".format(address))
-        if self.is_open is False:
-            try:
-                self.mil = Peripheral(address)
-            except Exception as e:
-                self.log.warning(
-                    'Failed to create ble peripheral at {}'.format(address))
-                self.mil = None
-                return False
-        else:
-            self.log.debug('Peripheral already initialised')
-        try:
-            self.log.debug('Installing peripheral delegate')
-            self.delegate = self.PeriDelegate(self.log)
-            self.delegate.que = self.que
-            self.mil.withDelegate(self.delegate)
-        except Exception as e:
-            self.log.error(
-                'Failed to install peripheral delegate! {}'.format(e))
-            self.mil = None
-            return False
-        try:
-            services = self.mil.getServices()
-        except:
-            self.log.error(
-                'Failed to enumerate services for {}, {}'.format(address, e))
-            return False
-        for ser in services:
-            self.log.debug('Service: {}'.format(ser))
-            chrs = ser.getCharacteristics()
-            for chr in chrs:
-                if chr.uuid == "49535343-1e4d-4bd9-ba61-23c647249616":  # TX char, rx for us
-                    self.rx = chr
-                    self.rxh = chr.getHandle()
-                    # Enable notification magic:
-                    self.log.debug('Enabling notifications')
-                    self.mil.writeCharacteristic(
-                        self.rxh+1, (1).to_bytes(2, byteorder='little'))
-                if chr.uuid == "49535343-8841-43f4-a8d4-ecbe34729bb3":  # RX char, tx for us
-                    self.tx = chr
-                    self.txh = chr.getHandle()
-                if chr.supportsRead():
-                    self.log.debug("  {} UUID={} {} -> {}".format(chr, chr.uuid,
-                                                                  chr.propertiesToString(), chr.read()))
-                else:
-                    self.log.debug("  {} UUID={}{}".format(
-                        chr, chr.uuid, chr.propertiesToString()))
-            # cc = ser.getCharacteristics(
-            #     forUUID='00002902-0000-1000-8000-00805f9b34fb')
-            # if len(cc) > 0:
-            #     self.log.debug("Found characteric.")
-            #     self.ccc = cc[0]
-            # else:
-            #     self.log.debug("no ccc characteric")
+        self.log.debug('Starting worker-thread for bluepy ble')
+        self.worker_thread_active = True
+        self.worker_threader = threading.Thread(
+            target=self.worker_thread, args=(self.log, address, self.wrque, self.que))
+        self.worker_threader.setDaemon(True)
+        self.worker_threader.start()
+
         return True
 
     def write_mt(self, msg):
-        if self.mil is not None:
-            gpar = 0
-            for b in msg:
-                gpar = gpar ^ ord(b)
-            msg = msg+mill_prot.hex2(gpar)
-            self.log.debug("blue_ble write: <{}>".format(msg))
-            bts = ""
-            for c in msg:
-                bo = chr(mill_prot.add_odd_par(c))
-                bts += bo
-            try:
-                btsx = bts.encode('latin1')
-                self.log.debug("Sending: <{}>".format(btsx))
-                self.blemutex.acquire()
-                self.tx.write(btsx, withResponse=True)
-                self.blemutex.release()
-                self.log.debug("Receiving...")
-                self.blemutex.acquire()
-                self.rx.read()
-                self.blemutex.release()
-            except Exception as e:
-                if self.blemutex.locked() is True:
-                    self.blemutex.release()
-                self.log.error(
-                    "bluepy_ble: failed to write {}: {}".format(msg, e))
-        else:
-            self.log.error("No open pheripheral for write")
+        self.log.debug('write-que-entry {}'.format(msg))
+        self.wrque.put(msg)
 
     def get_name(self):
         return "millcon_bluepy_ble"
@@ -198,11 +93,111 @@ class Transport():
     def is_init(self):
         return self.init
 
-    def worker_thread(self, mutex, mil):
+    def worker_thread(self, log, address, wrque, que):
+        class PeriDelegate(DefaultDelegate):
+            def __init__(self, log, que):
+                self.log = log
+                self.log.debug("Init delegate for peri")
+                self.chunks = ""
+                DefaultDelegate.__init__(self)
+
+            def handleNotification(self, cHandle, data):
+                self.log.debug(
+                    "BLE: Handle: {}, data: {}".format(cHandle, data))
+                rcv = ""
+                for b in data:
+                    rcv += chr(b & 127)
+                self.log.debug('BLE received [{}]'.format(rcv))
+                self.chunks += rcv
+                if self.chunks[0] not in mill_prot.millennium_protocol_replies:
+                    self.log.warning(
+                        "Illegal reply start '{}' received, discarding".format(self.chunks[0]))
+                    while len(self.chunks) > 0 and self.chunks[0] not in mill_prot.millennium_protocol_replies:
+                        self.chunks = self.chunks[1:]
+                if len(self.chunks) > 0:
+                    mlen = mill_prot.millennium_protocol_replies[self.chunks[0]]
+                    if len(self.chunks) >= mlen:
+                        valmsg = self.chunks[:mlen]
+                        self.log.debug(
+                            'bluepy_ble received complete msg: {}'.format(valmsg))
+                        if mill_prot.check_block_crc(valmsg):
+                            que.put(valmsg)
+                        self.chunks = self.chunks[mlen:]
+
+        rx = None
+        tx = None
+        log.debug("bluepy_ble open_mt {}".format(address))
+        try:
+            mil = Peripheral(address)
+        except Exception as e:
+            log.warning(
+                'Failed to create ble peripheral at {}'.format(address))
+            exit(-1)
+        try:
+            services = mil.getServices()
+        except:
+            log.error(
+                'Failed to enumerate services for {}, {}'.format(address, e))
+            exit(-1)
+        for ser in services:
+            log.debug('Service: {}'.format(ser))
+            chrs = ser.getCharacteristics()
+            for chri in chrs:
+                if chri.uuid == "49535343-1e4d-4bd9-ba61-23c647249616":  # TX char, rx for us
+                    rx = chri
+                    rxh = chri.getHandle()
+                    # Enable notification magic:
+                    log.debug('Enabling notifications')
+                    mil.writeCharacteristic(
+                        rxh+1, (1).to_bytes(2, byteorder='little'))
+                if chri.uuid == "49535343-8841-43f4-a8d4-ecbe34729bb3":  # RX char, tx for us
+                    tx = chri
+                    txh = chri.getHandle()
+                if chri.supportsRead():
+                    log.debug("  {} UUID={} {} -> {}".format(chri, chri.uuid,
+                                                             chri.propertiesToString(), chri.read()))
+                else:
+                    log.debug("  {} UUID={}{}".format(
+                        chri, chri.uuid, chri.propertiesToString()))
+
+        try:
+            log.debug('Installing peripheral delegate')
+            delegate = PeriDelegate(log, que)
+            delegate.que = que
+            mil.withDelegate(delegate)
+        except Exception as e:
+            log.error(
+                'Failed to install peripheral delegate! {}'.format(e))
+
         while self.worker_thread_active is True:
-            # if mutex.locked() is False:
-                # mutex.acquire()
-            if mil is not None:
-                mil.blewaitForNotifications(1.0)
-                # mutex.release()
-            time.sleep(0.05)
+            if wrque.empty() is False:
+                msg = wrque.get()
+                gpar = 0
+                for b in msg:
+                    gpar = gpar ^ ord(b)
+                msg = msg+mill_prot.hex2(gpar)
+                log.debug("blue_ble write: <{}>".format(msg))
+                bts = ""
+                for c in msg:
+                    bo = chr(mill_prot.add_odd_par(c))
+                    bts += bo
+                    btsx = bts.encode('latin1')
+                log.debug("Sending: <{}>".format(btsx))
+                try:
+                    tx.write(btsx, withResponse=True)
+                except Exception as e:
+                    log.error(
+                        "bluepy_ble: failed to write {}: {}".format(msg, e))
+                # time.sleep(0.1)
+                # try:
+                #     rx.read()
+                # except:
+                #     log.error(
+                #         "bluepy_ble: failed to read {}: {}".format(msg, e))
+                wrque.task_done()
+
+            rx.read()
+            mil.waitForNotifications(0.02)
+            # time.sleep(0.1)
+
+        log.debug('wt-end')
