@@ -716,7 +716,15 @@ class ChessBoardHelper:
 
     def kdb_event_worker_thread(self, appque, log):
         while self.kdb_thread_active:
-            cmd = input()
+            cmd = ""
+            log.info("Trying keyboard-input:")
+            try:
+                cmd = input()
+            except Exception as e:
+                log.info("Exception in input() {}".format(e))
+                time.sleep(1.0)
+            if cmd == "":
+                continue
             log.info("keyboard: <{}>".format(cmd))
             if len(cmd) >= 1:
                 if cmd in self.kbd_moves:
