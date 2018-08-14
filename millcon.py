@@ -26,8 +26,8 @@ class MillenniumChess:
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
-        self.transports = {'Darwin': ['millcon_usb', 'millcon_bluepy_ble'], 'Linux': [
-            'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}
+        self.transports = {'Darwin': ['millcon_usb'], 'Linux': [
+            'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}  #
 
         self.log = logging.getLogger('Millennium')
         self.log.info("Millennium starting")
@@ -720,6 +720,8 @@ class ChessBoardHelper:
             log.info("Trying keyboard-input:")
             try:
                 cmd = input()
+                # with open(0) as inp:
+                #     cmd = inp.readline().strip()
             except Exception as e:
                 log.info("Exception in input() {}".format(e))
                 time.sleep(1.0)

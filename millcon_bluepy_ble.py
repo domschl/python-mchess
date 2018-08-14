@@ -16,14 +16,10 @@ class Transport():
         if bluepy_ble_support == False:
             self.init = False
             return
-        self.blemutex = threading.Lock()
         self.wrque = queue.Queue()
         self.log = logging.getLogger("MillenniumBluePyBLE")
         self.que = que  # asyncio.Queue()
         self.init = True
-        self.is_open = False
-        self.mil = None
-        self.rx = None
         self.log.debug("bluepy_ble init ok")
 
     def search_board(self):
@@ -44,9 +40,7 @@ class Transport():
         scanner = Scanner().withDelegate(ScanDelegate(self.log))
 
         try:
-            self.blemutex.acquire()
             devices = scanner.scan(10.0)
-            self.blemutex.release()
         except Exception as e:
             self.log.error(
                 "BLE scanning failed. You might need to excecute the scan with root rights: {}".format(e))
@@ -66,12 +60,8 @@ class Transport():
         return None
 
     def test_board(self, address):
-        self.log.debug("Testing ble at {}".format(address))
-        if self.open_mt(address) is True:
-            self.is_open = True
-            return "1.0"
-        else:
-            return None
+        self.open_mt(address)
+        return "1.0"
 
     def open_mt(self, address):
         self.log.debug('Starting worker-thread for bluepy ble')
@@ -80,7 +70,6 @@ class Transport():
             target=self.worker_thread, args=(self.log, address, self.wrque, self.que))
         self.worker_threader.setDaemon(True)
         self.worker_threader.start()
-
         return True
 
     def write_mt(self, msg):
@@ -152,7 +141,7 @@ class Transport():
                         rxh+1, (1).to_bytes(2, byteorder='little'))
                 if chri.uuid == "49535343-8841-43f4-a8d4-ecbe34729bb3":  # RX char, tx for us
                     tx = chri
-                    txh = chri.getHandle()
+                    # txh = chri.getHandle()
                 if chri.supportsRead():
                     log.debug("  {} UUID={} {} -> {}".format(chri, chri.uuid,
                                                              chri.propertiesToString(), chri.read()))
@@ -191,7 +180,7 @@ class Transport():
                 wrque.task_done()
 
             rx.read()
-            mil.waitForNotifications(0.02)
+            mil.waitForNotifications(0.05)
             # time.sleep(0.1)
 
         log.debug('wt-end')
