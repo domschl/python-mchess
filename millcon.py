@@ -869,6 +869,7 @@ if __name__ == '__main__':
         brd.get_position()
         ana_mode = False
         hint_ply = 1
+        last_variant = time.time()
 
         while True:
             if appque.empty() is False:
@@ -885,6 +886,7 @@ if __name__ == '__main__':
                     bhlp.set_keyboard_valid(vals)
                     brd.move_from(cbrd.fen(), vals, bhlp.color(brd, cbrd.turn))
                 if 'move' in msg:
+                    last_variant = time.time()
                     if ana_mode == True and msg['move']['actor'] == 'uci-engine':
                         engine.position(cbrd)
                         engine.go(infinite=True, async_callback=True)
@@ -980,11 +982,13 @@ if __name__ == '__main__':
                         engine.position(cbrd)
                         engine.go(infinite=True, async_callback=True)
                 if 'curmove' in msg:
-                    uci = msg['curmove']['variant']
-                    logging.info("{} variant: {}".format(
-                        msg['curmove']['actor'], msg['curmove']['variant string']))
-                    bhlp.visualize_variant(
-                        brd, cbrd, msg['curmove']['variant'], hint_ply, 50)
+                    if time.time()-last_variant > 1.0:  # throttle
+                        last_variant = time.time()
+                        uci = msg['curmove']['variant']
+                        logging.info("{} variant: {}".format(
+                            msg['curmove']['actor'], msg['curmove']['variant string']))
+                        bhlp.visualize_variant(
+                            brd, cbrd, msg['curmove']['variant'], hint_ply, 50)
                 if 'score' in msg:
                     if msg['score']['mate'] is not None:
                         logging.info('Mate in {}'.format(msg['score']['mate']))

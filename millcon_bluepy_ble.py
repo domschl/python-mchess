@@ -188,12 +188,6 @@ class Transport():
                 except Exception as e:
                     log.error(
                         "bluepy_ble: failed to write {}: {}".format(msg, e))
-                # time.sleep(0.1)
-                # try:
-                #     rx.read()
-                # except:
-                #     log.error(
-                #         "bluepy_ble: failed to read {}: {}".format(msg, e))
                 wrque.task_done()
 
             rx.read()
