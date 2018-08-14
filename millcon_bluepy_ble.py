@@ -60,7 +60,7 @@ class Transport():
         return None
 
     def test_board(self, address):
-        self.open_mt(address)
+        # self.open_mt(address)
         return "1.0"
 
     def open_mt(self, address):
@@ -116,18 +116,19 @@ class Transport():
         rx = None
         tx = None
         log.debug("bluepy_ble open_mt {}".format(address))
+        time.sleep(1)
         try:
             mil = Peripheral(address)
         except Exception as e:
             log.warning(
-                'Failed to create ble peripheral at {}'.format(address))
-            exit(-1)
+                'Failed to create ble peripheral at {}, {}'.format(address, e))
+        time.sleep(2)
         try:
             services = mil.getServices()
-        except:
+        except Exception as e:
             log.error(
                 'Failed to enumerate services for {}, {}'.format(address, e))
-            exit(-1)
+        time.sleep(2)
         for ser in services:
             log.debug('Service: {}'.format(ser))
             chrs = ser.getCharacteristics()

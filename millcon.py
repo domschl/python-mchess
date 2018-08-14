@@ -27,8 +27,8 @@ class MillenniumChess:
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
         self.transports = {'Darwin': ['millcon_usb'], 'Linux': [
-                        'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}  #
-            # 'millcon_usb'], 'Windows': ['millcon_usb']}  #
+            'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}  #
+        # 'millcon_usb'], 'Windows': ['millcon_usb']}  #
 
         self.log = logging.getLogger('Millennium')
         self.log.info("Millennium starting")
@@ -715,14 +715,14 @@ class ChessBoardHelper:
             for v in vals:
                 self.kbd_moves.append(vals[v])
 
-    def kdb_event_worker_thread(self, appque, log):
+    def kdb_event_worker_thread(self, appque, log, std_in):
         while self.kdb_thread_active:
             cmd = ""
             log.info("Trying keyboard-input:")
             try:
-                cmd = input()
-                # with open(0) as inp:
-                #     cmd = inp.readline().strip()
+                # cmd = input()
+                # with open(std_in) as inp:
+                cmd = std_in.readline().strip()
             except Exception as e:
                 log.info("Exception in input() {}".format(e))
                 time.sleep(1.0)
@@ -808,7 +808,7 @@ class ChessBoardHelper:
     def keyboard_handler(self):
         self.kdb_thread_active = True
         self.kbd_event_thread = threading.Thread(
-            target=self.kdb_event_worker_thread, args=(self.appque, self.log))
+            target=self.kdb_event_worker_thread, args=(self.appque, self.log, sys.stdin))
         self.kbd_event_thread.setDaemon(True)
         self.kbd_event_thread.start()
 
