@@ -84,7 +84,7 @@ class Transport():
             if self.usb_port_check(port):
                 version = self.test_board(port)
                 if version != None:
-                    self.log.info("Found board at: {}".format(port))
+                    self.log.debug("Found board at: {}".format(port))
                     vports.append(port)
                     break  # only one port necessary
         return vports

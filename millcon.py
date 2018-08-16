@@ -26,12 +26,14 @@ class MillenniumChess:
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
+        self.checksym={"unic": ["†","‡"],
+                       "ascii": ["+","#"]}
         self.transports = {'Darwin': ['millcon_usb'], 'Linux': [
             'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}  #
         # 'millcon_usb'], 'Windows': ['millcon_usb']}  #
 
         self.log = logging.getLogger('Millennium')
-        self.log.info("Millennium starting")
+        self.log.debug("Millennium starting")
         self.WHITE = 0
         self.BLACK = 1
         self.turn = self.WHITE
@@ -45,7 +47,7 @@ class MillenniumChess:
             msg = "Supported are: "
             for p in self.transports:
                 msg += '{} '.format(p)
-            self.log.info(msg)
+            self.log.debug(msg)
             exit(-1)
 
         self.appque = appque
@@ -102,7 +104,7 @@ class MillenniumChess:
                             "Transport {} loaded.".format(tr.get_name()))
                         address = tr.search_board()
                         if address is not None:
-                            self.log.info("Found board on transport {} at address {}".format(
+                            self.log.debug("Found board on transport {} at address {}".format(
                                 tr.get_name(), address))
                             self.mill_config = {
                                 'transport': tr.get_name(), 'address': address}
@@ -121,7 +123,7 @@ class MillenniumChess:
                 "No transport available, cannot connect.")
             return
         else:
-            self.log.info('Valid board available on {} at {}'.format(
+            self.log.debug('Valid board available on {} at {}'.format(
                 self.mill_config['transport'], self.mill_config['address']))
             if platform.system() != 'Windows':
                 if os.geteuid() == 0:
@@ -180,7 +182,7 @@ class MillenniumChess:
                             sfen = self.short_fen(fen)
                             if sfen == "RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr":
                                 if self.orientation == True:
-                                    self.log.info("Cable-left board detected.")
+                                    self.log.debug("Cable-left board detected.")
                                     self.orientation = False
                                     self.write_configuration()
                                     position_inv = copy.deepcopy(position)
@@ -188,7 +190,7 @@ class MillenniumChess:
                                         for y in range(8):
                                             position[x][y] = position_inv[7-x][7-y]
                                 else:
-                                    self.log.info(
+                                    self.log.debug(
                                         "Cable-right board detected.")
                                     self.orientation = True
                                     self.write_configuration()
@@ -236,7 +238,7 @@ class MillenniumChess:
                         if len(msg) == 7:
                             reg_cont = '{}->{}'.format(
                                 msg[1]+msg[2], msg[3]+msg[4])
-                            self.log.info(
+                            self.log.debug(
                                 'Register written: {}'.format(reg_cont))
                         else:
                             self.log.warning(
@@ -246,7 +248,7 @@ class MillenniumChess:
                         if len(msg) == 7:
                             reg_cont = '{}->{}'.format(
                                 msg[1]+msg[2], msg[3]+msg[4])
-                            self.log.info(
+                            self.log.debug(
                                 'Register content: {}'.format(reg_cont))
                         else:
                             self.log.warning(
@@ -436,7 +438,7 @@ class MillenniumChess:
                 iscans = 255
             cmd += mill_prot.hex2(iscans)
             self.trans.write_mt(cmd)
-            self.log.info(
+            self.log.debug(
                 "Setting scan_ms intervall to {} -> {}ms ({} scans per sec)".format(iscans, scan_ms, 1000.0/scan_ms))
 
     def short_fen(self, fen):
@@ -520,15 +522,17 @@ class MillenniumChess:
             fi += 1
         return position
 
-    def print_position_ascii(self, position, col, use_unicode_chess_figures=True, cable_pos=True):
+    def print_position_ascii(self, position, col, use_unicode_chess_figures=True, cable_pos=True, move_stack=[]):
         if cable_pos is True:
             fil = "  "
         else:
             fil = ""
-        print("{}  +------------------------+".format(fil))
+        if move_stack==[]:
+            move_stack=["" for _ in range(11)]
+        print("{}  +------------------------+     {}".format(fil,move_stack[0]))
         for y in range(8):
             prf = ""
-            pof = ""
+            pof = "  "
             if cable_pos is True:
                 prf = fil
                 if y == 4:
@@ -557,13 +561,13 @@ class MillenniumChess:
                     print("\033[7m {} \033[m".format(c), end="")
                 else:
                     print(" {} ".format(c), end='')
-            print("|{}".format(pof))
-        print("{}  +------------------------+".format(fil))
+            print("|{}   {}".format(pof,move_stack[y+1]))
+        print("{}  +------------------------+     {}".format(fil,move_stack[9]))
         if col == self.WHITE:
             scol = 'white'
         else:
             scol = 'black'
-        print("{}    A  B  C  D  E  F  G  H    ({})".format(fil, scol))
+        print("{}    A  B  C  D  E  F  G  H       {}  ({})".format(fil, move_stack[10], scol))
 
     def _open_transport(self, transport):
         try:
@@ -631,6 +635,10 @@ class ChessBoardHelper:
         logging.debug("valid moves: {}".format(vals))
         return vals
 
+    def ascii_move_stack(self, cbrd):
+        ams=["{:3d} aabb - ccdd".format(i+1) for i in range(11)]
+        return ams
+
     def variant_to_positions(self, ebrd, cbrd, variant, plys):
         pos = []
         mvs = len(variant)
@@ -677,7 +685,7 @@ class ChessBoardHelper:
             super().post_info()  # Release the lock
 
         def on_bestmove(self, bestmove, ponder):
-            self.log.info("Best: {}".format(bestmove))
+            self.log.debug("Best: {}".format(bestmove))
             self.que.put({'move': {
                 'uci': bestmove.uci(),
                 'actor': 'uci-engine'
@@ -718,7 +726,6 @@ class ChessBoardHelper:
     def kdb_event_worker_thread(self, appque, log, std_in):
         while self.kdb_thread_active:
             cmd = ""
-            log.info("Trying keyboard-input:")
             try:
                 # cmd = input()
                 # with open(std_in) as inp:
@@ -728,52 +735,52 @@ class ChessBoardHelper:
                 time.sleep(1.0)
             if cmd == "":
                 continue
-            log.info("keyboard: <{}>".format(cmd))
+            log.debug("keyboard: <{}>".format(cmd))
             if len(cmd) >= 1:
                 if cmd in self.kbd_moves:
                     self.kbd_moves = []
                     appque.put(
                         {'move': {'uci': cmd, 'actor': 'keyboard'}})
                 elif cmd == 'n':
-                    log.info('requesting new game')
+                    log.debug('requesting new game')
                     appque.put({'new game': '', 'actor': 'keyboard'})
                 elif cmd == 'b':
-                    log.info('move back')
+                    log.debug('move back')
                     appque.put({'back': '', 'actor': 'keyboard'})
                 elif cmd == 'c':
-                    log.info('change board orientation')
+                    log.debug('change board orientation')
                     appque.put(
                         {'turn eboard orientation': '', 'actor': 'keyboard'})
                 elif cmd == 'a':
-                    log.info('analyze')
+                    log.debug('analyze')
                     appque.put({'analyze': '', 'actor': 'keyboard'})
                 elif cmd == 'ab':
-                    log.info('analyze black')
+                    log.debug('analyze black')
                     appque.put({'analyze': 'black', 'actor': 'keyboard'})
                 elif cmd == 'aw':
-                    log.info('analyze white')
+                    log.debug('analyze white')
                     appque.put({'analyze': 'white', 'actor': 'keyboard'})
                 elif cmd == 'e':
-                    log.info('board encoding switch')
+                    log.debug('board encoding switch')
                     appque.put({'encoding': '', 'actor': 'keyboard'})
                 elif cmd[:2] == 'l ':
-                    log.info('level')
+                    log.debug('level')
                     movetime = float(cmd[2:])
                     appque.put({'level': '', 'movetime': movetime})
                 elif cmd == 'p':
-                    log.info('position')
+                    log.debug('position')
                     appque.put({'position': '', 'actor': 'keyboard'})
                 elif cmd == 'g':
-                    log.info('go')
+                    log.debug('go')
                     appque.put({'go': 'current', 'actor': 'keyboard'})
                 elif cmd == 'gw':
-                    log.info('go')
+                    log.debug('go')
                     appque.put({'go': 'white', 'actor': 'keyboard'})
                 elif cmd == 'gb':
-                    log.info('go, black')
+                    log.debug('go, black')
                     appque.put({'go': 'black', 'actor': 'keyboard'})
                 elif cmd[:2] == 'h ':
-                    log.info('show analysis for n plys (max 4) on board.')
+                    log.debug('show analysis for n plys (max 4) on board.')
                     ply = int(cmd[2:])
                     if ply < 0:
                         ply = 0
@@ -782,7 +789,7 @@ class ChessBoardHelper:
                     appque.put({'hint': '', 'ply': ply})
 
                 elif cmd == 's':
-                    log.info('stop')
+                    log.debug('stop')
                     appque.put({'stop': '', 'actor': 'keyboard'})
                 elif cmd[:4] == 'fen ':
                     appque.put({'fen': cmd[4:], 'actor': 'keyboard'})
@@ -850,7 +857,7 @@ if __name__ == '__main__':
     bhlp = ChessBoardHelper(appque)
 
     bhlp.load_engines()
-    logging.info('{} engines loaded.'.format(len(bhlp.engines)))
+    logging.debug('{} engines loaded.'.format(len(bhlp.engines)))
 
     if len(bhlp.engines) > 0:
         engine_no = 0
@@ -892,8 +899,8 @@ if __name__ == '__main__':
                     ana_mode = False
                     logging.info("New Game (by: {})".format(msg['actor']))
                     cbrd = chess.Board()
-                    brd.print_position_ascii(brd.fen_to_position(
-                        cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'])
+                    #brd.print_position_ascii(brd.fen_to_position(
+                    #    cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'])
                     vals = bhlp.valid_moves(cbrd)
                     bhlp.set_keyboard_valid(vals)
                     brd.move_from(cbrd.fen(), vals, bhlp.color(brd, cbrd.turn))
@@ -911,8 +918,9 @@ if __name__ == '__main__':
                     time.sleep(0.2)
                     mv = chess.Move.from_uci(uci)
                     cbrd.push(mv)
+                    ams=bhlp.ascii_move_stack(cbrd)
                     brd.print_position_ascii(brd.fen_to_position(
-                        cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'])
+                        cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'], move_stack=ams)
                     if cbrd.is_check() and not cbrd.is_checkmate():
                         logging.info("Check!")
                     if cbrd.is_checkmate():
@@ -940,9 +948,10 @@ if __name__ == '__main__':
                                 brd.move_from(cbrd.fen(), vals,
                                               bhlp.color(brd, cbrd.turn))
                                 bhlp.set_keyboard_valid(vals)
+                                valm=""
                                 for v in vals:
-                                    print('{} '.format(vals[v]), end="")
-                                print(' {}'.format(brd.turn))
+                                    valm += '{} '.format(vals[v])
+                                logging.debug('{} {}'.format(valm,brd.turn))
                             else:
                                 brd.move_from(cbrd.fen(), {},
                                               bhlp.color(brd, cbrd.turn))
@@ -997,15 +1006,15 @@ if __name__ == '__main__':
                     if time.time()-last_variant > 1.0:  # throttle
                         last_variant = time.time()
                         uci = msg['curmove']['variant']
-                        logging.info("{} variant: {}".format(
+                        logging.debug("{} variant: {}".format(
                             msg['curmove']['actor'], msg['curmove']['variant string']))
                         bhlp.visualize_variant(
                             brd, cbrd, msg['curmove']['variant'], hint_ply, 50)
                 if 'score' in msg:
                     if msg['score']['mate'] is not None:
-                        logging.info('Mate in {}'.format(msg['score']['mate']))
+                        logging.debug('Mate in {}'.format(msg['score']['mate']))
                     else:
-                        logging.info('Score {}'.format(msg['score']['cp']))
+                        logging.debug('Score {}'.format(msg['score']['cp']))
                 if 'fen' in msg:
                     if msg['actor'] == 'keyboard' or (msg['actor'] == 'eboard' and init_position is True):
                         init_position = False
@@ -1034,7 +1043,7 @@ if __name__ == '__main__':
                 if 'level' in msg:
                     if 'movetime' in msg:
                         prefs['think_ms'] = int(msg['movetime']*1000)
-                        logging.info(
+                        logging.debug(
                             'Engine move time is {} ms'.format(prefs['think_ms']))
                         write_preferences(prefs)
                 if 'hint' in msg:
@@ -1050,9 +1059,4 @@ if __name__ == '__main__':
                     init_position = True
                     brd.get_position()
             else:
-                # if brd.trans.get_name() == 'millcon_bluepy_ble':
-                #     if brd.trans.blemutex.locked() is False:
-                #         brd.trans.blemutex.acquire()
-                #         brd.trans.mil.waitForNotifications(1.0)
-                #         brd.trans.blemutex.release()
                 time.sleep(0.1)
