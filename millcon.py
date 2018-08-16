@@ -127,7 +127,15 @@ class MillenniumChess:
                 if os.geteuid() == 0:
                     self.log.warning(
                         'Do not run as root, once intial BLE scan is done.')
+            self.log.debug('Connecting to Millennium board via {} at {}'.format(
+                self.mill_config['transport'], self.mill_config['address']))
             self.connected = self.trans.open_mt(self.mill_config['address'])
+            if self.connected is True:
+                self.log.info('Connected to Millennium board via {} at {}'.format(
+                    self.mill_config['transport'], self.mill_config['address']))
+            else:
+                self.log.error('Connection to Millennium board via {} at {} FAILED.'.format(
+                    self.mill_config['transport'], self.mill_config['address']))
 
     def write_configuration(self):
         self.mill_config['orientation'] = self.orientation
@@ -636,7 +644,7 @@ class ChessBoardHelper:
         logging.debug("valid moves: {}".format(vals))
         return vals
 
-    def ascii_move_stack(self, cbrd, score, unic=True, lines=11):
+    def ascii_move_stack(self, cbrd, score, use_unicode_chess_figures=True, lines=11):
         ams=["" for _ in range(11)]
         mc=len(cbrd.move_stack)
         if cbrd.turn==chess.BLACK:
@@ -652,12 +660,12 @@ class ChessBoardHelper:
             if amsi<0:
                 logging.error("bad amsi index! {}".format(amsi))
             if cbrd.is_checkmate() is True:
-                if unic is True:
+                if use_unicode_chess_figures is True:
                     chk=self.chesssym['unic'][3]
                 else:
                     chk=self.chesssym['ascii'][3]    
             elif cbrd.is_check() is True:
-                if unic is True:
+                if use_unicode_chess_figures is True:
                     chk=self.chesssym['unic'][2]
                 else:
                     chk=self.chesssym['ascii'][2]
@@ -668,24 +676,24 @@ class ChessBoardHelper:
             l2=len(cbrd.piece_map())
             move_store.append(mv)
             if l1!=l2:  # capture move, piece count changed :-/
-                if unic is True:
+                if use_unicode_chess_figures is True:
                     sep=self.chesssym['unic'][1]
                 else:
                     sep=self.chesssym['ascii'][1]
             else:    
-                if unic is True:
+                if use_unicode_chess_figures is True:
                     sep=self.chesssym['unic'][0]
                 else:
                     sep=self.chesssym['ascii'][0]
             if mv.promotion is not None:
                 fig=chess.Piece(chess.PAWN,cbrd.piece_at(mv.from_square).color).unicode_symbol(invert_color=True)
-                if unic is True:
+                if use_unicode_chess_figures is True:
                     pro=chess.Piece(mv.promotion, cbrd.piece_at(mv.from_square).color).unicode_symbol(invert_color=True)
                 else:
                     pro=mv.promotion.symbol()
             else:
                 pro=""
-                if unic is True:
+                if use_unicode_chess_figures is True:
                     fig=cbrd.piece_at(mv.from_square).unicode_symbol(invert_color=True)
                 else:
                     fig=cbrd.piece_at(mv.from_square).symbol()
@@ -732,7 +740,7 @@ class ChessBoardHelper:
 
     def load_engines(self):
         with open('uci_engines.json', 'r') as f:
-            self.engines = json.load(f)['engines']
+            self.engines = json.load(f)
             logging.debug(self.engines)
             return self.engines
 
@@ -939,13 +947,13 @@ if __name__ == '__main__':
         exit(-1)
 
     engine_no=0
-    for i in range(len(bhlp.engines)):
-        if 'default' in bhlp.engines[i] and bhlp.engines[i]['default']==True:
-            engine_no=i
-            break
-    engine = chess.uci.popen_engine(bhlp.engines[engine_no]['path'])
-    logging.info('Engine {} active.'.format(
-        bhlp.engines[engine_no]['name']))
+    if 'default-engine' in bhlp.engines:
+        engine_no = bhlp.engines['default-engine']
+        if engine_no > len(bhlp.engines['engines']):
+            engine_no=0
+    engine = chess.uci.popen_engine(bhlp.engines['engines'][engine_no]['path'])
+    logging.info('Loading engine {}.'.format(
+        bhlp.engines['engines'][engine_no]['name']))
     engine.uci()
     # options
     engine.isready()
@@ -1003,10 +1011,13 @@ if __name__ == '__main__':
                     time.sleep(0.2)
                     mv = chess.Move.from_uci(uci)
                     cbrd.push(mv)
-                    ams=bhlp.ascii_move_stack(cbrd,score)
+                    ams=bhlp.ascii_move_stack(cbrd,score,use_unicode_chess_figures=prefs['use_unicode_figures'])
                     brd.print_position_ascii(brd.fen_to_position(
                         cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'], move_stack=ams)
                     score=''
+                    nps=0
+                    seldepth=0
+                    depth=0
                     if cbrd.is_check() and not cbrd.is_checkmate():
                         logging.info("Check!")
                     if cbrd.is_checkmate():
