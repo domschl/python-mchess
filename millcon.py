@@ -26,8 +26,6 @@ class MillenniumChess:
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
-        self.checksym={"unic": ["†","‡"],
-                       "ascii": ["+","#"]}
         self.transports = {'Darwin': ['millcon_usb'], 'Linux': [
             'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}  #
         # 'millcon_usb'], 'Windows': ['millcon_usb']}  #
@@ -625,6 +623,13 @@ class ChessBoardHelper:
         self.appque = appque
         self.log = logging.getLogger('ChessBoardHelper')
         self.kbd_moves = []
+        self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
+                       "pythc": [(chess.PAWN, chess.WHITE), (chess.KNIGHT, chess.WHITE), (chess.BISHOP, chess.WHITE), (chess.ROOK, chess.WHITE), (chess.QUEEN, chess.WHITE), (chess.KING, chess.WHITE),
+                       (chess.PAWN, chess.BLACK), (chess.KNIGHT, chess.BLACK), (chess.BISHOP, chess.BLACK), (chess.ROOK, chess.BLACK), (chess.QUEEN, chess.BLACK), (chess.KING, chess.BLACK)],
+                       "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
+                       "ascii": "PNBRQK.pnbrqk"}
+        self.chesssym={"unic": ["-","×", "†","‡", "½"],
+                       "ascii": ["-","x","+","#", "1/2"]}
 
     def valid_moves(self, cbrd):
         vals = {}
@@ -635,7 +640,45 @@ class ChessBoardHelper:
         logging.debug("valid moves: {}".format(vals))
         return vals
 
-    def ascii_move_stack(self, cbrd):
+    def ascii_move_stack(self, cbrd, unic=True):
+        mc=len(cbrd.move_stack)
+        if cbrd.turn==chess.WHITE:
+            mmc=21
+        else:
+            mmc=22
+        if mc>mmc:
+            mc=mmc
+        move_store=[]
+        for i in range(mc):
+            if cbrd.is_checkmate() is True:
+                if unic is True:
+                    chk=self.chesssym['unic'][3]
+                else:
+                    chk=self.chesssym['ascii'][3]    
+            elif cbrd.is_check() is True:
+                if unic is True:
+                    chk=self.chesssym['unic'][2]
+                else:
+                    chk=self.chesssym['ascii'][2]
+            else:
+                chk=" "
+            mv=cbrd.pop()
+            move_store.append(mv)
+            if mv.drop is not None:
+                if unic is True:
+                    sep=self.chesssym['unic'][2]
+                else:
+                    sep=self.chesssym['ascii'][2]
+            else:    
+                if unic is True:
+                    sep=self.chesssym['unic'][1]
+                else:
+                    sep=self.chesssym['ascii'][1]
+
+
+
+
+
         ams=["{:3d} aabb - ccdd".format(i+1) for i in range(11)]
         return ams
 
