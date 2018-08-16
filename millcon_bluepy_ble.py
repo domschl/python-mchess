@@ -116,19 +116,22 @@ class Transport():
         rx = None
         tx = None
         log.debug("bluepy_ble open_mt {}".format(address))
-        time.sleep(1)
+        time.sleep(0.1)
         try:
             mil = Peripheral(address)
         except Exception as e:
-            log.warning(
+            log.error(
                 'Failed to create ble peripheral at {}, {}'.format(address, e))
-        time.sleep(2)
+            que.put('error')
+            while True:
+                time.sleep(1)
+        time.sleep(0.1)
         try:
             services = mil.getServices()
         except Exception as e:
             log.error(
                 'Failed to enumerate services for {}, {}'.format(address, e))
-        time.sleep(2)
+        time.sleep(0.1)
         for ser in services:
             log.debug('Service: {}'.format(ser))
             chrs = ser.getCharacteristics()

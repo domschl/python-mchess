@@ -151,6 +151,10 @@ class MillenniumChess:
         while self.thread_active:
             if self.trque.empty() is False:
                 msg = self.trque.get()
+                if msg=='error':
+                    self.appque.put({'error': 'transport failure or not available.'})
+                    continue
+
                 if len(msg) > 0:
                     if msg[0] == 's':
                         if len(msg) == 67:
@@ -987,6 +991,9 @@ if __name__ == '__main__':
                 msg = appque.get()
                 appque.task_done()
                 logging.debug("App received msg: {}".format(msg))
+                if 'error' in msg:
+                    logging.error(msg['error'])
+                    exit(-1)
                 if 'new game' in msg:
                     ana_mode = False
                     logging.info("New Game (by: {})".format(msg['actor']))
