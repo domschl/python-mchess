@@ -993,6 +993,7 @@ if __name__ == '__main__':
                 logging.debug("App received msg: {}".format(msg))
                 if 'error' in msg:
                     logging.error(msg['error'])
+                    print()
                     exit(-1)
                 if 'new game' in msg:
                     ana_mode = False
