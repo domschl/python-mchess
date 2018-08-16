@@ -776,6 +776,18 @@ class ChessBoardHelper:
             }})
             super().pv(moves)
 
+        def depth(self, n):
+            self.que.put({'depth': n})
+            super().depth(n)
+
+        def seldepth(self, n):
+            self.que.put({'seldepth': n})
+            super().seldepth(n)
+
+        def nps(self, n):
+            self.que.put({'nps': n})
+            super().nps(n)
+
     def uci_handler(self, engine):
         self.info_handler = self.UciHandler()
         self.info_handler.que = self.appque
@@ -922,18 +934,22 @@ if __name__ == '__main__':
 
     bhlp.load_engines()
     logging.debug('{} engines loaded.'.format(len(bhlp.engines)))
+    if len (bhlp.engines)==0:
+        logging.error("No engine defined! Check uci_engines.json.")
+        exit(-1)
 
-    if len(bhlp.engines) > 1:
-        engine_no = 1
-        engine = chess.uci.popen_engine(bhlp.engines[engine_no]['path'])
-        logging.info('Engine {} active.'.format(
-            bhlp.engines[engine_no]['name']))
-        engine.uci()
-        # options
-        engine.isready()
-        bhlp.uci_handler(engine)
-    else:
-        engine = None
+    engine_no=0
+    for i in range(len(bhlp.engines)):
+        if 'default' in bhlp.engines[i] and bhlp.engines[i]['default']==True:
+            engine_no=i
+            break
+    engine = chess.uci.popen_engine(bhlp.engines[engine_no]['path'])
+    logging.info('Engine {} active.'.format(
+        bhlp.engines[engine_no]['name']))
+    engine.uci()
+    # options
+    engine.isready()
+    bhlp.uci_handler(engine)
 
     if brd.connected is True:
         brd.get_version()
@@ -952,6 +968,9 @@ if __name__ == '__main__':
         hint_ply = 1
         last_variant = time.time()
         score=''
+        nps=0
+        depth=0
+        seldepth=0
 
         bhlp.keyboard_handler()
 
@@ -976,7 +995,8 @@ if __name__ == '__main__':
                         engine.go(infinite=True, async_callback=True)
                         continue
                     uci = msg['move']['uci']
-                    logging.info("{} move: {}".format(
+                    print()
+                    logging.debug("{} move: {}".format(
                         msg['move']['actor'], uci))
                     ft = engine.stop(async_callback=True)
                     ft.result()
@@ -1076,13 +1096,26 @@ if __name__ == '__main__':
                             msg['curmove']['actor'], msg['curmove']['variant string']))
                         bhlp.visualize_variant(
                             brd, cbrd, msg['curmove']['variant'], hint_ply, 50)
+                        lvar=len(uci)
+                        if lvar>10:
+                            lvar=10
+                        status='[eval: {} nps: {} depth: {}/{}] '.format(score,nps,depth,seldepth)
+                        for i in range(lvar):
+                            status += uci[i] + " "
+                        print(status, end='\r')
                 if 'score' in msg:
                     if msg['score']['mate'] is not None:
                         logging.debug('Mate in {}'.format(msg['score']['mate']))
                         score='#{}'.format(msg['score']['mate'])
                     else:
                         logging.debug('Score {}'.format(msg['score']['cp']))
-                        score='{}'.format(msg['score']['cp'])
+                        score='{}'.format(float(msg['score']['cp'])/100.0)
+                if 'depth' in msg:
+                    depth=msg['depth']
+                if 'seldepth' in msg:
+                    seldepth=msg['seldepth']
+                if 'nps' in msg:
+                    nps=msg['nps']
                 if 'fen' in msg:
                     if msg['actor'] == 'keyboard' or (msg['actor'] == 'eboard' and init_position is True):
                         init_position = False

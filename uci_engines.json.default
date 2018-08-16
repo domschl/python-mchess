@@ -2,12 +2,14 @@
     "engines": [{
             "name": "Leela Chess Zero",
             "path": "c:\\Program Files\\LeelaChessZero/lc0.exe",
-            "uci-options": {}
+            "uci-options": {},
+            "default": false
         },
         {
             "name": "Stockfish 9",
             "path": "c:\\Program Files\\Stockfish\\stockfish_9_x64_popcnt.exe",
-            "uci-options": {}
+            "uci-options": {},
+            "default": true
         }
     ]
 }
