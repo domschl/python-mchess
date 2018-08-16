@@ -253,7 +253,7 @@ class MillenniumChess:
                                 'Invalid length {} for read-register reply'.format(len(msg)))
 
             else:
-                time.sleep(0.1)
+                time.sleep(0.01)
 
     def new_game(self, pos):
         self.reference_position = pos
@@ -561,11 +561,7 @@ class MillenniumChess:
                     print(" {} ".format(c), end='')
             print("|{}   {}".format(pof,move_stack[y+1]))
         print("{}  +------------------------+     {}".format(fil,move_stack[9]))
-        if col == self.WHITE:
-            scol = 'white'
-        else:
-            scol = 'black'
-        print("{}    A  B  C  D  E  F  G  H       {}  ({})".format(fil, move_stack[10], scol))
+        print("{}    A  B  C  D  E  F  G  H       {}".format(fil, move_stack[10]))
 
     def _open_transport(self, transport):
         try:
@@ -640,16 +636,21 @@ class ChessBoardHelper:
         logging.debug("valid moves: {}".format(vals))
         return vals
 
-    def ascii_move_stack(self, cbrd, unic=True):
+    def ascii_move_stack(self, cbrd, score, unic=True, lines=11):
+        ams=["" for _ in range(11)]
         mc=len(cbrd.move_stack)
-        if cbrd.turn==chess.WHITE:
-            mmc=21
+        if cbrd.turn==chess.BLACK:
+            mmc=2*lines-1
         else:
-            mmc=22
+            mmc=2*lines
         if mc>mmc:
             mc=mmc
         move_store=[]
+
+        amsi=lines-1
         for i in range(mc):
+            if amsi<0:
+                logging.error("bad amsi index! {}".format(amsi))
             if cbrd.is_checkmate() is True:
                 if unic is True:
                     chk=self.chesssym['unic'][3]
@@ -661,25 +662,45 @@ class ChessBoardHelper:
                 else:
                     chk=self.chesssym['ascii'][2]
             else:
-                chk=" "
+                chk=""
+            l1=len(cbrd.piece_map())
             mv=cbrd.pop()
+            l2=len(cbrd.piece_map())
             move_store.append(mv)
-            if mv.drop is not None:
-                if unic is True:
-                    sep=self.chesssym['unic'][2]
-                else:
-                    sep=self.chesssym['ascii'][2]
-            else:    
+            if l1!=l2:  # capture move, piece count changed :-/
                 if unic is True:
                     sep=self.chesssym['unic'][1]
                 else:
                     sep=self.chesssym['ascii'][1]
+            else:    
+                if unic is True:
+                    sep=self.chesssym['unic'][0]
+                else:
+                    sep=self.chesssym['ascii'][0]
+            if mv.promotion is not None:
+                fig=chess.Piece(chess.PAWN,cbrd.piece_at(mv.from_square).color).unicode_symbol(invert_color=True)
+                if unic is True:
+                    pro=chess.Piece(mv.promotion, cbrd.piece_at(mv.from_square).color).unicode_symbol(invert_color=True)
+                else:
+                    pro=mv.promotion.symbol()
+            else:
+                pro=""
+                if unic is True:
+                    fig=cbrd.piece_at(mv.from_square).unicode_symbol(invert_color=True)
+                else:
+                    fig=cbrd.piece_at(mv.from_square).symbol()
+            move='{:10s}'.format(fig+" "+chess.SQUARE_NAMES[mv.from_square]+sep+chess.SQUARE_NAMES[mv.to_square]+pro+chk)
+            if amsi==lines-1 and score!='':
+                move = '{} ({})'.format(move,score)
+                score=''
 
+            ams[amsi] = move + ams[amsi]
+            if cbrd.turn==chess.WHITE:
+                amsi = amsi-1
 
+        for i in reversed(range(len(move_store))):
+            cbrd.push(move_store[i])
 
-
-
-        ams=["{:3d} aabb - ccdd".format(i+1) for i in range(11)]
         return ams
 
     def variant_to_positions(self, ebrd, cbrd, variant, plys):
@@ -902,8 +923,8 @@ if __name__ == '__main__':
     bhlp.load_engines()
     logging.debug('{} engines loaded.'.format(len(bhlp.engines)))
 
-    if len(bhlp.engines) > 0:
-        engine_no = 0
+    if len(bhlp.engines) > 1:
+        engine_no = 1
         engine = chess.uci.popen_engine(bhlp.engines[engine_no]['path'])
         logging.info('Engine {} active.'.format(
             bhlp.engines[engine_no]['name']))
@@ -930,6 +951,7 @@ if __name__ == '__main__':
         ana_mode = False
         hint_ply = 1
         last_variant = time.time()
+        score=''
 
         bhlp.keyboard_handler()
 
@@ -961,9 +983,10 @@ if __name__ == '__main__':
                     time.sleep(0.2)
                     mv = chess.Move.from_uci(uci)
                     cbrd.push(mv)
-                    ams=bhlp.ascii_move_stack(cbrd)
+                    ams=bhlp.ascii_move_stack(cbrd,score)
                     brd.print_position_ascii(brd.fen_to_position(
                         cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'], move_stack=ams)
+                    score=''
                     if cbrd.is_check() and not cbrd.is_checkmate():
                         logging.info("Check!")
                     if cbrd.is_checkmate():
@@ -1056,8 +1079,10 @@ if __name__ == '__main__':
                 if 'score' in msg:
                     if msg['score']['mate'] is not None:
                         logging.debug('Mate in {}'.format(msg['score']['mate']))
+                        score='#{}'.format(msg['score']['mate'])
                     else:
                         logging.debug('Score {}'.format(msg['score']['cp']))
+                        score='{}'.format(msg['score']['cp'])
                 if 'fen' in msg:
                     if msg['actor'] == 'keyboard' or (msg['actor'] == 'eboard' and init_position is True):
                         init_position = False
