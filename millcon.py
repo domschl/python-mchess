@@ -855,6 +855,10 @@ class ChessBoardHelper:
                     log.debug('level')
                     movetime = float(cmd[2:])
                     appque.put({'level': '', 'movetime': movetime})
+                elif cmd[:2] == 'm ':
+                    log.debug('max ply look-ahead display')
+                    n = int(cmd[2:])
+                    appque.put({'max_ply': n})
                 elif cmd == 'p':
                     log.debug('position')
                     appque.put({'position': '', 'actor': 'keyboard'})
@@ -867,6 +871,8 @@ class ChessBoardHelper:
                 elif cmd == 'gb':
                     log.debug('go, black')
                     appque.put({'go': 'black', 'actor': 'keyboard'})
+                elif cmd == 'w':
+                    appque.put({'write_prefs': ''})
                 elif cmd[:2] == 'h ':
                     log.debug('show analysis for n plys (max 4) on board.')
                     ply = int(cmd[2:])
@@ -892,9 +898,11 @@ class ChessBoardHelper:
                     log.info('gb - go, force black move')
                     log.info('h <ply> - show hints for <ply> levels on board')
                     log.info('l <n> - level: engine think-time in sec (float)')
+                    log.info('m <n> - max plys shown during look-ahead')
                     log.info('n - new game')
                     log.info('p - import eboard position')
                     log.info('s - stop')
+                    log.info('w - write current prefences as default')
                     log.info('e2e4 - valid move')
                 else:
                     log.info(
@@ -927,7 +935,12 @@ if __name__ == '__main__':
         prefs = {
             'think_ms': 3000,
             'use_unicode_figures': True,
+            'max_ply':6
         }
+        write_preferences(prefs)
+
+    if 'max_ply' not in prefs:
+        prefs['max_ply']=8
         write_preferences(prefs)
 
     if platform.system().lower() == 'windows':
@@ -999,8 +1012,8 @@ if __name__ == '__main__':
                     ana_mode = False
                     logging.info("New Game (by: {})".format(msg['actor']))
                     cbrd = chess.Board()
-                    #brd.print_position_ascii(brd.fen_to_position(
-                    #    cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'])
+                    brd.print_position_ascii(brd.fen_to_position(
+                        cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'])
                     vals = bhlp.valid_moves(cbrd)
                     bhlp.set_keyboard_valid(vals)
                     brd.move_from(cbrd.fen(), vals, bhlp.color(brd, cbrd.turn))
@@ -1116,8 +1129,8 @@ if __name__ == '__main__':
                         bhlp.visualize_variant(
                             brd, cbrd, msg['curmove']['variant'], hint_ply, 50)
                         lvar=len(uci)
-                        if lvar>10:
-                            lvar=10
+                        if lvar>prefs['max_ply']:
+                            lvar=prefs['max_ply']
                         status='[eval: {} nps: {} depth: {}/{}] '.format(score,nps,depth,seldepth)
                         for i in range(lvar):
                             status += uci[i] + " "
@@ -1169,6 +1182,10 @@ if __name__ == '__main__':
                 if 'hint' in msg:
                     if 'ply' in msg:
                         hint_ply = msg['ply']
+                if 'max_ply' in msg:
+                    prefs['max_ply']=msg['max_ply']
+                if 'write' in msg:
+                    write_preferences(prefs)
                 if 'turn eboard orientation' in msg:
                     if brd.get_orientation() is False:
                         brd.set_orientation(True)
