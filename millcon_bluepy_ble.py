@@ -46,7 +46,12 @@ class Transport():
                 "BLE scanning failed. You might need to excecute the scan with root rights: {}".format(e))
             return None
 
-        for bledev in devices:
+        devs = sorted(devices, key=lambda x: x.rssi, reverse=True)
+        print("Pre-Sort:")
+        for b in devs:
+            self.log.debug('sorted by rssi {} {}'.format(b.addr, b.rssi))
+
+        for bledev in devs:
             self.log.debug("Device {} ({}), RSSI={} dB".format(
                 bledev.addr, bledev.addrType, bledev.rssi))
             for (adtype, desc, value) in bledev.getScanData():

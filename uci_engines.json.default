@@ -1,5 +1,5 @@
 {
-    "default-engine": 0,
+    "default-engine": 1,
     "engines": [{
             "name": "Leela Chess Zero",
             "path": "c:\\Program Files\\LeelaChessZero/lc0.exe",
