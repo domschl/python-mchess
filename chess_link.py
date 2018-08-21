@@ -11,7 +11,7 @@ import json
 import importlib
 import copy
 
-import mill_prot
+import chess_link_protocol as clp
 
 try:
     import chess
@@ -151,8 +151,9 @@ class MillenniumChess:
         while self.thread_active:
             if self.trque.empty() is False:
                 msg = self.trque.get()
-                if msg=='error':
-                    self.appque.put({'error': 'transport failure or not available.'})
+                if msg == 'error':
+                    self.appque.put(
+                        {'error': 'transport failure or not available.'})
                     continue
 
                 if len(msg) > 0:
@@ -192,7 +193,8 @@ class MillenniumChess:
                             sfen = self.short_fen(fen)
                             if sfen == "RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr":
                                 if self.orientation == True:
-                                    self.log.debug("Cable-left board detected.")
+                                    self.log.debug(
+                                        "Cable-left board detected.")
                                     self.orientation = False
                                     self.write_configuration()
                                     position_inv = copy.deepcopy(position)
@@ -314,7 +316,7 @@ class MillenniumChess:
     def set_mv_led(self, pos, freq):
         if self.connected is True:
             leds = [[0 for x in range(9)] for y in range(9)]
-            cmd = "L"+mill_prot.hex2(freq)
+            cmd = "L"+clp.hex2(freq)
             for y in range(8):
                 for x in range(8):
                     if pos[y][x] != 0:
@@ -331,7 +333,7 @@ class MillenniumChess:
 
             for y in range(9):
                 for x in range(9):
-                    cmd = cmd + mill_prot.hex2(leds[y][x])
+                    cmd = cmd + clp.hex2(leds[y][x])
             self.trans.write_mt(cmd)
         else:
             self.log.warning(
@@ -351,7 +353,7 @@ class MillenniumChess:
     def set_led(self, pos, freq, ontime1, ontime2):
         if self.connected is True:
             leds = [[0 for x in range(9)] for y in range(9)]
-            cmd = "L"+mill_prot.hex2(freq)
+            cmd = "L"+clp.hex2(freq)
             for y in range(8):
                 for x in range(8):
                     if pos[y][x] != 0:
@@ -371,9 +373,9 @@ class MillenniumChess:
                     if leds[y][x] == 0:
                         cmd = cmd + "00"
                     elif leds[y][x] == 1:
-                        cmd = cmd + mill_prot.hex2(ontime1)
+                        cmd = cmd + clp.hex2(ontime1)
                     else:
-                        cmd = cmd + mill_prot.hex2(ontime2)
+                        cmd = cmd + clp.hex2(ontime2)
 
             self.trans.write_mt(cmd)
         else:
@@ -388,7 +390,7 @@ class MillenniumChess:
                 "Not connected to Millennium board.")
 
     def get_debounce(self):
-        cmd = "R"+mill_prot.hex2(2)
+        cmd = "R"+clp.hex2(2)
         if self.connected is True:
             self.trans.write_mt(cmd)
         else:
@@ -402,12 +404,12 @@ class MillenniumChess:
                 'Invalid debounce count {}, should be 0: no debounce, 1 .. 4: 1-4  scan times debounce'.format(count))
         else:
             # 3: no debounce, 4: 2 scans debounce, -> 7: 4 scans
-            cmd += mill_prot.hex2(count+3)
+            cmd += clp.hex2(count+3)
             self.trans.write_mt(cmd)
             self.log.debug("Setting board scan debounce to {}".format(count))
 
     def get_led_brightness_precent(self):
-        cmd = "R"+mill_prot.hex2(4)
+        cmd = "R"+clp.hex2(4)
         if self.connected is True:
             self.trans.write_mt(cmd)
         else:
@@ -421,13 +423,13 @@ class MillenniumChess:
                 'Invalid brightness level {}, shouldbe between 0(darkest)..1.0(brightest)'.format(level))
         else:
             ilevel = int(level*15)
-            cmd += mill_prot.hex2(ilevel)
+            cmd += clp.hex2(ilevel)
             self.trans.write_mt(cmd)
             self.log.debug(
                 "Setting led brightness to {} (bri={})".format(ilevel, level))
 
     def get_scan_time_ms(self):
-        cmd = "R"+mill_prot.hex2(1)
+        cmd = "R"+clp.hex2(1)
         if self.connected is True:
             self.trans.write_mt(cmd)
         else:
@@ -446,7 +448,7 @@ class MillenniumChess:
                 iscans = 15
             if iscans > 255:
                 iscans = 255
-            cmd += mill_prot.hex2(iscans)
+            cmd += clp.hex2(iscans)
             self.trans.write_mt(cmd)
             self.log.debug(
                 "Setting scan_ms intervall to {} -> {}ms ({} scans per sec)".format(iscans, scan_ms, 1000.0/scan_ms))
@@ -537,9 +539,10 @@ class MillenniumChess:
             fil = "  "
         else:
             fil = ""
-        if move_stack==[]:
-            move_stack=["" for _ in range(11)]
-        print("{}  +------------------------+     {}".format(fil,move_stack[0]))
+        if move_stack == []:
+            move_stack = ["" for _ in range(11)]
+        print(
+            "{}  +------------------------+     {}".format(fil, move_stack[0]))
         for y in range(8):
             prf = ""
             pof = "  "
@@ -571,9 +574,11 @@ class MillenniumChess:
                     print("\033[7m {} \033[m".format(c), end="")
                 else:
                     print(" {} ".format(c), end='')
-            print("|{}   {}".format(pof,move_stack[y+1]))
-        print("{}  +------------------------+     {}".format(fil,move_stack[9]))
-        print("{}    A  B  C  D  E  F  G  H       {}".format(fil, move_stack[10]))
+            print("|{}   {}".format(pof, move_stack[y+1]))
+        print(
+            "{}  +------------------------+     {}".format(fil, move_stack[9]))
+        print("{}    A  B  C  D  E  F  G  H       {}".format(
+            fil, move_stack[10]))
 
     def _open_transport(self, transport):
         try:
@@ -624,576 +629,3 @@ class MillenniumChess:
 
     def get_orientation(self):
         return self.orientation
-
-
-class ChessBoardHelper:
-    def __init__(self, appque):
-        self.appque = appque
-        self.log = logging.getLogger('ChessBoardHelper')
-        self.kbd_moves = []
-        self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
-                       "pythc": [(chess.PAWN, chess.WHITE), (chess.KNIGHT, chess.WHITE), (chess.BISHOP, chess.WHITE), (chess.ROOK, chess.WHITE), (chess.QUEEN, chess.WHITE), (chess.KING, chess.WHITE),
-                       (chess.PAWN, chess.BLACK), (chess.KNIGHT, chess.BLACK), (chess.BISHOP, chess.BLACK), (chess.ROOK, chess.BLACK), (chess.QUEEN, chess.BLACK), (chess.KING, chess.BLACK)],
-                       "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
-                       "ascii": "PNBRQK.pnbrqk"}
-        self.chesssym={"unic": ["-","×", "†","‡", "½"],
-                       "ascii": ["-","x","+","#", "1/2"]}
-
-    def valid_moves(self, cbrd):
-        vals = {}
-        for mv in cbrd.legal_moves:
-            cbrd.push(mv)
-            vals[brd.short_fen(cbrd.fen())] = mv.uci()
-            cbrd.pop()
-        logging.debug("valid moves: {}".format(vals))
-        return vals
-
-    def ascii_move_stack(self, cbrd, score, use_unicode_chess_figures=True, lines=11):
-        ams=["" for _ in range(11)]
-        mc=len(cbrd.move_stack)
-        if cbrd.turn==chess.BLACK:
-            mmc=2*lines-1
-        else:
-            mmc=2*lines
-        if mc>mmc:
-            mc=mmc
-        move_store=[]
-
-        amsi=lines-1
-        for i in range(mc):
-            if amsi<0:
-                logging.error("bad amsi index! {}".format(amsi))
-            if cbrd.is_checkmate() is True:
-                if use_unicode_chess_figures is True:
-                    chk=self.chesssym['unic'][3]
-                else:
-                    chk=self.chesssym['ascii'][3]    
-            elif cbrd.is_check() is True:
-                if use_unicode_chess_figures is True:
-                    chk=self.chesssym['unic'][2]
-                else:
-                    chk=self.chesssym['ascii'][2]
-            else:
-                chk=""
-            l1=len(cbrd.piece_map())
-            mv=cbrd.pop()
-            l2=len(cbrd.piece_map())
-            move_store.append(mv)
-            if l1!=l2:  # capture move, piece count changed :-/
-                if use_unicode_chess_figures is True:
-                    sep=self.chesssym['unic'][1]
-                else:
-                    sep=self.chesssym['ascii'][1]
-            else:    
-                if use_unicode_chess_figures is True:
-                    sep=self.chesssym['unic'][0]
-                else:
-                    sep=self.chesssym['ascii'][0]
-            if mv.promotion is not None:
-                fig=chess.Piece(chess.PAWN,cbrd.piece_at(mv.from_square).color).unicode_symbol(invert_color=True)
-                if use_unicode_chess_figures is True:
-                    pro=chess.Piece(mv.promotion, cbrd.piece_at(mv.from_square).color).unicode_symbol(invert_color=True)
-                else:
-                    pro=mv.promotion.symbol()
-            else:
-                pro=""
-                if use_unicode_chess_figures is True:
-                    fig=cbrd.piece_at(mv.from_square).unicode_symbol(invert_color=True)
-                else:
-                    fig=cbrd.piece_at(mv.from_square).symbol()
-            move='{:10s}'.format(fig+" "+chess.SQUARE_NAMES[mv.from_square]+sep+chess.SQUARE_NAMES[mv.to_square]+pro+chk)
-            if amsi==lines-1 and score!='':
-                move = '{} ({})'.format(move,score)
-                score=''
-
-            ams[amsi] = move + ams[amsi]
-            if cbrd.turn==chess.WHITE:
-                amsi = amsi-1
-
-        for i in reversed(range(len(move_store))):
-            cbrd.push(move_store[i])
-
-        return ams
-
-    def variant_to_positions(self, ebrd, cbrd, variant, plys):
-        pos = []
-        mvs = len(variant)
-        if mvs > plys:
-            mvs = plys
-
-        pos.append(ebrd.fen_to_position(cbrd.fen()))
-        for i in range(mvs):
-            cbrd.push(chess.Move.from_uci(variant[i]))
-            pos.append(ebrd.fen_to_position(cbrd.fen()))
-        for i in range(mvs):
-            cbrd.pop()
-        return pos
-
-    def color(self, ebrd, col):
-        if col == chess.WHITE:
-            col = ebrd.WHITE
-        else:
-            col = ebrd.BLACK
-        return col
-
-    def visualize_variant(self, ebrd, cbrd, variant, plys=1, freq=80):
-        if plys > 4:
-            plys = 4
-        pos = self.variant_to_positions(ebrd, cbrd, variant, plys)
-        ebrd.show_deltas(pos, freq)
-
-    def load_engines(self):
-        with open('uci_engines.json', 'r') as f:
-            self.engines = json.load(f)
-            logging.debug(self.engines)
-            return self.engines
-
-    class UciHandler(chess.uci.InfoHandler):
-        def __init__(self):
-            self.que = None
-            self.last_pv_move = ""
-            self.log = logging.getLogger('UciHandler')
-            super().__init__()
-
-        def post_info(self):
-            # Called whenever a complete info line has been processed.
-            # print(self.info)
-            super().post_info()  # Release the lock
-
-        def on_bestmove(self, bestmove, ponder):
-            self.log.debug("Best: {}".format(bestmove))
-            self.que.put({'move': {
-                'uci': bestmove.uci(),
-                'actor': 'uci-engine'
-            }})
-            self.last_pv_move = ""
-            super().on_bestmove(bestmove, ponder)
-
-        def score(self, cp, mate, lowerbound, upperbound):
-            self.que.put({'score': {'cp': cp, 'mate': mate}})
-            super().score(cp, mate, lowerbound, upperbound)
-
-        def pv(self, moves):
-            variant = []
-            svar = ""
-            for m in moves:
-                variant.append(m.uci())
-                svar += m.uci()+" "
-            if svar[-1] == " ":
-                svar = svar[:-1]
-            self.que.put({'curmove': {
-                'variant': variant,
-                'variant string': svar,
-                'actor': 'uci-engine'
-            }})
-            super().pv(moves)
-
-        def depth(self, n):
-            self.que.put({'depth': n})
-            super().depth(n)
-
-        def seldepth(self, n):
-            self.que.put({'seldepth': n})
-            super().seldepth(n)
-
-        def nps(self, n):
-            self.que.put({'nps': n})
-            super().nps(n)
-
-    def uci_handler(self, engine):
-        self.info_handler = self.UciHandler()
-        self.info_handler.que = self.appque
-        engine.info_handlers.append(self.info_handler)
-
-    def set_keyboard_valid(self, vals):
-        self.kbd_moves = []
-        if vals != None:
-            for v in vals:
-                self.kbd_moves.append(vals[v])
-
-    def kdb_event_worker_thread(self, appque, log, std_in):
-        while self.kdb_thread_active:
-            cmd = ""
-            try:
-                # cmd = input()
-                # with open(std_in) as inp:
-                cmd = std_in.readline().strip()
-            except Exception as e:
-                log.info("Exception in input() {}".format(e))
-                time.sleep(1.0)
-            if cmd == "":
-                continue
-            log.debug("keyboard: <{}>".format(cmd))
-            if len(cmd) >= 1:
-                if cmd in self.kbd_moves:
-                    self.kbd_moves = []
-                    appque.put(
-                        {'move': {'uci': cmd, 'actor': 'keyboard'}})
-                elif cmd == 'n':
-                    log.debug('requesting new game')
-                    appque.put({'new game': '', 'actor': 'keyboard'})
-                elif cmd == 'b':
-                    log.debug('move back')
-                    appque.put({'back': '', 'actor': 'keyboard'})
-                elif cmd == 'c':
-                    log.debug('change board orientation')
-                    appque.put(
-                        {'turn eboard orientation': '', 'actor': 'keyboard'})
-                elif cmd == 'a':
-                    log.debug('analyze')
-                    appque.put({'analyze': '', 'actor': 'keyboard'})
-                elif cmd == 'ab':
-                    log.debug('analyze black')
-                    appque.put({'analyze': 'black', 'actor': 'keyboard'})
-                elif cmd == 'aw':
-                    log.debug('analyze white')
-                    appque.put({'analyze': 'white', 'actor': 'keyboard'})
-                elif cmd == 'e':
-                    log.debug('board encoding switch')
-                    appque.put({'encoding': '', 'actor': 'keyboard'})
-                elif cmd[:2] == 'l ':
-                    log.debug('level')
-                    movetime = float(cmd[2:])
-                    appque.put({'level': '', 'movetime': movetime})
-                elif cmd[:2] == 'm ':
-                    log.debug('max ply look-ahead display')
-                    n = int(cmd[2:])
-                    appque.put({'max_ply': n})
-                elif cmd == 'p':
-                    log.debug('position')
-                    appque.put({'position': '', 'actor': 'keyboard'})
-                elif cmd == 'g':
-                    log.debug('go')
-                    appque.put({'go': 'current', 'actor': 'keyboard'})
-                elif cmd == 'gw':
-                    log.debug('go')
-                    appque.put({'go': 'white', 'actor': 'keyboard'})
-                elif cmd == 'gb':
-                    log.debug('go, black')
-                    appque.put({'go': 'black', 'actor': 'keyboard'})
-                elif cmd == 'w':
-                    appque.put({'write_prefs': ''})
-                elif cmd[:2] == 'h ':
-                    log.debug('show analysis for n plys (max 4) on board.')
-                    ply = int(cmd[2:])
-                    if ply < 0:
-                        ply = 0
-                    if ply > 4:
-                        ply = 4
-                    appque.put({'hint': '', 'ply': ply})
-
-                elif cmd == 's':
-                    log.debug('stop')
-                    appque.put({'stop': '', 'actor': 'keyboard'})
-                elif cmd[:4] == 'fen ':
-                    appque.put({'fen': cmd[4:], 'actor': 'keyboard'})
-                elif cmd == 'help':
-                    log.info(
-                        'a - analyze current position, ab: analyze black, aw: analyses white')
-                    log.info(
-                        'c - change cable orientation (eboard cable left/right')
-                    log.info('b - take back move')
-                    log.info('g - go, current player (default white)')
-                    log.info('gw - go, force white move')
-                    log.info('gb - go, force black move')
-                    log.info('h <ply> - show hints for <ply> levels on board')
-                    log.info('l <n> - level: engine think-time in sec (float)')
-                    log.info('m <n> - max plys shown during look-ahead')
-                    log.info('n - new game')
-                    log.info('p - import eboard position')
-                    log.info('s - stop')
-                    log.info('w - write current prefences as default')
-                    log.info('e2e4 - valid move')
-                else:
-                    log.info(
-                        'Unknown keyboard cmd <{}>, enter "help" for a list of valid commands.'.format(cmd))
-
-    def keyboard_handler(self):
-        self.kdb_thread_active = True
-        self.kbd_event_thread = threading.Thread(
-            target=self.kdb_event_worker_thread, args=(self.appque, self.log, sys.stdin))
-        self.kbd_event_thread.setDaemon(True)
-        self.kbd_event_thread.start()
-
-
-def write_preferences(prefs):
-    try:
-        with open("preferences.json", "w") as f:
-            json.dump(prefs, f)
-    except Exception as e:
-        logging.error("Failed to write preferences.json, {}".format(e))
-
-
-if __name__ == '__main__':
-    import chess
-    import chess.uci
-
-    try:
-        with open("preferences.json", "r") as f:
-            prefs = json.load(f)
-    except:
-        prefs = {
-            'think_ms': 3000,
-            'use_unicode_figures': True,
-            'max_ply':6
-        }
-        write_preferences(prefs)
-
-    if 'max_ply' not in prefs:
-        prefs['max_ply']=8
-        write_preferences(prefs)
-
-    if platform.system().lower() == 'windows':
-        from ctypes import windll, c_int, byref
-        stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
-        mode = c_int(0)
-        windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
-        mode = c_int(mode.value | 4)
-        windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
-
-    logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
-    appque = queue.Queue()
-    brd = MillenniumChess(appque)
-    bhlp = ChessBoardHelper(appque)
-
-    bhlp.load_engines()
-    logging.debug('{} engines loaded.'.format(len(bhlp.engines)))
-    if len (bhlp.engines)==0:
-        logging.error("No engine defined! Check uci_engines.json.")
-        exit(-1)
-
-    engine_no=0
-    if 'default-engine' in bhlp.engines:
-        engine_no = bhlp.engines['default-engine']
-        if engine_no > len(bhlp.engines['engines']):
-            engine_no=0
-    engine = chess.uci.popen_engine(bhlp.engines['engines'][engine_no]['path'])
-    logging.info('Loading engine {}.'.format(
-        bhlp.engines['engines'][engine_no]['name']))
-    engine.uci()
-    # options
-    engine.isready()
-    bhlp.uci_handler(engine)
-
-    if brd.connected is True:
-        brd.get_version()
-        time.sleep(0.1)
-        brd.set_debounce(4)
-        time.sleep(0.1)
-        brd.get_scan_time_ms()
-        time.sleep(0.1)
-        brd.set_scan_time_ms(100.0)
-        time.sleep(0.1)
-        brd.get_scan_time_ms()
-        time.sleep(0.1)
-        init_position = True
-        brd.get_position()
-        ana_mode = False
-        hint_ply = 1
-        last_variant = time.time()
-        score=''
-        nps=0
-        depth=0
-        seldepth=0
-
-        bhlp.keyboard_handler()
-
-        while True:
-            if appque.empty() is False:
-                msg = appque.get()
-                appque.task_done()
-                logging.debug("App received msg: {}".format(msg))
-                if 'error' in msg:
-                    logging.error(msg['error'])
-                    print()
-                    exit(-1)
-                if 'new game' in msg:
-                    ana_mode = False
-                    logging.info("New Game (by: {})".format(msg['actor']))
-                    cbrd = chess.Board()
-                    brd.print_position_ascii(brd.fen_to_position(
-                        cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'])
-                    vals = bhlp.valid_moves(cbrd)
-                    bhlp.set_keyboard_valid(vals)
-                    brd.move_from(cbrd.fen(), vals, bhlp.color(brd, cbrd.turn))
-                if 'move' in msg:
-                    last_variant = time.time()
-                    if ana_mode == True and msg['move']['actor'] == 'uci-engine':
-                        engine.position(cbrd)
-                        engine.go(infinite=True, async_callback=True)
-                        continue
-                    uci = msg['move']['uci']
-                    print()
-                    logging.debug("{} move: {}".format(
-                        msg['move']['actor'], uci))
-                    ft = engine.stop(async_callback=True)
-                    ft.result()
-                    time.sleep(0.2)
-                    mv = chess.Move.from_uci(uci)
-                    cbrd.push(mv)
-                    ams=bhlp.ascii_move_stack(cbrd,score,use_unicode_chess_figures=prefs['use_unicode_figures'])
-                    brd.print_position_ascii(brd.fen_to_position(
-                        cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'], move_stack=ams)
-                    score=''
-                    nps=0
-                    seldepth=0
-                    depth=0
-                    if cbrd.is_check() and not cbrd.is_checkmate():
-                        logging.info("Check!")
-                    if cbrd.is_checkmate():
-                        logging.info("Checkmate!")
-                        if msg['move']['actor'] != 'eboard':
-                            brd.move_from(cbrd.fen(), {},
-                                          bhlp.color(brd, cbrd.turn))
-                    else:
-                        if msg['move']['actor'] == 'keyboard':
-                            if ana_mode == True:
-                                vals = bhlp.valid_moves(cbrd)
-                                brd.move_from(cbrd.fen(), vals,
-                                              bhlp.color(brd, cbrd.turn))
-                                bhlp.set_keyboard_valid(vals)
-                            else:
-                                brd.move_from(cbrd.fen(), {},
-                                              bhlp.color(brd, cbrd.turn))
-                                bhlp.set_keyboard_valid(None)
-                                engine.position(cbrd)
-                                engine.go(movetime=prefs['think_ms'],
-                                          async_callback=True)
-                        if msg['move']['actor'] == 'eboard':
-                            if ana_mode == True:
-                                vals = bhlp.valid_moves(cbrd)
-                                brd.move_from(cbrd.fen(), vals,
-                                              bhlp.color(brd, cbrd.turn))
-                                bhlp.set_keyboard_valid(vals)
-                                valm=""
-                                for v in vals:
-                                    valm += '{} '.format(vals[v])
-                                logging.debug('{} {}'.format(valm,brd.turn))
-                            else:
-                                brd.move_from(cbrd.fen(), {},
-                                              bhlp.color(brd, cbrd.turn))
-                                bhlp.set_keyboard_valid(None)
-                                engine.position(cbrd)
-                                engine.go(movetime=prefs['think_ms'],
-                                          async_callback=True)
-                        if msg['move']['actor'] == 'uci-engine':
-                            vals = bhlp.valid_moves(cbrd)
-                            bhlp.set_keyboard_valid(vals)
-                            brd.move_from(cbrd.fen(), vals,
-                                          bhlp.color(brd, cbrd.turn))
-                if 'go' in msg:
-                    if msg['go'] == 'white':
-                        cbrd.turn = chess.WHITE
-                    if msg['go'] == 'black':
-                        cbrd.turn = chess.BLACK
-                    bhlp.set_keyboard_valid(None)
-                    engine.position(cbrd)
-                    engine.go(movetime=prefs['think_ms'], async_callback=True)
-                if 'analyze' in msg:
-                    if msg['analyze'] == 'white':
-                        cbrd.turn = chess.WHITE
-                    if msg['analyze'] == 'black':
-                        cbrd.turn = chess.BLACK
-                    ana_mode = True
-                    vals = bhlp.valid_moves(cbrd)
-                    brd.move_from(cbrd.fen(), vals, bhlp.color(brd, cbrd.turn))
-                    bhlp.set_keyboard_valid(vals)
-                    engine.position(cbrd)
-                    engine.go(infinite=True, async_callback=True)
-                if 'stop' in msg:
-                    engine.stop()
-                    time.sleep(0.2)
-                    ana_mode = False
-                    vals = bhlp.valid_moves(cbrd)
-                    brd.move_from(cbrd.fen(), vals, bhlp.color(brd, cbrd.turn))
-                    bhlp.set_keyboard_valid(vals)
-                if 'back' in msg:
-                    cbrd.pop()
-                    brd.print_position_ascii(brd.fen_to_position(
-                        cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'])
-                    if cbrd.is_check() and not cbrd.is_checkmate():
-                        logging.info("Check!")
-                    vals = bhlp.valid_moves(cbrd)
-                    brd.move_from(cbrd.fen(), vals, bhlp.color(brd, cbrd.turn))
-                    bhlp.set_keyboard_valid(vals)
-                    if ana_mode:
-                        engine.position(cbrd)
-                        engine.go(infinite=True, async_callback=True)
-                if 'curmove' in msg:
-                    if time.time()-last_variant > 1.0:  # throttle
-                        last_variant = time.time()
-                        uci = msg['curmove']['variant']
-                        logging.debug("{} variant: {}".format(
-                            msg['curmove']['actor'], msg['curmove']['variant string']))
-                        bhlp.visualize_variant(
-                            brd, cbrd, msg['curmove']['variant'], hint_ply, 50)
-                        lvar=len(uci)
-                        if lvar>prefs['max_ply']:
-                            lvar=prefs['max_ply']
-                        status='[eval: {} nps: {} depth: {}/{}] '.format(score,nps,depth,seldepth)
-                        for i in range(lvar):
-                            status += uci[i] + " "
-                        print(status, end='\r')
-                if 'score' in msg:
-                    if msg['score']['mate'] is not None:
-                        logging.debug('Mate in {}'.format(msg['score']['mate']))
-                        score='#{}'.format(msg['score']['mate'])
-                    else:
-                        logging.debug('Score {}'.format(msg['score']['cp']))
-                        score='{}'.format(float(msg['score']['cp'])/100.0)
-                if 'depth' in msg:
-                    depth=msg['depth']
-                if 'seldepth' in msg:
-                    seldepth=msg['seldepth']
-                if 'nps' in msg:
-                    nps=msg['nps']
-                if 'fen' in msg:
-                    if msg['actor'] == 'keyboard' or (msg['actor'] == 'eboard' and init_position is True):
-                        init_position = False
-                        cbrd = chess.Board(msg['fen'])
-                        if cbrd.is_valid() is True:
-                            brd.print_position_ascii(brd.fen_to_position(
-                                cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'])
-                            vals = bhlp.valid_moves(cbrd)
-                            bhlp.set_keyboard_valid(vals)
-                            brd.move_from(cbrd.fen(), vals,
-                                          bhlp.color(brd, cbrd.turn))
-                        else:
-                            logging.error(
-                                'Invalid FEN position {}, starting new game.'.format(msg['fen']))
-                            appque.put(
-                                {'new game': '', 'actor': 'bad position error'})
-                if 'position' in msg:
-                    init_position = True
-                    brd.get_position()
-                if 'encoding' in msg:
-                    prefs['use_unicode_figures'] = not prefs['use_unicode_figures']
-                    write_preferences(prefs)
-                    brd.print_position_ascii(brd.fen_to_position(
-                        cbrd.fen()), bhlp.color(brd, cbrd.turn), use_unicode_chess_figures=prefs['use_unicode_figures'])
-
-                if 'level' in msg:
-                    if 'movetime' in msg:
-                        prefs['think_ms'] = int(msg['movetime']*1000)
-                        logging.debug(
-                            'Engine move time is {} ms'.format(prefs['think_ms']))
-                        write_preferences(prefs)
-                if 'hint' in msg:
-                    if 'ply' in msg:
-                        hint_ply = msg['ply']
-                if 'max_ply' in msg:
-                    prefs['max_ply']=msg['max_ply']
-                if 'write' in msg:
-                    write_preferences(prefs)
-                if 'turn eboard orientation' in msg:
-                    if brd.get_orientation() is False:
-                        brd.set_orientation(True)
-                        logging.info("eboard cable on right side.")
-                    else:
-                        brd.set_orientation(False)
-                        logging.info("eboard cable on left side.")
-                    init_position = True
-                    brd.get_position()
-            else:
-                time.sleep(0.1)
