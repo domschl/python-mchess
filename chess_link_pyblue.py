@@ -1,19 +1,13 @@
 import logging
 
-import mill_prot
-try:
-    from bluepy.btle import Scanner, DefaultDelegate, Peripheral
-    bluepy_ble_support = True
-except:
-    bluepy_ble_support = False
+import chess_link_protocol as clp
+
+# TODO: expand empty framework with actual functionality!
 
 
 class Transport():
     def __init__(self, que):
-        if bluepy_ble_support == False:
-            self.init = False
-            return
-        self.log = logging.getLogger("MilleniumPyBlueBt")
+        self.log = logging.getLogger("ChessLinkPyBlue")
         self.que = que  # asyncio.Queue()
         self.init = True
         self.is_open = False
@@ -35,7 +29,7 @@ class Transport():
         return False
 
     def get_name(self):
-        return "millcon_pyblue_bt"
+        return "chess_link_pyblue"
 
     def is_init(self):
         return self.init

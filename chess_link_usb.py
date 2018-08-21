@@ -3,7 +3,7 @@ import threading
 import queue
 import time
 
-import mill_prot
+import chess_link_protocol as clp
 
 try:
     import serial
@@ -18,7 +18,7 @@ class Transport():
         if usb_support == False:
             self.init = False
             return
-        self.log = logging.getLogger("MillenniumUSB")
+        self.log = logging.getLogger("ChessLinkUSB")
         self.que = que  # asyncio.Queue()
         self.init = True
         self.log.debug("USB init ok")
@@ -90,10 +90,10 @@ class Transport():
         return vports
 
     def write_mt(self, msg):
-        msg = mill_prot.add_block_crc(msg)
+        msg = clp.add_block_crc(msg)
         bts = []
         for c in msg:
-            bo = mill_prot.add_odd_par(c)
+            bo = clp.add_odd_par(c)
             bts.append(bo)
         try:
             self.log.debug('Trying write <{}>'.format(bts))
@@ -123,7 +123,7 @@ class Transport():
             except (Exception) as e:
                 self.log.error("Read error {}".format(e))
                 break
-        if mill_prot.check_block_crc(rep) is False:
+        if clp.check_block_crc(rep) is False:
             return []
         return rep
 
@@ -171,9 +171,9 @@ class Transport():
                 continue
             if len(b) > 0:
                 if cmd_started is False:
-                    if b in mill_prot.millennium_protocol_replies:
+                    if b in clp.protocol_replies:
                         cmd_started = True
-                        cmd_size = mill_prot.millennium_protocol_replies[b]
+                        cmd_size = clp.protocol_replies[b]
                         cmd = b
                         cmd_size -= 1
                 else:
@@ -183,7 +183,7 @@ class Transport():
                         cmd_started = False
                         cmd_size = 0
                         self.log.debug("USB received cmd: {}".format(cmd))
-                        if mill_prot.check_block_crc(cmd):
+                        if clp.check_block_crc(cmd):
                             que.put(cmd)
                         cmd = ""
 

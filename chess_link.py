@@ -5,7 +5,6 @@ import platform
 import sys
 import struct
 import threading
-# import asyncio
 import queue
 import json
 import importlib

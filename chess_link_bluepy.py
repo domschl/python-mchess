@@ -3,7 +3,7 @@ import threading
 import queue
 import time
 
-import mill_prot
+import chess_link_protocol as clp
 try:
     from bluepy.btle import Scanner, DefaultDelegate, Peripheral
     bluepy_ble_support = True
@@ -17,7 +17,7 @@ class Transport():
             self.init = False
             return
         self.wrque = queue.Queue()
-        self.log = logging.getLogger("MillenniumBluePyBLE")
+        self.log = logging.getLogger("ChessLinkBluePy")
         self.que = que  # asyncio.Queue()
         self.init = True
         self.log.debug("bluepy_ble init ok")
@@ -57,9 +57,9 @@ class Transport():
             for (adtype, desc, value) in bledev.getScanData():
                 self.log.debug("  {} ({}) = {}".format(desc, adtype, value))
                 if desc == "Complete Local Name":
-                    if "MILLENNIUM CHESS" in value:
+                    if "clpNNIUM CHESS" in value:
                         self.log.info(
-                            "Autodetected Millennium board at Bluetooth LE address: {}, signal strength (rssi): {}".format(
+                            "Autodetected Millennium Chess Link board at Bluetooth LE address: {}, signal strength (rssi): {}".format(
                                 bledev.addr, bledev.rssi))
                         return bledev.addr
         return None
@@ -82,7 +82,7 @@ class Transport():
         self.wrque.put(msg)
 
     def get_name(self):
-        return "millcon_bluepy_ble"
+        return "chess_link_bluepy"
 
     def is_init(self):
         return self.init
@@ -103,18 +103,18 @@ class Transport():
                     rcv += chr(b & 127)
                 self.log.debug('BLE received [{}]'.format(rcv))
                 self.chunks += rcv
-                if self.chunks[0] not in mill_prot.millennium_protocol_replies:
+                if self.chunks[0] not in clp.protocol_replies:
                     self.log.warning(
                         "Illegal reply start '{}' received, discarding".format(self.chunks[0]))
-                    while len(self.chunks) > 0 and self.chunks[0] not in mill_prot.millennium_protocol_replies:
+                    while len(self.chunks) > 0 and self.chunks[0] not in clp.protocol_replies:
                         self.chunks = self.chunks[1:]
                 if len(self.chunks) > 0:
-                    mlen = mill_prot.millennium_protocol_replies[self.chunks[0]]
+                    mlen = clp.protocol_replies[self.chunks[0]]
                     if len(self.chunks) >= mlen:
                         valmsg = self.chunks[:mlen]
                         self.log.debug(
                             'bluepy_ble received complete msg: {}'.format(valmsg))
-                        if mill_prot.check_block_crc(valmsg):
+                        if clp.check_block_crc(valmsg):
                             que.put(valmsg)
                         self.chunks = self.chunks[mlen:]
 
@@ -173,11 +173,11 @@ class Transport():
                 gpar = 0
                 for b in msg:
                     gpar = gpar ^ ord(b)
-                msg = msg+mill_prot.hex2(gpar)
+                msg = msg+clp.hex2(gpar)
                 log.debug("blue_ble write: <{}>".format(msg))
                 bts = ""
                 for c in msg:
-                    bo = chr(mill_prot.add_odd_par(c))
+                    bo = chr(clp.add_odd_par(c))
                     bts += bo
                     btsx = bts.encode('latin1')
                 log.debug("Sending: <{}>".format(btsx))
