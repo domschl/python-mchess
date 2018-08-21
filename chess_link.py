@@ -13,25 +13,16 @@ import copy
 
 import chess_link_protocol as clp
 
-try:
-    import chess
-    import chess.uci
-    chess_support = True
-except:
-    chess_support = False
 
-
-class MillenniumChess:
+class ChessLink:
     def __init__(self, appque):
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
-                       "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
-        self.transports = {'Darwin': ['millcon_usb'], 'Linux': [
-            'millcon_bluepy_ble', 'millcon_usb'], 'Windows': ['millcon_usb']}  #
-        # 'millcon_usb'], 'Windows': ['millcon_usb']}  #
+        self.transports = {'Darwin': ['chess_link_usb'], 'Linux': [
+            'chess_link_bluepy', 'chess_link_usb'], 'Windows': ['chess_link_usb']}
 
-        self.log = logging.getLogger('Millennium')
-        self.log.debug("Millennium starting")
+        self.log = logging.getLogger('ChessLink')
+        self.log.debug("Chess Link starting")
         self.WHITE = 0
         self.BLACK = 1
         self.turn = self.WHITE
@@ -67,7 +58,7 @@ class MillenniumChess:
         self.event_thread.start()
 
         try:
-            with open("millennium_config.json", "r") as f:
+            with open("chess_link_config.json", "r") as f:
                 self.mill_config = json.load(f)
                 if 'orientation' not in self.mill_config:
                     self.mill_config['orientation'] = True
@@ -127,27 +118,27 @@ class MillenniumChess:
                 if os.geteuid() == 0:
                     self.log.warning(
                         'Do not run as root, once intial BLE scan is done.')
-            self.log.debug('Connecting to Millennium board via {} at {}'.format(
+            self.log.debug('Connecting to Chess Link via {} at {}'.format(
                 self.mill_config['transport'], self.mill_config['address']))
             self.connected = self.trans.open_mt(self.mill_config['address'])
             if self.connected is True:
-                self.log.info('Connected to Millennium board via {} at {}'.format(
+                self.log.info('Connected to Chess Link via {} at {}'.format(
                     self.mill_config['transport'], self.mill_config['address']))
             else:
-                self.log.error('Connection to Millennium board via {} at {} FAILED.'.format(
+                self.log.error('Connection to Chess Link via {} at {} FAILED.'.format(
                     self.mill_config['transport'], self.mill_config['address']))
 
     def write_configuration(self):
         self.mill_config['orientation'] = self.orientation
         try:
-            with open("millennium_config.json", "w") as f:
+            with open("chess_link_config.json", "w") as f:
                 json.dump(self.mill_config, f)
         except Exception as e:
             self.log.error("Failed to save default configuration {} to {}: {}".format(
-                self.mill_config, "millennium_config.json", e))
+                self.mill_config, "chess_link_config.json", e))
 
     def event_worker_thread(self, que):
-        self.log.debug('Millennium worker thread started.')
+        self.log.debug('Chess Link worker thread started.')
         while self.thread_active:
             if self.trque.empty() is False:
                 msg = self.trque.get()
@@ -337,7 +328,7 @@ class MillenniumChess:
             self.trans.write_mt(cmd)
         else:
             self.log.warning(
-                "Not connected to Millennium board.")
+                "Not connected to Chess Link.")
 
     def show_delta(self, pos1, pos2, freq=0x20, ontime1=0x0f, ontime2=0xf0):
         dpos = [[0 for x in range(8)] for y in range(8)]
@@ -380,14 +371,14 @@ class MillenniumChess:
             self.trans.write_mt(cmd)
         else:
             self.log.warning(
-                "Not connected to Millennium board.")
+                "Not connected to Chess Link.")
 
     def set_led_off(self):
         if self.connected is True:
             self.trans.write_mt("X")
         else:
             self.log.warning(
-                "Not connected to Millennium board.")
+                "Not connected to Chess Link.")
 
     def get_debounce(self):
         cmd = "R"+clp.hex2(2)
@@ -395,7 +386,7 @@ class MillenniumChess:
             self.trans.write_mt(cmd)
         else:
             self.log.warning(
-                "Not connected to Millennium board.")
+                "Not connected to Chess Link.")
 
     def set_debounce(self, count):
         cmd = "W02"
@@ -414,7 +405,7 @@ class MillenniumChess:
             self.trans.write_mt(cmd)
         else:
             self.log.warning(
-                "Not connected to Millennium board.")
+                "Not connected to Chess Link.")
 
     def set_led_brightness(self, level=1.0):
         cmd = "W04"
@@ -434,7 +425,7 @@ class MillenniumChess:
             self.trans.write_mt(cmd)
         else:
             self.log.warning(
-                "Not connected to Millennium board.")
+                "Not connected to Chess Link.")
 
     # default is scan every 40.96 ms, 24.4 scans per second.
     def set_scan_time_ms(self, scan_ms=41):
@@ -534,52 +525,6 @@ class MillenniumChess:
             fi += 1
         return position
 
-    def print_position_ascii(self, position, col, use_unicode_chess_figures=True, cable_pos=True, move_stack=[]):
-        if cable_pos is True:
-            fil = "  "
-        else:
-            fil = ""
-        if move_stack == []:
-            move_stack = ["" for _ in range(11)]
-        print(
-            "{}  +------------------------+     {}".format(fil, move_stack[0]))
-        for y in range(8):
-            prf = ""
-            pof = "  "
-            if cable_pos is True:
-                prf = fil
-                if y == 4:
-                    if self.orientation == False:
-                        prf = "=="
-                    else:
-                        pof = "=="
-
-            print("{}{} |".format(prf, 8-y), end="")
-            for x in range(8):
-                f = position[7-y][x]
-                if use_unicode_chess_figures is True:
-                    if (x+y) % 2 == 0:
-                        f = f*-1
-                c = '?'
-                for i in range(len(self.figrep['int'])):
-                    if self.figrep['int'][i] == f:
-                        if use_unicode_chess_figures is True:
-                            c = self.figrep['unic'][i]
-                        else:
-                            c = self.figrep['ascii'][i]
-                            if c == '.':
-                                c = ' '
-                        break
-                if (x+y) % 2 == 0:
-                    print("\033[7m {} \033[m".format(c), end="")
-                else:
-                    print(" {} ".format(c), end='')
-            print("|{}   {}".format(pof, move_stack[y+1]))
-        print(
-            "{}  +------------------------+     {}".format(fil, move_stack[9]))
-        print("{}    A  B  C  D  E  F  G  H       {}".format(
-            fil, move_stack[10]))
-
     def _open_transport(self, transport):
         try:
             tri = importlib.import_module(transport)
@@ -601,10 +546,10 @@ class MillenniumChess:
         if self.connected is True:
             self.trans.write_mt("T")
             self.log.warning(
-                "Millennium board reset initiated, will take 3 secs.")
+                "Chess Link reset initiated, will take 3 secs.")
         else:
             self.log.warning(
-                "Not connected to Millennium board, can't reset.")
+                "Not connected to Chess Link, can't reset.")
         return '?'
 
     def get_version(self):
@@ -612,7 +557,7 @@ class MillenniumChess:
             self.trans.write_mt("V")
         else:
             self.log.warning(
-                "Not connected to Millennium board, can't get version.")
+                "Not connected to Chess Link, can't get version.")
         return '?'
 
     def get_position(self):
@@ -620,7 +565,7 @@ class MillenniumChess:
             self.trans.write_mt("S")
         else:
             self.log.warning(
-                "Not connected to Millennium board, can't get position.")
+                "Not connected to Chess Link, can't get position.")
         return '?'
 
     def set_orientation(self, orientation):
