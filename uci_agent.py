@@ -1,4 +1,15 @@
-def load_engines(self):
+import logging
+import queue
+import json
+import chess.uci
+
+
+class UciAgent:
+    def __init__(self, appque):
+        self.log = logging.getLogger("UciAgent")
+        self.appque = appque
+
+    def load_engines(self):
         with open('uci_engines.json', 'r') as f:
             self.engines = json.load(f)
             logging.debug(self.engines)

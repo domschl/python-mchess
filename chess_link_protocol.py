@@ -7,7 +7,7 @@ protocol_replies = {'v': 7, 's': 67, 'l': 3, 'x': 3, 'w': 7, 'r': 7}
 
 
 def add_odd_par(b):
-    """ The chess link protocol is 7-Bit ASCII. This adds an odd-parity-bit"""
+    """ The chess link protocol is 7-Bit ASCII. This adds an odd-parity-bit to an ASCII char"""
     byte = ord(b) & 127
     par = 1
     for _ in range(7):
@@ -15,7 +15,6 @@ def add_odd_par(b):
         byte = byte >> 1
         par = par ^ bit
     if par == 1:
-        # byte = ord(b) & 127
         byte = ord(b) | 128
     else:
         byte = ord(b) & 127

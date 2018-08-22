@@ -1,3 +1,14 @@
+import logging
+import chess
+import json
+import queue
+
+import chess
+import chess.uci
+
+from chess_link_agent import ChessLinkAgent
+from terminal_agent import TerminalAgent
+from uci_agent import UciAgent
 
 
 def write_preferences(prefs):
@@ -9,9 +20,17 @@ def write_preferences(prefs):
 
 
 if __name__ == '__main__':
-    import chess
-    import chess.uci
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
 
+    appque = queue.Queue()
+
+    cla = ChessLinkAgent(appque)
+    ta = TerminalAgent(appque)
+    ua = UciAgent(appque)
+
+    # brd = chess.Board()
+"""
     try:
         with open("preferences.json", "r") as f:
             prefs = json.load(f)
@@ -26,18 +45,6 @@ if __name__ == '__main__':
     if 'max_ply' not in prefs:
         prefs['max_ply'] = 8
         write_preferences(prefs)
-
-    if platform.system().lower() == 'windows':
-        from ctypes import windll, c_int, byref
-        stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
-        mode = c_int(0)
-        windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
-        mode = c_int(mode.value | 4)
-        windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
-
-    logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
-    appque = queue.Queue()
 
     bhlp = ChessBoardHelper(appque)
 
@@ -284,3 +291,4 @@ if __name__ == '__main__':
                     brd.get_position()
             else:
                 time.sleep(0.1)
+"""

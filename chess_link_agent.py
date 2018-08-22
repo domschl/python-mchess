@@ -1,4 +1,5 @@
 import logging
+import queue
 import chess
 import chess_link as cl
 

@@ -1,6 +1,38 @@
+import logging
+import time
+import sys
+import platform
+import threading
+import queue
+
+import chess
+
+
+class TerminalAgent:
+    def __init__(self, appque):
+        self.log = logging.getLogger("UciAgent")
+        self.appque = appque
+        self.orientation = True
+
+        self.kbd_moves = []
+        self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
+                       "pythc": [(chess.PAWN, chess.WHITE), (chess.KNIGHT, chess.WHITE), (chess.BISHOP, chess.WHITE), (chess.ROOK, chess.WHITE), (chess.QUEEN, chess.WHITE), (chess.KING, chess.WHITE),
+                                 (chess.PAWN, chess.BLACK), (chess.KNIGHT, chess.BLACK), (chess.BISHOP, chess.BLACK), (chess.ROOK, chess.BLACK), (chess.QUEEN, chess.BLACK), (chess.KING, chess.BLACK)],
+                       "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
+                       "ascii": "PNBRQK.pnbrqk"}
+        self.chesssym = {"unic": ["-", "×", "†", "‡", "½"],
+                         "ascii": ["-", "x", "+", "#", "1/2"]}
+
+        # TODO: this seems to set windows terminal to Unicode. There should be a better way.
+        if platform.system().lower() == 'windows':
+            from ctypes import windll, c_int, byref
+            stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
+            mode = c_int(0)
+            windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
+            mode = c_int(mode.value | 4)
+            windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
 
     def print_position_ascii(self, position, col, use_unicode_chess_figures=True, cable_pos=True, move_stack=[]):
-                       "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
         if cable_pos is True:
             fil = "  "
         else:
@@ -45,15 +77,6 @@
             "{}  +------------------------+     {}".format(fil, move_stack[9]))
         print("{}    A  B  C  D  E  F  G  H       {}".format(
             fil, move_stack[10]))
-
-        self.kbd_moves = []
-        self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
-                       "pythc": [(chess.PAWN, chess.WHITE), (chess.KNIGHT, chess.WHITE), (chess.BISHOP, chess.WHITE), (chess.ROOK, chess.WHITE), (chess.QUEEN, chess.WHITE), (chess.KING, chess.WHITE),
-                                 (chess.PAWN, chess.BLACK), (chess.KNIGHT, chess.BLACK), (chess.BISHOP, chess.BLACK), (chess.ROOK, chess.BLACK), (chess.QUEEN, chess.BLACK), (chess.KING, chess.BLACK)],
-                       "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
-                       "ascii": "PNBRQK.pnbrqk"}
-        self.chesssym = {"unic": ["-", "×", "†", "‡", "½"],
-                         "ascii": ["-", "x", "+", "#", "1/2"]}
 
     def ascii_move_stack(self, cbrd, score, use_unicode_chess_figures=True, lines=11):
         ams = ["" for _ in range(11)]
@@ -126,8 +149,7 @@
 
         return ams
 
-
-def set_keyboard_valid(self, vals):
+    def set_keyboard_valid(self, vals):
         self.kbd_moves = []
         if vals != None:
             for v in vals:
