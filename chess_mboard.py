@@ -2,6 +2,7 @@ import logging
 import chess
 import json
 import queue
+import time
 
 import chess
 import chess.uci
@@ -29,7 +30,22 @@ if __name__ == '__main__':
     ta = TerminalAgent(appque)
     ua = UciAgent(appque)
 
-    # brd = chess.Board()
+    modes = ("analysis", "setup", "player-engine",
+             "engine-player", "engine-engine", "player-player")
+
+    mode = "player-engine"
+    board = chess.Board()
+
+    while True:
+        if appque.empty() is False:
+            msg = appque.get()
+            appque.task_done()
+            logging.debug("App received msg: {}".format(msg))
+
+        else:
+            time.sleep(0.05)
+
+
 """
     try:
         with open("preferences.json", "r") as f:
