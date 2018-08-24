@@ -149,7 +149,7 @@ class TerminalAgent:
 
         return ams
 
-    def set_keyboard_valid(self, vals):
+    def set_valid_moves(self, vals):
         self.kbd_moves = []
         if vals != None:
             for v in vals:

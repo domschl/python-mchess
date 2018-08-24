@@ -9,11 +9,32 @@ class UciAgent:
         self.log = logging.getLogger("UciAgent")
         self.appque = appque
 
-    def load_engines(self):
-        with open('uci_engines.json', 'r') as f:
-            self.engines = json.load(f)
-            logging.debug(self.engines)
-            return self.engines
+        try:
+            with open('uci_engines.json', 'r') as f:
+                self.engines = json.load(f)
+                logging.debug(self.engines)
+        except Exception as e:
+            logging.error("Can't load uci_engines.json: {}".format(e))
+            return
+
+        self.log.debug('{} engines loaded.'.format(len(self.engines)))
+        if len(self.engines['engines']) == 0:
+            logging.error("No engine defined! Check uci_engines.json.")
+
+        engine_no = 0
+        if 'default-engine' in self.engines:
+            engine_no = self.engines['default-engine']
+            if engine_no > len(self.engines['engines']):
+                engine_no = 0
+        engine = chess.uci.popen_engine(
+            self.engines['engines'][engine_no]['path'])
+        logging.info('Loading engine {}.'.format(
+            self.engines['engines'][engine_no]['name']))
+        self.uci_handler(engine)
+        engine.uci()
+        # TODO: uci options
+        engine.isready()
+        self.active = True
 
     class UciHandler(chess.uci.InfoHandler):
         def __init__(self):

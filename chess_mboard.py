@@ -3,6 +3,7 @@ import chess
 import json
 import queue
 import time
+from enum import Enum
 
 import chess
 import chess.uci
@@ -20,6 +21,25 @@ def write_preferences(prefs):
         logging.error("Failed to write preferences.json, {}".format(e))
 
 
+def short_fen(fen):
+    i = fen.find(' ')
+    if i == -1:
+        logging.error(
+            'Invalid fen position <{}> in short_fen'.format(fen))
+        return None
+    else:
+        return fen[:i]
+
+
+def valid_moves(cbrd):
+    vals = {}
+    for mv in cbrd.legal_moves:
+        cbrd.push(mv)
+        vals[short_fen(cbrd.fen())] = mv.uci()
+        cbrd.pop()
+    return vals
+
+
 if __name__ == '__main__':
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
@@ -33,10 +53,32 @@ if __name__ == '__main__':
     modes = ("analysis", "setup", "player-engine",
              "engine-player", "engine-engine", "player-player")
 
+    class States(Enum):
+        IDLE_W = 0
+        BUSY_W = 1
+        IDLE_B = 2
+        BUSY_B = 3
+
     mode = "player-engine"
+    player_w = [ta, cla]
+    player_b = [ua]
     board = chess.Board()
+    state = States.IDLE_W
 
     while True:
+        if state == States.IDLE_W:
+            val = valid_moves(board)
+            for agent in player_w:
+                setm = getattr(agent, "set_valid_moves", None)
+                if callable(setm):
+                    agent.set_valid_moves(val)
+            state = States.BUSY_W
+        else:
+            for agent in player_w:
+                setm = getattr(agent, "set_valid_moves", None)
+                if callable(setm):
+                    agent.set_valid_moves(None)
+
         if appque.empty() is False:
             msg = appque.get()
             appque.task_done()
@@ -64,24 +106,6 @@ if __name__ == '__main__':
 
     bhlp = ChessBoardHelper(appque)
 
-    bhlp.load_engines()
-    logging.debug('{} engines loaded.'.format(len(bhlp.engines)))
-    if len(bhlp.engines) == 0:
-        logging.error("No engine defined! Check uci_engines.json.")
-        exit(-1)
-
-    engine_no = 0
-    if 'default-engine' in bhlp.engines:
-        engine_no = bhlp.engines['default-engine']
-        if engine_no > len(bhlp.engines['engines']):
-            engine_no = 0
-    engine = chess.uci.popen_engine(bhlp.engines['engines'][engine_no]['path'])
-    logging.info('Loading engine {}.'.format(
-        bhlp.engines['engines'][engine_no]['name']))
-    engine.uci()
-    # options
-    engine.isready()
-    bhlp.uci_handler(engine)
 
     if brd.connected is True:
         brd.get_version()

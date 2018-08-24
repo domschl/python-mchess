@@ -443,6 +443,7 @@ class ChessLink:
             self.log.debug(
                 "Setting scan_ms intervall to {} -> {}ms ({} scans per sec)".format(iscans, scan_ms, 1000.0/scan_ms))
 
+    # TODO: move this?
     def short_fen(self, fen):
         i = fen.find(' ')
         if i == -1:

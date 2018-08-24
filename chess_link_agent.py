@@ -10,15 +10,6 @@ class ChessLinkAgent:
         self.log = logging.getLogger('ChessLinkAgent')
         self.cl_brd = cl.ChessLink(appque)
 
-    def valid_moves(self, cbrd):
-        vals = {}
-        for mv in cbrd.legal_moves:
-            cbrd.push(mv)
-            vals[self.cl_brd.short_fen(cbrd.fen())] = mv.uci()
-            cbrd.pop()
-        logging.debug("valid moves: {}".format(vals))
-        return vals
-
     def variant_to_positions(self, cbrd, variant, plys):
         pos = []
         mvs = len(variant)
@@ -45,3 +36,6 @@ class ChessLinkAgent:
             plys = 4
         pos = self.variant_to_positions(cbrd, variant, plys)
         self.cl_brd.show_deltas(pos, freq)
+
+    def set_valid_moves(self, val):
+        self.log.error("Not implemented.")
