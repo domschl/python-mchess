@@ -47,7 +47,7 @@ class Transport():
             return None
 
         devs = sorted(devices, key=lambda x: x.rssi, reverse=True)
-        print("Pre-Sort:")
+        print("Sorted:")
         for b in devs:
             self.log.debug('sorted by rssi {} {}'.format(b.addr, b.rssi))
 
@@ -57,7 +57,7 @@ class Transport():
             for (adtype, desc, value) in bledev.getScanData():
                 self.log.debug("  {} ({}) = {}".format(desc, adtype, value))
                 if desc == "Complete Local Name":
-                    if "clpNNIUM CHESS" in value:
+                    if "MILLENNIUM CHESS" in value:
                         self.log.info(
                             "Autodetected Millennium Chess Link board at Bluetooth LE address: {}, signal strength (rssi): {}".format(
                                 bledev.addr, bledev.rssi))
@@ -88,6 +88,8 @@ class Transport():
         return self.init
 
     def worker_thread(self, log, address, wrque, que):
+        mil = None
+
         class PeriDelegate(DefaultDelegate):
             def __init__(self, log, que):
                 self.log = log
@@ -121,22 +123,28 @@ class Transport():
         rx = None
         tx = None
         log.debug("bluepy_ble open_mt {}".format(address))
-        time.sleep(0.1)
+        # time.sleep(0.1)
         try:
+            log.debug("per1")
             mil = Peripheral(address)
+            log.debug("per2")
         except Exception as e:
+            log.debug("per3")
             log.error(
                 'Failed to create ble peripheral at {}, {}'.format(address, e))
             que.put('error')
-            while True:
-                time.sleep(1)
-        time.sleep(0.1)
+            return
+#            while True:
+#                time.sleep(1)
+        # time.sleep(0.1)
+        log.debug('Peripheral generated {}'.format(address))
         try:
             services = mil.getServices()
         except Exception as e:
             log.error(
                 'Failed to enumerate services for {}, {}'.format(address, e))
-        time.sleep(0.1)
+        # time.sleep(0.1)
+        log.debug("services: {}".format(len(services)))
         for ser in services:
             log.debug('Service: {}'.format(ser))
             chrs = ser.getCharacteristics()

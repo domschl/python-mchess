@@ -42,11 +42,12 @@ def valid_moves(cbrd):
 
 if __name__ == '__main__':
     logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
+        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
 
     appque = queue.Queue()
 
     cla = ChessLinkAgent(appque)
+    time.sleep(1.0)
     ta = TerminalAgent(appque)
     ua = UciAgent(appque)
 
@@ -54,30 +55,37 @@ if __name__ == '__main__':
              "engine-player", "engine-engine", "player-player")
 
     class States(Enum):
-        IDLE_W = 0
-        BUSY_W = 1
-        IDLE_B = 2
-        BUSY_B = 3
+        IDLE = 0
+        BUSY = 1
 
     mode = "player-engine"
     player_w = [ta, cla]
     player_b = [ua]
     board = chess.Board()
-    state = States.IDLE_W
+    state = States.IDLE
 
     while True:
-        if state == States.IDLE_W:
+        if state == States.IDLE:
+            if board.turn == chess.WHITE:
+                player = player_w
+            else:
+                player = player_b
             val = valid_moves(board)
-            for agent in player_w:
+            for agent in player:
                 setm = getattr(agent, "set_valid_moves", None)
                 if callable(setm):
-                    agent.set_valid_moves(val)
-            state = States.BUSY_W
+                    agent.set_valid_moves(board, val)
+                gom = getattr(agent, "go", None)
+                if callable(gom):
+                    agent.go(board)
+                    break
+            state = States.BUSY
         else:
-            for agent in player_w:
-                setm = getattr(agent, "set_valid_moves", None)
-                if callable(setm):
-                    agent.set_valid_moves(None)
+            pass
+            # for agent in player_w:
+            #     setm = getattr(agent, "set_valid_moves", None)
+            #     if callable(setm):
+            #         agent.set_valid_moves(None)
 
         if appque.empty() is False:
             msg = appque.get()

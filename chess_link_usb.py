@@ -188,7 +188,7 @@ class Transport():
                         cmd = ""
 
     def get_name(self):
-        return "millcon_usb"
+        return "chess_link_usb"
 
     def is_init(self):
         self.log.debug("Ask for init")
