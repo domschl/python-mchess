@@ -11,7 +11,9 @@ protocol_replies = {'v': 7, 's': 67, 'l': 3, 'x': 3, 'w': 7, 'r': 7}
 
 
 def add_odd_par(b):
-    """ The chess link protocol is 7-Bit ASCII. This adds an odd-parity-bit to an ASCII char
+    """
+    The chess link protocol is 7-Bit ASCII. This adds an odd-parity-bit to an ASCII char
+
     :param b: an ASCII character (0..127)
     :returns: a byte (0..255) with odd parity in most significant bit.
     """
@@ -29,7 +31,9 @@ def add_odd_par(b):
 
 
 def hexd(digit):
-    """return a hex digit '0'..'F' for an integer 0..15
+    """
+    Returns a hex digit '0'..'F' for an integer 0..15
+
     :param digit: integer 0..15
     :return: an ASCII hex character '0'..'F'
     """
@@ -40,7 +44,9 @@ def hexd(digit):
 
 
 def hex2(num):
-    """ return a 2-digit hex code 00..FF for an uint_8 integer 0..255"""
+    """
+    Returns a 2-digit hex code 00..FF for an uint_8 integer 0..255
+    """
     d1 = num//16
     d2 = num % 16
     s = hexd(d1)+hexd(d2)
@@ -48,9 +54,11 @@ def hex2(num):
 
 
 def check_block_crc(msg):
-    """chess link messages consist of 7-bit-ASCII characters with odd parity. At the end of each
+    """
+    Chess link messages consist of 7-bit-ASCII characters with odd parity. At the end of each
     message, an additional block-parity is added. Valid chess link messages must have correct odd
-    parity for each character and a valid block parity at the end."""
+    parity for each character and a valid block parity at the end.
+    """
     if len(msg) > 2:
         gpar = 0
         for b in msg[:-2]:

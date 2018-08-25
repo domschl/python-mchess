@@ -15,7 +15,6 @@ Welcome to mchess's documentation!
 
 .. currentmodule:: chess_link_protocol
 
-
 Indices and tables
 ==================
 
