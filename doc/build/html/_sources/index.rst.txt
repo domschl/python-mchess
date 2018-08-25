@@ -10,7 +10,8 @@ Welcome to mchess's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+.. automodule:: chess_link
+    :members:
 
 Indices and tables
 ==================
