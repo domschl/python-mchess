@@ -1,9 +1,11 @@
 
-"""Helper functions for the Chess Link protocol for character-based odd-parity and 
+"""
+Helper functions for the Chess Link protocol for character-based odd-parity and 
 message-block-parity.
 
 The chess link protocol sends ASCII messages. Each ASCII character gets an additional
-odd-parity-bit. Each block of ASCII+odd-parity bytes gets an additional block parity."""
+odd-parity-bit. Each block of ASCII+odd-parity bytes gets an additional block parity.
+"""
 
 import logging
 
