@@ -47,7 +47,7 @@ def hexd(digit):
 
 def hex2(num):
     """
-    Returns a 2-digit hex code 00..FF for an uint_8 integer 0..255
+    Returns a 2-digit hex code '00'..FF for an uint_8 integer 0..255
     """
     d1 = num//16
     d2 = num % 16
