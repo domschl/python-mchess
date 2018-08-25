@@ -15,6 +15,7 @@ class TerminalAgent:
         self.appque = appque
         self.orientation = True
         self.active = False
+        self.max_plies = 6
 
         self.kbd_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -39,103 +40,48 @@ class TerminalAgent:
     def agent_ready(self):
         return self.active
 
-    def position_to_text(self, position, col, use_unicode_chess_figures=True, cable_pos=True):
-        if cable_pos is True:
-            fil = "  "
-        else:
-            fil = ""
+    def position_to_text(self, board, use_unicode_chess_figures=True):
         tpos = []
         tpos.append(
-            "{}  +------------------------+".format(fil))
-        for y in range(8):
-            prf = ""
-            pof = "  "
-            if cable_pos is True:
-                prf = fil
-                if y == 4:
-                    if self.orientation == False:
-                        prf = "=="
-                    else:
-                        pof = "=="
-
-            ti = "{}{} |".format(prf, 8-y)
+            "  +------------------------+")
+        for y in reversed(range(8)):
+            ti = "{} |".format(y+1)
             for x in range(8):
-                f = position[7-y][x]
-                if use_unicode_chess_figures is True:
-                    if (x+y) % 2 == 0:
-                        f = f*-1
+                f = board.piece_at(chess.square(x, y))
+                if (x+y) % 2 == 0 and use_unicode_chess_figures is True:
+                    invinv = False
+                else:
+                    invinv = True
                 c = '?'
-                for i in range(len(self.figrep['int'])):
-                    if self.figrep['int'][i] == f:
-                        if use_unicode_chess_figures is True:
-                            c = self.figrep['unic'][i]
-                        else:
-                            c = self.figrep['ascii'][i]
-                            if c == '.':
-                                c = ' '
-                        break
+                # for i in range(len(self.figrep['int'])):
+                if f == None:
+                    c = ' '
+                else:
+                    if use_unicode_chess_figures is True:
+                        c = f.unicode_symbol(invert_color=invinv)
+                    else:
+                        c = f.symbol()
+                    # if ((self.figrep['pythc'][i][1] == f.color) == inv) and self.figrep['pythc'][i][0] == f.piece_type:
+                    #     if use_unicode_chess_figures is True:
+                    #         c = self.figrep['unic'][i]
+                    #     else:
+                    #         c = self.figrep['ascii'][i]
+                    # break
                 if (x+y) % 2 == 0:
                     ti += "\033[7m {} \033[m".format(c)
                 else:
                     ti += " {} ".format(c)
-            ti += "|{}".format(pof)
+            ti += "|"
             tpos.append(ti)
         tpos.append(
-            "{}  +------------------------+".format(fil))
-        tpos.append("{}    A  B  C  D  E  F  G  H".format(
-            fil))
+            "  +------------------------+")
+        tpos.append("    A  B  C  D  E  F  G  H  ")
         return tpos
 
-    def print_position_ascii(self, position, col, use_unicode_chess_figures=True, cable_pos=True, move_stack=[]):
-        if cable_pos is True:
-            fil = "  "
-        else:
-            fil = ""
-        if move_stack == []:
-            move_stack = ["" for _ in range(11)]
-        print(
-            "{}  +------------------------+     {}".format(fil, move_stack[0]))
-        for y in range(8):
-            prf = ""
-            pof = "  "
-            if cable_pos is True:
-                prf = fil
-                if y == 4:
-                    if self.orientation == False:
-                        prf = "=="
-                    else:
-                        pof = "=="
-
-            print("{}{} |".format(prf, 8-y), end="")
-            for x in range(8):
-                f = position[7-y][x]
-                if use_unicode_chess_figures is True:
-                    if (x+y) % 2 == 0:
-                        f = f*-1
-                c = '?'
-                for i in range(len(self.figrep['int'])):
-                    if self.figrep['int'][i] == f:
-                        if use_unicode_chess_figures is True:
-                            c = self.figrep['unic'][i]
-                        else:
-                            c = self.figrep['ascii'][i]
-                            if c == '.':
-                                c = ' '
-                        break
-                if (x+y) % 2 == 0:
-                    print("\033[7m {} \033[m".format(c), end="")
-                else:
-                    print(" {} ".format(c), end='')
-            print("|{}   {}".format(pof, move_stack[y+1]))
-        print(
-            "{}  +------------------------+     {}".format(fil, move_stack[9]))
-        print("{}    A  B  C  D  E  F  G  H       {}".format(
-            fil, move_stack[10]))
-
-    def ascii_move_stack(self, cbrd, score, use_unicode_chess_figures=True, lines=11):
+    def moves_to_text(self, board, score=None, use_unicode_chess_figures=True, lines=11):
         ams = ["" for _ in range(11)]
-        mc = len(cbrd.move_stack)
-        if cbrd.turn == chess.BLACK:
+        mc = len(board.move_stack)
+        if board.turn == chess.BLACK:
             mmc = 2*lines-1
         else:
             mmc = 2*lines
@@ -147,21 +93,21 @@ class TerminalAgent:
         for i in range(mc):
             if amsi < 0:
                 logging.error("bad amsi index! {}".format(amsi))
-            if cbrd.is_checkmate() is True:
+            if board.is_checkmate() is True:
                 if use_unicode_chess_figures is True:
                     chk = self.chesssym['unic'][3]
                 else:
                     chk = self.chesssym['ascii'][3]
-            elif cbrd.is_check() is True:
+            elif board.is_check() is True:
                 if use_unicode_chess_figures is True:
                     chk = self.chesssym['unic'][2]
                 else:
                     chk = self.chesssym['ascii'][2]
             else:
                 chk = ""
-            l1 = len(cbrd.piece_map())
-            mv = cbrd.pop()
-            l2 = len(cbrd.piece_map())
+            l1 = len(board.piece_map())
+            mv = board.pop()
+            l2 = len(board.piece_map())
             move_store.append(mv)
             if l1 != l2:  # capture move, piece count changed :-/
                 if use_unicode_chess_figures is True:
@@ -174,34 +120,63 @@ class TerminalAgent:
                 else:
                     sep = self.chesssym['ascii'][0]
             if mv.promotion is not None:
-                fig = chess.Piece(chess.PAWN, cbrd.piece_at(
+                fig = chess.Piece(chess.PAWN, board.piece_at(
                     mv.from_square).color).unicode_symbol(invert_color=True)
                 if use_unicode_chess_figures is True:
-                    pro = chess.Piece(mv.promotion, cbrd.piece_at(
+                    pro = chess.Piece(mv.promotion, board.piece_at(
                         mv.from_square).color).unicode_symbol(invert_color=True)
                 else:
                     pro = mv.promotion.symbol()
             else:
                 pro = ""
                 if use_unicode_chess_figures is True:
-                    fig = cbrd.piece_at(mv.from_square).unicode_symbol(
+                    fig = board.piece_at(mv.from_square).unicode_symbol(
                         invert_color=True)
                 else:
-                    fig = cbrd.piece_at(mv.from_square).symbol()
+                    fig = board.piece_at(mv.from_square).symbol()
             move = '{:10s}'.format(
                 fig+" "+chess.SQUARE_NAMES[mv.from_square]+sep+chess.SQUARE_NAMES[mv.to_square]+pro+chk)
-            if amsi == lines-1 and score != '':
+            if amsi == lines-1 and score != None:
                 move = '{} ({})'.format(move, score)
                 score = ''
 
             ams[amsi] = move + ams[amsi]
-            if cbrd.turn == chess.WHITE:
+            if board.turn == chess.WHITE:
+                ams[amsi] = "{:3d}. ".format(board.fullmove_number) + ams[amsi]
                 amsi = amsi-1
 
         for i in reversed(range(len(move_store))):
-            cbrd.push(move_store[i])
+            board.push(move_store[i])
 
         return ams
+
+    def display_board(self, board):
+        txa = self.position_to_text(board)
+        ams = self.moves_to_text(board, lines=len(txa))
+        for i in range(len(txa)):
+            print('{}  {}'.format(txa[i], ams[i]))
+
+    def display_info(self, board, info):
+        st = '['
+        if 'score' in info:
+            st += 'Eval: {} '.format(info['score'])
+        if 'nps' in info:
+            st += 'Nps: {} '.format(info['nps'])
+        if 'depth' in info:
+            d = 'Depth: {}'.format(info['depth'])
+            if 'seldepth' in info:
+                d += '/{} '.format(info['seldepth'])
+            else:
+                d += ' '
+            st += d
+        if 'variant' in info:
+            moves = info['variant']
+            mvs = len(moves)
+            if mvs > self.max_plies:
+                mvs = self.max_plies
+            for i in range(mvs):
+                st += moves[i].uci()+' '
+        print(st, end='\r')
 
     def set_valid_moves(self, board, vals):
         self.kbd_moves = []
@@ -273,7 +248,7 @@ class TerminalAgent:
                 elif cmd == 'w':
                     appque.put({'write_prefs': ''})
                 elif cmd[:2] == 'h ':
-                    log.debug('show analysis for n plys (max 4) on board.')
+                    log.debug('show analysis for n plies (max 4) on board.')
                     ply = int(cmd[2:])
                     if ply < 0:
                         ply = 0
@@ -297,7 +272,7 @@ class TerminalAgent:
                     log.info('gb - go, force black move')
                     log.info('h <ply> - show hints for <ply> levels on board')
                     log.info('l <n> - level: engine think-time in sec (float)')
-                    log.info('m <n> - max plys shown during look-ahead')
+                    log.info('m <n> - max plies shown during look-ahead')
                     log.info('n - new game')
                     log.info('p - import eboard position')
                     log.info('s - stop')

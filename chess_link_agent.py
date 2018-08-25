@@ -20,6 +20,7 @@ class ChessLinkAgent:
         self.cl_brd.get_scan_time_ms()
         self.init_position = False
         self.cl_brd.get_position()
+        self.max_plies = 3
 
         self.log.debug("waiting for board position")
         start = time.time()
@@ -36,18 +37,18 @@ class ChessLinkAgent:
     def agent_ready(self):
         return self.init_position
 
-    def variant_to_positions(self, cbrd, variant, plys):
+    def variant_to_positions(self, board, moves, plies):
         pos = []
-        mvs = len(variant)
-        if mvs > plys:
-            mvs = plys
+        mvs = len(moves)
+        if mvs > plies:
+            mvs = plies
 
-        pos.append(self.cl_brd.fen_to_position(cbrd.fen()))
+        pos.append(self.cl_brd.fen_to_position(board.fen()))
         for i in range(mvs):
-            cbrd.push(chess.Move.from_uci(variant[i]))
-            pos.append(self.cl_brd.fen_to_position(cbrd.fen()))
+            board.push(moves[i])
+            pos.append(self.cl_brd.fen_to_position(board.fen()))
         for i in range(mvs):
-            cbrd.pop()
+            board.pop()
         return pos
 
     def color(self, col):
@@ -57,11 +58,16 @@ class ChessLinkAgent:
             col = self.cl_brd.BLACK
         return col
 
-    def visualize_variant(self, cbrd, variant, plys=1, freq=80):
-        if plys > 4:
-            plys = 4
-        pos = self.variant_to_positions(cbrd, variant, plys)
+    def visualize_variant(self, board, moves, plies=1, freq=80):
+        if plies > 4:
+            plies = 4
+        pos = self.variant_to_positions(board, moves, plies)
         self.cl_brd.show_deltas(pos, freq)
+
+    def display_info(self, board, info):
+        if 'variant' in info:
+            self.visualize_variant(
+                board, info['variant'], plies=self.max_plies)
 
     def set_valid_moves(self, board, val):
         if board.turn == chess.WHITE:

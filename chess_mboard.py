@@ -44,10 +44,41 @@ if __name__ == '__main__':
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
 
+    prefs = {}
+    changed_prefs = False
+    try:
+        with open('preferences.json', 'r') as f:
+            prefs = json.load(f)
+    except Exception as e:
+        changed_prefs = True
+        logging.warning(
+            'Failed to read preferences.json, initializing defaults: {}'.format(e))
+
+    if 'think_ms' not in prefs:
+        prefs['think_ms'] = 500
+        changed_prefs = True
+    if 'use_unicode_figures' not in prefs:
+        prefs['use_unicode_figures'] = True
+        changed_prefs = True
+    if 'max_plies_terminal' not in prefs:
+        prefs['max_plies_terminal'] = 6
+        changed_prefs = True
+    if 'max_plies_board' not in prefs:
+        prefs['max_plies_board'] = 3
+        changed_prefs = True
+    if changed_prefs is True:
+        try:
+            with open('preferences.json', 'w') as fw:
+                json.dump(prefs, fw)
+        except Exception as e:
+            logging.error('Failed to save preferences {}'.format(e))
+
     appque = queue.Queue()
 
     cla = ChessLinkAgent(appque)
+    cla.max_plies = prefs['max_plies_board']
     ta = TerminalAgent(appque)
+    ta.max_plies = prefs['max_plies_terminal']
     ua = UciAgent(appque)
 
     modes = ("analysis", "setup", "player-engine",
@@ -64,6 +95,7 @@ if __name__ == '__main__':
     player_b = [ua]
     board = chess.Board()
     state = States.IDLE
+    last_info = 0
 
     ags = ""
     for p in player_w + player_b:
@@ -86,21 +118,17 @@ if __name__ == '__main__':
             for agent in passive_player:
                 setm = getattr(agent, "set_valid_moves", None)
                 if callable(setm):
-                    logging.info(
-                        'Setting valid moves for {}'.format(agent.name))
                     agent.set_valid_moves(board, [])
             val = valid_moves(board)
             for agent in active_player:
                 setm = getattr(agent, "set_valid_moves", None)
                 if callable(setm):
-                    logging.info(
-                        'Setting valid moves for {}'.format(agent.name))
                     agent.set_valid_moves(board, val)
                 gom = getattr(agent, "go", None)
                 if callable(gom):
                     logging.debug(
                         'Initiating GO for agent {}'.format(agent.name))
-                    agent.go(board, 3000)
+                    agent.go(board, prefs['think_ms'])
                     break
             state = States.BUSY
         else:
@@ -113,18 +141,40 @@ if __name__ == '__main__':
         if appque.empty() is False:
             msg = appque.get()
             appque.task_done()
-            logging.info("App received msg: {}".format(msg))
+            logging.debug("App received msg: {}".format(msg))
             if 'new game' in msg:
                 logging.info(
                     "New game initiated by {}".format(msg['actor']))
                 board.reset()
+                txa = ta.position_to_text(
+                    board, use_unicode_chess_figures=True)
+                for t in txa:
+                    print(t)
                 state = States.IDLE
 
             if 'move' in msg:
-                logging.info('Move {} by {}'.format(
-                    msg['move']['uci'], msg['move']['actor']))
+                if 'score' in msg['move']:
+                    sc = msg['move']['score']
+                else:
+                    sc = '?'
+                logging.info('Move {} (ev: {}) by {}'.format(
+                    msg['move']['uci'], sc, msg['move']['actor']))
                 board.push(chess.Move.from_uci(msg['move']['uci']))
+                for agent in player_b+player_w:
+                    disp = getattr(agent, "display_board", None)
+                    if callable(disp):
+                        agent.display_board(board)
                 state = States.IDLE
+
+            if 'curmove' in msg:
+                if time.time()-last_info > 1.0:  # throttle
+                    last_info = time.time()
+                    uci = msg['curmove']['variant']
+                    for agent in player_b+player_w:
+                        dinfo = getattr(agent, "display_info", None)
+                        if callable(dinfo):
+                            agent.display_info(
+                                board, info=msg['curmove'])
 
         else:
             time.sleep(0.05)
