@@ -29,13 +29,17 @@ class UciAgent:
                 engine_no = 0
         engine = chess.uci.popen_engine(
             self.engines['engines'][engine_no]['path'])
-        logging.info('Loading engine {}.'.format(
+        logging.debug('Loading engine {}.'.format(
             self.engines['engines'][engine_no]['name']))
+        self.name = self.engines['engines'][engine_no]['name']
         self.uci_handler(engine)
         engine.uci()
         # TODO: uci options
         engine.isready()
         self.active = True
+
+    def agent_ready(self):
+        return self.active
 
     class UciHandler(chess.uci.InfoHandler):
         def __init__(self):

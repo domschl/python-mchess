@@ -14,7 +14,8 @@ import chess_link_protocol as clp
 
 
 class ChessLink:
-    def __init__(self, appque):
+    def __init__(self, appque, name):
+        self.name = name
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "ascii": "PNBRQK.pnbrqk"}
         self.transports = {'Darwin': ['chess_link_usb'], 'Linux': [
@@ -128,17 +129,14 @@ class ChessLink:
                 self.log.error('Connection to Chess Link via {} at {} FAILED.'.format(
                     self.mill_config['transport'], self.mill_config['address']))
 
-    def position_initialized(self, board_timeout):
+    def position_initialized(self):
         if self.connected is True:
-            start_time = time.time()
+            pos = None
             with self.board_mutex:
                 pos = self.position
-            while time.time()-start_time < board_timeout and pos is None:
-                time.sleep(0.1)
-            if time.time()-start_time >= board_timeout:
-                self.log.error('No position received from board: timeout!')
-                return False
-        return True
+            if pos is not None:
+                return True
+        return False
 
     def write_configuration(self):
         self.mill_config['orientation'] = self.orientation
@@ -219,7 +217,7 @@ class ChessLink:
                             if sfen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
                                 if self.is_new_game is False:
                                     self.is_new_game is True
-                                    cmd = {'new game': '', 'actor': 'eboard',
+                                    cmd = {'new game': '', 'actor': self.name,
                                            'orientation': self.orientation}
                                     self.new_game(position)
                                     self.appque.put(cmd)
@@ -234,7 +232,7 @@ class ChessLink:
                             self.show_delta(
                                 self.reference_position, self.position)
                             # self.print_position_ascii(position)
-                            self.appque.put({'fen': fen, 'actor': 'eboard'})
+                            self.appque.put({'fen': fen, 'actor': self.name})
                             self.check_move(position)
                     if msg[0] == 'v':
                         self.log.debug('got version reply')
@@ -283,7 +281,7 @@ class ChessLink:
         fen = self.short_fen(self.position_to_fen(pos))
         if self.legal_moves is not None and fen in self.legal_moves:
             self.appque.put(
-                {'move': {'uci': self.legal_moves[fen], 'fen': fen, 'actor': 'eboard'}})
+                {'move': {'uci': self.legal_moves[fen], 'fen': fen, 'actor': self.name}})
             self.legal_moves = None
             self.reference_position = pos
             self.set_led_off()

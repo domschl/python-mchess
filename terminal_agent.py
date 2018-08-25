@@ -33,6 +33,9 @@ class TerminalAgent:
             mode = c_int(mode.value | 4)
             windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
 
+    def agent_ready(self):
+        return True
+
     def print_position_ascii(self, position, col, use_unicode_chess_figures=True, cable_pos=True, move_stack=[]):
         if cable_pos is True:
             fil = "  "

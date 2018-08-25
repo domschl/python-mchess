@@ -42,7 +42,7 @@ def valid_moves(cbrd):
 
 if __name__ == '__main__':
     logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
+        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
 
     appque = queue.Queue()
 
@@ -64,6 +64,16 @@ if __name__ == '__main__':
     player_b = [ua]
     board = chess.Board()
     state = States.IDLE
+
+    ags = ""
+    for p in player_w + player_b:
+        if p.agent_ready() is False:
+            logging.error('Failed to initialize agent {}.'.format(p.name))
+            exit(-1)
+        if len(ags) > 0:
+            ags += ", "
+        ags += '"'+p.name+'"'
+    logging.info("Agents {} initialized".format(ags))
 
     while True:
         if state == States.IDLE:
@@ -96,6 +106,8 @@ if __name__ == '__main__':
             msg = appque.get()
             appque.task_done()
             logging.debug("App received msg: {}".format(msg))
+            if 'new_game' in msg:
+                pass
 
         else:
             time.sleep(0.05)

@@ -10,8 +10,8 @@ class ChessLinkAgent:
     def __init__(self, appque, timeout=30):
         self.name = 'ChessLinkAgent'
         self.appque = appque
-        self.log = logging.getLogger('ChessLinkAgent')
-        self.cl_brd = cl.ChessLink(appque)
+        self.log = logging.getLogger(self.name)
+        self.cl_brd = cl.ChessLink(appque, self.name)
 
         self.cl_brd.get_version()
         self.cl_brd.set_debounce(4)
@@ -22,12 +22,19 @@ class ChessLinkAgent:
         self.cl_brd.get_position()
 
         self.log.debug("waiting for board position")
-        self.init_position = self.cl_brd.position_initialized(timeout)
+        start = time.time()
+        while time.time()-start < timeout and self.init_position is False:
+            self.init_position = self.cl_brd.position_initialized()
+            time.sleep(0.1)
+
         if self.init_position is True:
             self.log.debug("board position received, init ok.")
         else:
             self.log.error(
                 "no board position received within timeout {}".format(timeout))
+
+    def agent_ready(self):
+        return self.init_position
 
     def variant_to_positions(self, cbrd, variant, plys):
         pos = []
