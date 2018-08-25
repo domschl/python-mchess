@@ -47,7 +47,6 @@ if __name__ == '__main__':
     appque = queue.Queue()
 
     cla = ChessLinkAgent(appque)
-    time.sleep(1.0)
     ta = TerminalAgent(appque)
     ua = UciAgent(appque)
 
@@ -57,6 +56,8 @@ if __name__ == '__main__':
     class States(Enum):
         IDLE = 0
         BUSY = 1
+
+    time.sleep(10.0)
 
     mode = "player-engine"
     player_w = [ta, cla]

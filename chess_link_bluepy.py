@@ -89,6 +89,7 @@ class Transport():
 
     def worker_thread(self, log, address, wrque, que):
         mil = None
+        message_delta_time = 0.1  # least 0.1 sec between outgoing btle messages
 
         class PeriDelegate(DefaultDelegate):
             def __init__(self, log, que):
@@ -175,8 +176,10 @@ class Transport():
             log.error(
                 'Failed to install peripheral delegate! {}'.format(e))
 
+        time_last_out = time.time()+0.2
+
         while self.worker_thread_active is True:
-            if wrque.empty() is False:
+            if wrque.empty() is False and time.time()-time_last_out > message_delta_time:
                 msg = wrque.get()
                 gpar = 0
                 for b in msg:
@@ -191,6 +194,7 @@ class Transport():
                 log.debug("Sending: <{}>".format(btsx))
                 try:
                     tx.write(btsx, withResponse=True)
+                    time_last_out = time.time()
                 except Exception as e:
                     log.error(
                         "bluepy_ble: failed to write {}: {}".format(msg, e))
