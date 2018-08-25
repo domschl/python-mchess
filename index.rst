@@ -13,7 +13,6 @@ Welcome to mchess's documentation!
 .. automodule:: chess_link
     :members:
 
-.. automodule:: chess_link_protocol
 .. currentmodule:: chess_link_protocol
 
 Indices and tables
