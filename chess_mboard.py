@@ -57,7 +57,7 @@ if __name__ == '__main__':
         IDLE = 0
         BUSY = 1
 
-    time.sleep(10.0)
+    # time.sleep(10.0)
 
     mode = "player-engine"
     player_w = [ta, cla]
@@ -75,9 +75,13 @@ if __name__ == '__main__':
             for agent in player:
                 setm = getattr(agent, "set_valid_moves", None)
                 if callable(setm):
+                    logging.debug(
+                        'Setting valid moves for {}'.format(agent.name))
                     agent.set_valid_moves(board, val)
                 gom = getattr(agent, "go", None)
                 if callable(gom):
+                    logging.debug(
+                        'Initiating GO for agent {}'.format(agent.name))
                     agent.go(board)
                     break
             state = States.BUSY

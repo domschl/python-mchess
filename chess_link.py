@@ -39,6 +39,7 @@ class ChessLink:
             exit(-1)
 
         self.appque = appque
+        self.board_mutex = threading.Lock()
         self.is_new_game = False
         self.trans = None
         self.trque = queue.Queue()  # asyncio.Queue()
@@ -52,7 +53,7 @@ class ChessLink:
 
         self.thread_active = True
         self.event_thread = threading.Thread(
-            target=self.event_worker_thread, args=(self.trque,))
+            target=self.event_worker_thread, args=(self.trque, self.board_mutex))
         self.event_thread.setDaemon(True)
         self.event_thread.start()
 
@@ -127,6 +128,18 @@ class ChessLink:
                 self.log.error('Connection to Chess Link via {} at {} FAILED.'.format(
                     self.mill_config['transport'], self.mill_config['address']))
 
+    def position_initialized(self, board_timeout):
+        if self.connected is True:
+            start_time = time.time()
+            with self.board_mutex:
+                pos = self.position
+            while time.time()-start_time < board_timeout and pos is None:
+                time.sleep(0.1)
+            if time.time()-start_time >= board_timeout:
+                self.log.error('No position received from board: timeout!')
+                return False
+        return True
+
     def write_configuration(self):
         self.mill_config['orientation'] = self.orientation
         try:
@@ -136,7 +149,7 @@ class ChessLink:
             self.log.error("Failed to save default configuration {} to {}: {}".format(
                 self.mill_config, "chess_link_config.json", e))
 
-    def event_worker_thread(self, que):
+    def event_worker_thread(self, que, mutex):
         self.log.debug('Chess Link worker thread started.')
         while self.thread_active:
             if self.trque.empty() is False:
@@ -213,9 +226,11 @@ class ChessLink:
                             else:
                                 self.is_new_game = False
 
-                            self.position = position
-                            if self.reference_position == None:
-                                self.reference_position = position
+                            with mutex:
+                                self.position = copy.deepcopy(position)
+                                if self.reference_position == None:
+                                    self.reference_position = copy.deepcopy(
+                                        position)
                             self.show_delta(
                                 self.reference_position, self.position)
                             # self.print_position_ascii(position)

@@ -10,7 +10,8 @@ import chess
 
 class TerminalAgent:
     def __init__(self, appque):
-        self.log = logging.getLogger("UciAgent")
+        self.name = 'TerminalAgent'
+        self.log = logging.getLogger("TerminalAgent")
         self.appque = appque
         self.orientation = True
 

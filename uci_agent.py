@@ -6,6 +6,7 @@ import chess.uci
 
 class UciAgent:
     def __init__(self, appque):
+        self.name = 'UciAgent'
         self.log = logging.getLogger("UciAgent")
         self.appque = appque
 
