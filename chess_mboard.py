@@ -78,21 +78,29 @@ if __name__ == '__main__':
     while True:
         if state == States.IDLE:
             if board.turn == chess.WHITE:
-                player = player_w
+                active_player = player_w
+                passive_player = player_b
             else:
-                player = player_b
-            val = valid_moves(board)
-            for agent in player:
+                active_player = player_b
+                passive_player = player_w
+            for agent in passive_player:
                 setm = getattr(agent, "set_valid_moves", None)
                 if callable(setm):
-                    logging.debug(
+                    logging.info(
+                        'Setting valid moves for {}'.format(agent.name))
+                    agent.set_valid_moves(board, [])
+            val = valid_moves(board)
+            for agent in active_player:
+                setm = getattr(agent, "set_valid_moves", None)
+                if callable(setm):
+                    logging.info(
                         'Setting valid moves for {}'.format(agent.name))
                     agent.set_valid_moves(board, val)
                 gom = getattr(agent, "go", None)
                 if callable(gom):
                     logging.debug(
                         'Initiating GO for agent {}'.format(agent.name))
-                    agent.go(board)
+                    agent.go(board, 3000)
                     break
             state = States.BUSY
         else:
@@ -105,9 +113,18 @@ if __name__ == '__main__':
         if appque.empty() is False:
             msg = appque.get()
             appque.task_done()
-            logging.debug("App received msg: {}".format(msg))
-            if 'new_game' in msg:
-                pass
+            logging.info("App received msg: {}".format(msg))
+            if 'new game' in msg:
+                logging.info(
+                    "New game initiated by {}".format(msg['actor']))
+                board.reset()
+                state = States.IDLE
+
+            if 'move' in msg:
+                logging.info('Move {} by {}'.format(
+                    msg['move']['uci'], msg['move']['actor']))
+                board.push(chess.Move.from_uci(msg['move']['uci']))
+                state = States.IDLE
 
         else:
             time.sleep(0.05)

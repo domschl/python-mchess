@@ -27,19 +27,28 @@ class UciAgent:
             engine_no = self.engines['default-engine']
             if engine_no > len(self.engines['engines']):
                 engine_no = 0
-        engine = chess.uci.popen_engine(
+        self.engine = chess.uci.popen_engine(
             self.engines['engines'][engine_no]['path'])
         logging.debug('Loading engine {}.'.format(
             self.engines['engines'][engine_no]['name']))
         self.name = self.engines['engines'][engine_no]['name']
-        self.uci_handler(engine)
-        engine.uci()
+        self.uci_handler(self.engine)
+        self.engine.uci()
         # TODO: uci options
-        engine.isready()
+        self.engine.isready()
         self.active = True
 
     def agent_ready(self):
         return self.active
+
+    def go(self, board, mtime):
+        self.engine.position(board)
+        if mtime == 0:
+            self.engine.go(infinite=True, async_callback=True)
+
+        else:
+            self.engine.go(movetime=mtime,
+                           async_callback=True)
 
     class UciHandler(chess.uci.InfoHandler):
         def __init__(self):

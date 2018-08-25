@@ -14,6 +14,7 @@ class TerminalAgent:
         self.log = logging.getLogger("TerminalAgent")
         self.appque = appque
         self.orientation = True
+        self.active = False
 
         self.kbd_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -33,8 +34,57 @@ class TerminalAgent:
             mode = c_int(mode.value | 4)
             windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
 
+        self.keyboard_handler()
+
     def agent_ready(self):
-        return True
+        return self.active
+
+    def position_to_text(self, position, col, use_unicode_chess_figures=True, cable_pos=True):
+        if cable_pos is True:
+            fil = "  "
+        else:
+            fil = ""
+        tpos = []
+        tpos.append(
+            "{}  +------------------------+".format(fil))
+        for y in range(8):
+            prf = ""
+            pof = "  "
+            if cable_pos is True:
+                prf = fil
+                if y == 4:
+                    if self.orientation == False:
+                        prf = "=="
+                    else:
+                        pof = "=="
+
+            ti = "{}{} |".format(prf, 8-y)
+            for x in range(8):
+                f = position[7-y][x]
+                if use_unicode_chess_figures is True:
+                    if (x+y) % 2 == 0:
+                        f = f*-1
+                c = '?'
+                for i in range(len(self.figrep['int'])):
+                    if self.figrep['int'][i] == f:
+                        if use_unicode_chess_figures is True:
+                            c = self.figrep['unic'][i]
+                        else:
+                            c = self.figrep['ascii'][i]
+                            if c == '.':
+                                c = ' '
+                        break
+                if (x+y) % 2 == 0:
+                    ti += "\033[7m {} \033[m".format(c)
+                else:
+                    ti += " {} ".format(c)
+            ti += "|{}".format(pof)
+            tpos.append(ti)
+        tpos.append(
+            "{}  +------------------------+".format(fil))
+        tpos.append("{}    A  B  C  D  E  F  G  H".format(
+            fil))
+        return tpos
 
     def print_position_ascii(self, position, col, use_unicode_chess_figures=True, cable_pos=True, move_stack=[]):
         if cable_pos is True:
@@ -161,6 +211,7 @@ class TerminalAgent:
 
     def kdb_event_worker_thread(self, appque, log, std_in):
         while self.kdb_thread_active:
+            self.active = True
             cmd = ""
             try:
                 # cmd = input()
@@ -176,29 +227,29 @@ class TerminalAgent:
                 if cmd in self.kbd_moves:
                     self.kbd_moves = []
                     appque.put(
-                        {'move': {'uci': cmd, 'actor': 'keyboard'}})
+                        {'move': {'uci': cmd, 'actor': self.name}})
                 elif cmd == 'n':
                     log.debug('requesting new game')
-                    appque.put({'new game': '', 'actor': 'keyboard'})
+                    appque.put({'new game': '', 'actor': self.name})
                 elif cmd == 'b':
                     log.debug('move back')
-                    appque.put({'back': '', 'actor': 'keyboard'})
+                    appque.put({'back': '', 'actor': self.name})
                 elif cmd == 'c':
                     log.debug('change board orientation')
                     appque.put(
-                        {'turn eboard orientation': '', 'actor': 'keyboard'})
+                        {'turn eboard orientation': '', 'actor': self.name})
                 elif cmd == 'a':
                     log.debug('analyze')
-                    appque.put({'analyze': '', 'actor': 'keyboard'})
+                    appque.put({'analyze': '', 'actor': self.name})
                 elif cmd == 'ab':
                     log.debug('analyze black')
-                    appque.put({'analyze': 'black', 'actor': 'keyboard'})
+                    appque.put({'analyze': 'black', 'actor': self.name})
                 elif cmd == 'aw':
                     log.debug('analyze white')
-                    appque.put({'analyze': 'white', 'actor': 'keyboard'})
+                    appque.put({'analyze': 'white', 'actor': self.name})
                 elif cmd == 'e':
                     log.debug('board encoding switch')
-                    appque.put({'encoding': '', 'actor': 'keyboard'})
+                    appque.put({'encoding': '', 'actor': self.name})
                 elif cmd[:2] == 'l ':
                     log.debug('level')
                     movetime = float(cmd[2:])
@@ -209,16 +260,16 @@ class TerminalAgent:
                     appque.put({'max_ply': n})
                 elif cmd == 'p':
                     log.debug('position')
-                    appque.put({'position': '', 'actor': 'keyboard'})
+                    appque.put({'position': '', 'actor': self.name})
                 elif cmd == 'g':
                     log.debug('go')
-                    appque.put({'go': 'current', 'actor': 'keyboard'})
+                    appque.put({'go': 'current', 'actor': self.name})
                 elif cmd == 'gw':
                     log.debug('go')
-                    appque.put({'go': 'white', 'actor': 'keyboard'})
+                    appque.put({'go': 'white', 'actor': self.name})
                 elif cmd == 'gb':
                     log.debug('go, black')
-                    appque.put({'go': 'black', 'actor': 'keyboard'})
+                    appque.put({'go': 'black', 'actor': self.name})
                 elif cmd == 'w':
                     appque.put({'write_prefs': ''})
                 elif cmd[:2] == 'h ':
@@ -232,9 +283,9 @@ class TerminalAgent:
 
                 elif cmd == 's':
                     log.debug('stop')
-                    appque.put({'stop': '', 'actor': 'keyboard'})
+                    appque.put({'stop': '', 'actor': self.name})
                 elif cmd[:4] == 'fen ':
-                    appque.put({'fen': cmd[4:], 'actor': 'keyboard'})
+                    appque.put({'fen': cmd[4:], 'actor': self.name})
                 elif cmd == 'help':
                     log.info(
                         'a - analyze current position, ab: analyze black, aw: analyses white')
