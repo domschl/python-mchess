@@ -1,5 +1,9 @@
 
-"""Helper functions for the Chess Link protocol for character-based odd-parity and message-block-parity"""
+"""Helper functions for the Chess Link protocol for character-based odd-parity and 
+message-block-parity.
+
+The chess link protocol sends ASCII messages. Each ASCII character gets an additional
+odd-parity-bit. Each block of ASCII+odd-parity bytes gets an additional block parity."""
 
 import logging
 
@@ -7,7 +11,10 @@ protocol_replies = {'v': 7, 's': 67, 'l': 3, 'x': 3, 'w': 7, 'r': 7}
 
 
 def add_odd_par(b):
-    """ The chess link protocol is 7-Bit ASCII. This adds an odd-parity-bit to an ASCII char"""
+    """ The chess link protocol is 7-Bit ASCII. This adds an odd-parity-bit to an ASCII char
+    :param b: an ASCII character (0..127)
+    :returns: a byte (0..255) with odd parity in most significant bit.
+    """
     byte = ord(b) & 127
     par = 1
     for _ in range(7):
@@ -22,7 +29,10 @@ def add_odd_par(b):
 
 
 def hexd(digit):
-    """return a hex digit 0..F for an integer 0..15"""
+    """return a hex digit '0'..'F' for an integer 0..15
+    :param digit: integer 0..15
+    :return: an ASCII hex character '0'..'F'
+    """
     if digit < 10:
         return chr(ord('0')+digit)
     else:
