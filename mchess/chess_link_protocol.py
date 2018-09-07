@@ -47,7 +47,9 @@ def hexd(digit):
 
 def hex2(num):
     """
-    Returns a 2-digit hex code '00'..FF for an uint_8 integer 0..255
+    Convert integer to 2-digit hex string. Most numeric parameters and the block CRC are encoded as such 2-digit hex-string.
+    :param num: uint_8 integer 0..255
+    :return: Returns a 2-digit hex code '00'..'FF' 
     """
     d1 = num//16
     d2 = num % 16
@@ -60,6 +62,8 @@ def check_block_crc(msg):
     Chess link messages consist of 7-bit-ASCII characters with odd parity. At the end of each
     message, an additional block-parity is added. Valid chess link messages must have correct odd
     parity for each character and a valid block parity at the end.
+    :param msg: a byte array with the message.
+    :return: True, if the last two bytes of msg contain a correct CRC, False otherwise.
     """
     if len(msg) > 2:
         gpar = 0
@@ -77,7 +81,12 @@ def check_block_crc(msg):
 
 
 def add_block_crc(msg):
-    """Add block parity at the end of the message"""
+    """Add block parity at the end of the message
+    :param msg: a message byte array (each byte must have already been encoded with odd parity). 
+    This function adds two bytes of block CRC at the end of the message.
+    :param msg: byte array with a message (incl. odd-parity bits set already)
+    :return: two byte longer message that includes 2 CRC bytes.
+    """
     gpar = 0
     for b in msg:
         gpar = gpar ^ ord(b)
