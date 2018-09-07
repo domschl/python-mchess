@@ -12,12 +12,27 @@ import copy
 
 import chess_link_protocol as clp
 
+# TODO: Expand protocol description
+"""The Chess Link Protocol
+
+<V56>
+2018-08-31 11:07:31,141 DEBUG ChessLinkBluePy Sending: <b'\xd6\xb5\xb6'>
+2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy BLE: Handle: 55, data: b'v\xb01\xb0\xb374'
+2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy BLE received [v010374]
+2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy bluepy_ble received complete msg: v010374
+
+
+"""
+
 
 class ChessLink:
     """This implements the 'Chess Link' protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol"""
 
     def __init__(self, appque, name):
-        """Constructor, appque is a Queue that receive chess board events, name identifies this protocol"""
+        """Constructor, searches, configures and connectors to Chess Link compatible Millennium Chess Genius Exclusive or similar boards.
+
+        :param appque: a Queue that receive chess board events
+        :param name: identifies this protocol"""
         self.name = name
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "ascii": "PNBRQK.pnbrqk"}
@@ -133,7 +148,8 @@ class ChessLink:
                     self.mill_config['transport'], self.mill_config['address']))
 
     def position_initialized(self):
-        """Check, if a board position has been received and chess link board is online. Returns True on success"""
+        """Check, if a board position has been received and chess link board is online.
+        :returns: True on success"""
         if self.connected is True:
             pos = None
             with self.board_mutex:
@@ -143,16 +159,26 @@ class ChessLink:
         return False
 
     def write_configuration(self):
-        """Write the configuration for hardware connection (USB/Bluetooth LE) and board orientation"""
+        """Write the configuration for hardware connection (USB/Bluetooth LE) and board orientation
+        :returns: True on success"""
         self.mill_config['orientation'] = self.orientation
         try:
             with open("chess_link_config.json", "w") as f:
                 json.dump(self.mill_config, f)
+                return True
         except Exception as e:
             self.log.error("Failed to save default configuration {} to {}: {}".format(
                 self.mill_config, "chess_link_config.json", e))
+        return False
 
     def event_worker_thread(self, que, mutex):
+        """[summary]
+        
+        :param que: [description]
+        :type que: [type]
+        :param mutex: [description]
+        :type mutex: [type]
+        """
         self.log.debug('Chess Link worker thread started.')
         while self.thread_active:
             if self.trque.empty() is False:
