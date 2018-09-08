@@ -108,36 +108,41 @@ if __name__ == '__main__':
     logging.info("Agents {} initialized".format(ags))
 
     while True:
-        if mode == 'player-engine':
-            if state == States.IDLE:
+        if state == States.IDLE:
+            if mode == 'player-engine':
                 if board.turn == chess.WHITE:
                     active_player = player_w
                     passive_player = player_b
                 else:
                     active_player = player_b
                     passive_player = player_w
-                for agent in passive_player:
-                    setm = getattr(agent, "set_valid_moves", None)
-                    if callable(setm):
-                        agent.set_valid_moves(board, [])
-                val = valid_moves(board)
-                for agent in active_player:
-                    setm = getattr(agent, "set_valid_moves", None)
-                    if callable(setm):
-                        agent.set_valid_moves(board, val)
-                    gom = getattr(agent, "go", None)
-                    if callable(gom):
-                        logging.debug(
-                            'Initiating GO for agent {}'.format(agent.name))
-                        agent.go(board, prefs['think_ms'])
-                        break
-                state = States.BUSY
-            else:
-                pass
-                # for agent in player_w:
-                #     setm = getattr(agent, "set_valid_moves", None)
-                #     if callable(setm):
-                #         agent.set_valid_moves(None)
+            if mode == 'engine-player':
+                if board.turn == chess.BLACK:
+                    active_player = player_w
+                    passive_player = player_b
+                else:
+                    active_player = player_b
+                    passive_player = player_w
+            if mode == 'player-player':
+                active_player = player_w
+                passive_player = player_w
+
+            for agent in passive_player:
+                setm = getattr(agent, "set_valid_moves", None)
+                if callable(setm):
+                    agent.set_valid_moves(board, [])
+            val = valid_moves(board)
+            for agent in active_player:
+                setm = getattr(agent, "set_valid_moves", None)
+                if callable(setm):
+                    agent.set_valid_moves(board, val)
+                gom = getattr(agent, "go", None)
+                if callable(gom):
+                    logging.debug(
+                        'Initiating GO for agent {}'.format(agent.name))
+                    agent.go(board, prefs['think_ms'])
+                    break
+            state = States.BUSY
 
         if appque.empty() is False:
             msg = appque.get()
@@ -170,6 +175,14 @@ if __name__ == '__main__':
                     disp = getattr(agent, "display_board", None)
                     if callable(disp):
                         agent.display_board(board)
+                mode = 'player-player'
+                state = States.IDLE
+
+            if 'go' in msg:
+                if board.turn == chess.WHITE:
+                    mode = 'engine-player'
+                else:
+                    mode = 'player-engine'
                 state = States.IDLE
 
             if 'curmove' in msg:

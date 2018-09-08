@@ -68,7 +68,7 @@ class UciAgent:
             super().post_info()  # Release the lock
 
         def on_bestmove(self, bestmove, ponder):
-            self.log.debug("Best: {}".format(bestmove))
+            self.log.debug("Best: {}, ponder: {}".format(bestmove, ponder))
             rep = {'move': {
                 'uci': bestmove.uci(),
                 'actor': self.name
@@ -81,6 +81,8 @@ class UciAgent:
                 rep['move']['nps'] = self.cnps
             if self.cscore is not None:
                 rep['move']['score'] = self.cscore
+            if ponder is not None:
+                rep['move']['ponder'] = ponder.uci()
             self.que.put(rep)
             self.last_pv_move = ""
             self.cdepth = None

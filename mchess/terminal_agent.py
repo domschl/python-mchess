@@ -163,6 +163,8 @@ class TerminalAgent:
         else:
             print('\nMove {} by {}'.format(
                 move_msg['move']['uci'], move_msg['move']['actor']))
+        if 'ponder' in move_msg['move']:
+            print('Ponder: {}'.format(move_msg['move']['ponder']))
 
     def display_info(self, board, info):
         st = '['
