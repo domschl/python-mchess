@@ -156,6 +156,14 @@ class TerminalAgent:
         for i in range(len(txa)):
             print('{}  {}'.format(txa[i], ams[i]))
 
+    def display_move(self, move_msg):
+        if 'score' in move_msg['move']:
+            print('\nMove {} (ev: {}) by {}'.format(
+                move_msg['move']['uci'], move_msg['move']['score'], move_msg['move']['actor']))
+        else:
+            print('\nMove {} by {}'.format(
+                move_msg['move']['uci'], move_msg['move']['actor']))
+
     def display_info(self, board, info):
         st = '['
         if 'score' in info:
@@ -165,9 +173,9 @@ class TerminalAgent:
         if 'depth' in info:
             d = 'Depth: {}'.format(info['depth'])
             if 'seldepth' in info:
-                d += '/{} '.format(info['seldepth'])
+                d += '/{}] '.format(info['seldepth'])
             else:
-                d += ' '
+                d += '] '
             st += d
         if 'variant' in info:
             moves = info['variant']
