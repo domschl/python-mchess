@@ -42,7 +42,7 @@ def valid_moves(cbrd):
 
 if __name__ == '__main__':
     logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
+        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
 
     prefs = {}
     changed_prefs = False
@@ -108,35 +108,36 @@ if __name__ == '__main__':
     logging.info("Agents {} initialized".format(ags))
 
     while True:
-        if state == States.IDLE:
-            if board.turn == chess.WHITE:
-                active_player = player_w
-                passive_player = player_b
+        if mode == 'player-engine':
+            if state == States.IDLE:
+                if board.turn == chess.WHITE:
+                    active_player = player_w
+                    passive_player = player_b
+                else:
+                    active_player = player_b
+                    passive_player = player_w
+                for agent in passive_player:
+                    setm = getattr(agent, "set_valid_moves", None)
+                    if callable(setm):
+                        agent.set_valid_moves(board, [])
+                val = valid_moves(board)
+                for agent in active_player:
+                    setm = getattr(agent, "set_valid_moves", None)
+                    if callable(setm):
+                        agent.set_valid_moves(board, val)
+                    gom = getattr(agent, "go", None)
+                    if callable(gom):
+                        logging.debug(
+                            'Initiating GO for agent {}'.format(agent.name))
+                        agent.go(board, prefs['think_ms'])
+                        break
+                state = States.BUSY
             else:
-                active_player = player_b
-                passive_player = player_w
-            for agent in passive_player:
-                setm = getattr(agent, "set_valid_moves", None)
-                if callable(setm):
-                    agent.set_valid_moves(board, [])
-            val = valid_moves(board)
-            for agent in active_player:
-                setm = getattr(agent, "set_valid_moves", None)
-                if callable(setm):
-                    agent.set_valid_moves(board, val)
-                gom = getattr(agent, "go", None)
-                if callable(gom):
-                    logging.debug(
-                        'Initiating GO for agent {}'.format(agent.name))
-                    agent.go(board, prefs['think_ms'])
-                    break
-            state = States.BUSY
-        else:
-            pass
-            # for agent in player_w:
-            #     setm = getattr(agent, "set_valid_moves", None)
-            #     if callable(setm):
-            #         agent.set_valid_moves(None)
+                pass
+                # for agent in player_w:
+                #     setm = getattr(agent, "set_valid_moves", None)
+                #     if callable(setm):
+                #         agent.set_valid_moves(None)
 
         if appque.empty() is False:
             msg = appque.get()
@@ -153,13 +154,18 @@ if __name__ == '__main__':
                 state = States.IDLE
 
             if 'move' in msg:
-                if 'score' in msg['move']:
-                    sc = msg['move']['score']
-                else:
-                    sc = '?'
-                logging.info('Move {} (ev: {}) by {}'.format(
-                    msg['move']['uci'], sc, msg['move']['actor']))
                 board.push(chess.Move.from_uci(msg['move']['uci']))
+                for agent in player_b+player_w:
+                    dispm = getattr(agent, "display_move", None)
+                    if callable(dispm):
+                        agent.display_move(msg)
+                    dispb = getattr(agent, "display_board", None)
+                    if callable(dispb):
+                        agent.display_board(board)
+                state = States.IDLE
+
+            if 'back' in msg:
+                board.pop()
                 for agent in player_b+player_w:
                     disp = getattr(agent, "display_board", None)
                     if callable(disp):
