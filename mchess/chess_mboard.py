@@ -102,12 +102,8 @@ if __name__ == '__main__':
     last_info = 0
 
     if cla.agent_ready() and prefs['import_chesslink_position'] is True:
-        board = chess.Board(cla.cl_brd.position_to_fen(cla.cl_brd.position))
-        txa = ta.position_to_text(
-            board, use_unicode_chess_figures=True)
-        for t in txa:
-            print(t)
-        print("(Imported position from Chess Link)")
+        appque.put({'position': 'ChessLinkAgent', 'agent': 'prefs'})
+        state = States.BUSY
 
     ags = ""
     for p in player_w + player_b:
@@ -164,10 +160,32 @@ if __name__ == '__main__':
                 logging.info(
                     "New game initiated by {}".format(msg['actor']))
                 board.reset()
-                txa = ta.position_to_text(
-                    board, use_unicode_chess_figures=True)
-                for t in txa:
-                    print(t)
+                for agent in player_b+player_w:
+                    dispb = getattr(agent, "display_board", None)
+                    if callable(dispb):
+                        agent.display_board(board)
+                state = States.IDLE
+
+            if 'position_fetch' in msg:
+                for agent in player_b+player_w:
+                    if agent.name == msg['position_fetch']:
+                        fen = agent.get_fen()
+                        # Only treat as setup, if it's not the start position
+                        # if short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
+                        board = chess.Board(fen)
+                        for agent2 in player_b+player_w:
+                            dispb = getattr(agent2, "display_board", None)
+                            if callable(dispb):
+                                agent2.display_board(board)
+                        break
+                state = States.IDLE
+
+            if 'fen_setup' in msg:
+                board = chess.Board(msg['fen'])
+                for agent in player_b+player_w:
+                    dispb = getattr(agent, "display_board", None)
+                    if callable(dispb):
+                        agent.display_board(board)
                 state = States.IDLE
 
             if 'move' in msg:

@@ -244,8 +244,9 @@ class TerminalAgent:
                     n = int(cmd[2:])
                     appque.put({'max_ply': n})
                 elif cmd == 'p':
-                    log.debug('position')
-                    appque.put({'position': '', 'actor': self.name})
+                    log.debug('position_fetch')
+                    appque.put(
+                        {'position_fetch': 'ChessLinkAgent', 'actor': self.name})
                 elif cmd == 'g':
                     log.debug('go')
                     appque.put({'go': 'current', 'actor': self.name})
@@ -270,7 +271,7 @@ class TerminalAgent:
                     log.debug('stop')
                     appque.put({'stop': '', 'actor': self.name})
                 elif cmd[:4] == 'fen ':
-                    appque.put({'fen': cmd[4:], 'actor': self.name})
+                    appque.put({'fen_setup': cmd[4:], 'actor': self.name})
                 elif cmd == 'help':
                     log.info(
                         'a - analyze current position, ab: analyze black, aw: analyses white')
