@@ -9,6 +9,7 @@ class UciAgent:
         self.name = 'UciAgent'
         self.log = logging.getLogger("UciAgent")
         self.appque = appque
+        self.ponder_board = None
 
         try:
             with open('uci_engines.json', 'r') as f:
@@ -32,6 +33,7 @@ class UciAgent:
         logging.debug('Loading engine {}.'.format(
             self.engines['engines'][engine_no]['name']))
         self.name = self.engines['engines'][engine_no]['name']
+        self.use_ponder = self.engines['engines'][engine_no]['ponder']
         self.uci_handler(self.engine)
         self.engine.uci()
         # TODO: uci options
@@ -41,14 +43,15 @@ class UciAgent:
     def agent_ready(self):
         return self.active
 
-    def go(self, board, mtime):
+    def go(self, board, mtime, ponder=False):
         self.engine.position(board)
+        self.last_board = board
         if mtime == 0:
-            self.engine.go(infinite=True, async_callback=True)
+            self.engine.go(infinite=True, async_callback=True, ponder=ponder)
 
         else:
             self.engine.go(movetime=mtime,
-                           async_callback=True)
+                           async_callback=True, ponder=ponder)
 
     class UciHandler(chess.uci.InfoHandler):
         def __init__(self):
@@ -83,12 +86,16 @@ class UciAgent:
                 rep['move']['score'] = self.cscore
             if ponder is not None:
                 rep['move']['ponder'] = ponder.uci()
+                self.ponder = ponder.uci()
+            else:
+                self.ponder = None
             self.que.put(rep)
             self.last_pv_move = ""
             self.cdepth = None
             self.cseldepth = None
             self.cscore = None
             self.cnps = None
+
             super().on_bestmove(bestmove, ponder)
 
         def score(self, cp, mate, lowerbound, upperbound):

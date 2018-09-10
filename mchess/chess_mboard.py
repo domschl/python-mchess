@@ -100,9 +100,10 @@ if __name__ == '__main__':
     board = chess.Board()
     state = States.IDLE
     last_info = 0
+    ponder_move = None
 
     if cla.agent_ready() and prefs['import_chesslink_position'] is True:
-        appque.put({'position': 'ChessLinkAgent', 'agent': 'prefs'})
+        appque.put({'position_fetch': 'ChessLinkAgent', 'agent': 'prefs'})
         state = States.BUSY
 
     ags = ""
@@ -139,6 +140,11 @@ if __name__ == '__main__':
                 setm = getattr(agent, "set_valid_moves", None)
                 if callable(setm):
                     agent.set_valid_moves(board, [])
+                if ponder_move != None:
+                    setp = getattr(agent, "set_ponder", None)
+                    if callable(setm):
+                        agent.set_ponder(board, ponder_move)
+
             val = valid_moves(board)
             for agent in active_player:
                 setm = getattr(agent, "set_valid_moves", None)
@@ -171,13 +177,13 @@ if __name__ == '__main__':
                     if agent.name == msg['position_fetch']:
                         fen = agent.get_fen()
                         # Only treat as setup, if it's not the start position
-                        # if short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
-                        board = chess.Board(fen)
-                        for agent2 in player_b+player_w:
-                            dispb = getattr(agent2, "display_board", None)
-                            if callable(dispb):
-                                agent2.display_board(board)
-                        break
+                        if short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
+                            board = chess.Board(fen)
+                            for agent2 in player_b+player_w:
+                                dispb = getattr(agent2, "display_board", None)
+                                if callable(dispb):
+                                    agent2.display_board(board)
+                            break
                 state = States.IDLE
 
             if 'fen_setup' in msg:
@@ -197,6 +203,8 @@ if __name__ == '__main__':
                     dispb = getattr(agent, "display_board", None)
                     if callable(dispb):
                         agent.display_board(board)
+                if 'ponder' in msg['move']:
+                    ponder_move = msg['move']['ponder']
                 state = States.IDLE
 
             if 'back' in msg:
