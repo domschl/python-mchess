@@ -66,6 +66,10 @@ if __name__ == '__main__':
     if 'max_plies_board' not in prefs:
         prefs['max_plies_board'] = 3
         changed_prefs = True
+    if 'import_chesslink_position' not in prefs:
+        prefs['import_chesslink_position'] = True
+        changed_prefs = True
+
     if changed_prefs is True:
         try:
             with open('preferences.json', 'w') as fw:
@@ -96,6 +100,14 @@ if __name__ == '__main__':
     board = chess.Board()
     state = States.IDLE
     last_info = 0
+
+    if cla.agent_ready() and prefs['import_chesslink_position'] is True:
+        board = chess.Board(cla.cl_brd.position_to_fen(cla.cl_brd.position))
+        txa = ta.position_to_text(
+            board, use_unicode_chess_figures=True)
+        for t in txa:
+            print(t)
+        print("(Imported position from Chess Link)")
 
     ags = ""
     for p in player_w + player_b:
