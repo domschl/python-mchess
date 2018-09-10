@@ -142,7 +142,7 @@ if __name__ == '__main__':
                     agent.set_valid_moves(board, [])
                 if ponder_move != None:
                     setp = getattr(agent, "set_ponder", None)
-                    if callable(setm):
+                    if callable(setp):
                         agent.set_ponder(board, ponder_move)
 
             val = valid_moves(board)
