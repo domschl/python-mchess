@@ -24,6 +24,7 @@ class UciAgent:
             logging.error("No engine defined! Check uci_engines.json.")
 
         engine_no = 0
+        # TODO: Error checking!
         if 'default-engine' in self.engines:
             engine_no = self.engines['default-engine']
             if engine_no > len(self.engines['engines']):
@@ -37,6 +38,34 @@ class UciAgent:
         self.uci_handler(self.engine)
         self.engine.uci()
         # TODO: uci options
+        optsh = {}
+        opts = {}
+        print(self.engine.options)
+        for opt in self.engine.options:
+            print(opt)
+            entries = self.engine.options[opt]
+            print(f"entries: {entries}")
+            optvs = {}
+            optvs['name'] = entries.name
+            optvs['type'] = entries.type
+            optvs['default'] = entries.default
+            optvs['min'] = entries.min
+            optvs['max'] = entries.max
+            optvs['var'] = entries.var
+            optsh[opt] = optvs
+            opts[opt] = entries.default
+        if 'uci-options' not in self.engines['engines'][engine_no] or self.engines['engines'][engine_no]['uci-options'] == {}:
+            self.engines['engines'][engine_no]['uci-options'] = opts
+        self.engines['engines'][engine_no]['uci-options-help'] = optsh
+        try:
+            with open('uci_engines.json', 'w') as f:
+                json.dump(self.engines, f)
+        except Exception as e:
+            logging.error(
+                "Can't save prefs to uci_engines.json, {}".format(e))
+        else:
+            # TODO: implement:
+            print("Now we should set uci-options")
         self.engine.isready()
         self.active = True
 
