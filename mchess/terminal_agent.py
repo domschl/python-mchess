@@ -150,9 +150,11 @@ class TerminalAgent:
 
         return ams
 
-    def display_board(self, board):
-        txa = self.position_to_text(board)
-        ams = self.moves_to_text(board, lines=len(txa))
+    def display_board(self, board, use_unicode_chess_figures=True):
+        txa = self.position_to_text(
+            board, use_unicode_chess_figures=use_unicode_chess_figures)
+        ams = self.moves_to_text(board, lines=len(
+            txa), use_unicode_chess_figures=use_unicode_chess_figures)
         for i in range(len(txa)):
             print('{}  {}'.format(txa[i], ams[i]))
 

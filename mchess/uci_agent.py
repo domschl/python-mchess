@@ -4,6 +4,11 @@ import json
 import chess.uci
 
 
+class UciEngines:
+    def __init__(self):
+        pass
+
+
 class UciAgent:
     def __init__(self, appque):
         self.name = 'UciAgent'
@@ -40,11 +45,8 @@ class UciAgent:
         # TODO: uci options
         optsh = {}
         opts = {}
-        print(self.engine.options)
         for opt in self.engine.options:
-            print(opt)
             entries = self.engine.options[opt]
-            print(f"entries: {entries}")
             optvs = {}
             optvs['name'] = entries.name
             optvs['type'] = entries.type

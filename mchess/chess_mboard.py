@@ -169,7 +169,8 @@ if __name__ == '__main__':
                 for agent in player_b+player_w:
                     dispb = getattr(agent, "display_board", None)
                     if callable(dispb):
-                        agent.display_board(board)
+                        agent.display_board(
+                            board, use_unicode_chess_figures=prefs['use_unicode_figures'])
                 state = States.IDLE
 
             if 'position_fetch' in msg:
@@ -182,7 +183,8 @@ if __name__ == '__main__':
                             for agent2 in player_b+player_w:
                                 dispb = getattr(agent2, "display_board", None)
                                 if callable(dispb):
-                                    agent2.display_board(board)
+                                    agent2.display_board(
+                                        board, use_unicode_chess_figures=prefs['use_unicode_figures'])
                             break
                 state = States.IDLE
 
@@ -191,7 +193,8 @@ if __name__ == '__main__':
                 for agent in player_b+player_w:
                     dispb = getattr(agent, "display_board", None)
                     if callable(dispb):
-                        agent.display_board(board)
+                        agent.display_board(
+                            board, use_unicode_chess_figures=prefs['use_unicode_figures'])
                 state = States.IDLE
 
             if 'move' in msg:
@@ -202,7 +205,8 @@ if __name__ == '__main__':
                         agent.display_move(msg)
                     dispb = getattr(agent, "display_board", None)
                     if callable(dispb):
-                        agent.display_board(board)
+                        agent.display_board(
+                            board, use_unicode_chess_figures=prefs['use_unicode_figures'])
                 if 'ponder' in msg['move']:
                     ponder_move = msg['move']['ponder']
                 state = States.IDLE
@@ -212,7 +216,8 @@ if __name__ == '__main__':
                 for agent in player_b+player_w:
                     disp = getattr(agent, "display_board", None)
                     if callable(disp):
-                        agent.display_board(board)
+                        agent.display_board(
+                            board, use_unicode_chess_figures=prefs['use_unicode_figures'])
                 mode = 'player-player'
                 state = States.IDLE
 
