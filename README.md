@@ -57,6 +57,8 @@ sudo python3 chess_mboard.py
 ```
 Once the board is found, stop the program and restart without `sudo`. You might want to set ownership for `chess_link_config.json` to your user-account, since the file will be rewritten, if the detected board orientation is changed.
 
+![Console mchess](https://raw.github.com/domschl/python-mchess/master/images/MchessAlpha.png)
+
 ## Documentation
 
 [API Documentation](https://domschl.github.io/python-mchess/doc/build/html/index.html) (incomplete!)
