@@ -59,6 +59,31 @@ Once the board is found, stop the program and restart without `sudo`. You might 
 
 ![Console mchess](https://raw.github.com/domschl/python-mchess/master/images/MchessAlpha.png)
 
+## Architecture
+```
+                                +--------------------+
+                                |   chess_mboard.py  |   Start and connect agents
+                                +--------------------+
+                                   |     |     |
+                        +----------+     |     +---------+
+                        |                |               |
+         +---------------------+  +--------------+  +-------------------+
+         | chess_link_agent.py |  | uci_agent.py |  | terminal_agent.py |   agents represent
+         +---------------------+  +--------------+  +-------------------+   player activities 
+                        |            uci-engines         I/O hardware
+                        |            Stockfish,
+                        |            Lc0 etc.                
+ -  -  -  -  -  -  -  - | -  -  -  -  -  -  -  -  -  -  -  -
+               +---------------+
+               | chess_link.py |           Python 3 chess link library, can be
+               +---------------+           reused for other projects without agents above
+                  |         |
+  +-------------------+  +----------------------+
+  | chess_link_usb.py |  | chess_link_bluepy.py |
+  +-------------------+  +----------------------+
+         Chess Genius Exclusive board hardware
+         via Chess Link
+```
 ## Documentation
 
 [API Documentation](https://domschl.github.io/python-mchess/doc/build/html/index.html) (incomplete!)
