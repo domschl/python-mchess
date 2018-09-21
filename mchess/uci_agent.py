@@ -5,8 +5,24 @@ import chess.uci
 
 
 class UciEngines:
+    """Search for UCI engines and make a list of all available engines
+    """
+
     def __init__(self):
-        pass
+        self.log = logging.getLogger("UciEngines")
+
+        COMMON_ENGINES = ['stockfish', 'crafty', 'komodo']
+        try:
+            with open('uci_engines.json', 'r') as f:
+                self.engines = json.load(f)
+                logging.debug(self.engines)
+        except Exception as e:
+            logging.error("Can't load uci_engines.json: {}".format(e))
+            return
+
+        self.log.debug('{} engines loaded.'.format(len(self.engines)))
+        if len(self.engines['engines']) == 0:
+            logging.error("No engine defined! Check uci_engines.json.")
 
 
 class UciAgent:
@@ -65,9 +81,9 @@ class UciAgent:
         except Exception as e:
             logging.error(
                 "Can't save prefs to uci_engines.json, {}".format(e))
-        else:
-            # TODO: implement:
-            print("Now we should set uci-options")
+
+        self.engine.setoption(opts)
+
         self.engine.isready()
         self.active = True
 
