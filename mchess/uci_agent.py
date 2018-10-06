@@ -27,6 +27,7 @@ class UciEngines:
 
 class UciAgent:
     def __init__(self, appque):
+        self.active = False
         self.name = 'UciAgent'
         self.log = logging.getLogger("UciAgent")
         self.appque = appque
@@ -55,32 +56,40 @@ class UciAgent:
         logging.debug('Loading engine {}.'.format(
             self.engines['engines'][engine_no]['name']))
         self.name = self.engines['engines'][engine_no]['name']
-        self.use_ponder = self.engines['engines'][engine_no]['ponder']
         self.uci_handler(self.engine)
         self.engine.uci()
-        # TODO: uci options
         optsh = {}
         opts = {}
-        for opt in self.engine.options:
-            entries = self.engine.options[opt]
-            optvs = {}
-            optvs['name'] = entries.name
-            optvs['type'] = entries.type
-            optvs['default'] = entries.default
-            optvs['min'] = entries.min
-            optvs['max'] = entries.max
-            optvs['var'] = entries.var
-            optsh[opt] = optvs
-            opts[opt] = entries.default
         if 'uci-options' not in self.engines['engines'][engine_no] or self.engines['engines'][engine_no]['uci-options'] == {}:
+            for opt in self.engine.options:
+                entries = self.engine.options[opt]
+                optvs = {}
+                optvs['name'] = entries.name
+                optvs['type'] = entries.type
+                optvs['default'] = entries.default
+                optvs['min'] = entries.min
+                optvs['max'] = entries.max
+                optvs['var'] = entries.var
+                optsh[opt] = optvs
+                opts[opt] = entries.default
             self.engines['engines'][engine_no]['uci-options'] = opts
-        self.engines['engines'][engine_no]['uci-options-help'] = optsh
-        try:
-            with open('uci_engines.json', 'w') as f:
-                json.dump(self.engines, f)
-        except Exception as e:
-            logging.error(
-                "Can't save prefs to uci_engines.json, {}".format(e))
+            self.engines['engines'][engine_no]['uci-options-help'] = optsh
+            try:
+                with open('uci_engines.json', 'w') as f:
+                    json.dump(self.engines, f)
+            except Exception as e:
+                logging.error(
+                    "Can't save prefs to uci_engines.json, {}".format(e))
+        else:
+            opts = self.engines['engines'][engine_no]['uci-options']
+
+        print("Setting uci:")
+        print(opts)
+
+        if 'Ponder' in opts:
+            self.use_ponder = opts['Ponder']
+        else:
+            self.use_ponder = False
 
         self.engine.setoption(opts)
 
@@ -131,6 +140,8 @@ class UciAgent:
                 rep['move']['nps'] = self.cnps
             if self.cscore is not None:
                 rep['move']['score'] = self.cscore
+            if self.ctbhits is not None:
+                rep['move']['tbhits'] = self.ctbhits
             if ponder is not None:
                 rep['move']['ponder'] = ponder.uci()
                 self.ponder = ponder.uci()
@@ -142,6 +153,7 @@ class UciAgent:
             self.cseldepth = None
             self.cscore = None
             self.cnps = None
+            self.ctbhits = None
 
             super().on_bestmove(bestmove, ponder)
 
@@ -174,6 +186,8 @@ class UciAgent:
                 rep['curmove']['nps'] = self.cnps
             if self.cscore is not None:
                 rep['curmove']['score'] = self.cscore
+            if self.ctbhits is not None:
+                rep['curmove']['tbhits'] = self.ctbhits
             self.que.put(rep)
             super().pv(moves)
 
@@ -191,6 +205,11 @@ class UciAgent:
             self.cnps = n
             self.que.put({'nps': n})
             super().nps(n)
+
+        def tbhits(self, n):
+            self.ctbhits = n
+            self.que.put({'tbhits': n})
+            super().tbhits(n)
 
     def uci_handler(self, engine):
         self.info_handler = self.UciHandler()

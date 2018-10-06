@@ -177,10 +177,12 @@ class TerminalAgent:
         if 'depth' in info:
             d = 'Depth: {}'.format(info['depth'])
             if 'seldepth' in info:
-                d += '/{}] '.format(info['seldepth'])
-            else:
-                d += '] '
+                d += '/{} '.format(info['seldepth'])
             st += d
+        if 'tbhits' in info:
+            st += 'TB: {}] '.format(info['tbhits'])
+        else:
+            st += '] '
         if 'variant' in info:
             moves = info['variant']
             mvs = len(moves)
