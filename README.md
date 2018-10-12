@@ -1,6 +1,7 @@
 # python-mchess
 
 ![Alpha status](https://img.shields.io/badge/Project%20status-Alpha-red.svg)
+[![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
 
 `python-mchess` is a collections of libraries to work with Millennium's Chess Genius Exclusive chess board via the Chess Link interface.
 
