@@ -19,7 +19,7 @@ Currently, the following platforms are under development:
 
 ## Alpha installation instructions
 
-Warning! This project is under development, and basically everything described below will change at some point.
+This project is under heavy development, and basically everything described below might change at some point.
 
 ### Dependencies
 `python-mchess` is written for Python 3.x
@@ -58,7 +58,16 @@ sudo python3 chess_mboard.py
 ```
 Once the board is found, stop the program and restart without `sudo`. You might want to set ownership for `chess_link_config.json` to your user-account, since the file will be rewritten, if the detected board orientation is changed.
 
+`uci_engines.json` will now contain the UCI options. Those can be edited e.g. to enable tablebases or other UCI options.
+
 ![Console mchess](https://raw.github.com/domschl/python-mchess/master/images/MchessAlpha.png)
+
+## Usage
+
+On start, the current position from Chess Genius Exclusive board is imported and displayed on the console.
+Simply start making a move on the board, and the UCI engine will reply. During the time, the engine calculates,
+the best current line is displayed on the board for up to 3 half-moves (see `preferences.json` to enable/disable this
+feature).
 
 ## Architecture
 ```
@@ -85,6 +94,9 @@ Once the board is found, stop the program and restart without `sudo`. You might 
          Chess Genius Exclusive board hardware
          via Chess Link
 ```
+
+It whould be straight forward to include other agents (e.g. pyqt5 GUI or web GUIs) at a later point.
+
 ## Documentation
 
 [API Documentation](https://domschl.github.io/python-mchess/doc/build/html/index.html) (incomplete!)
