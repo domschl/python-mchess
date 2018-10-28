@@ -1,3 +1,6 @@
+"""
+ChessLink transport implementation for USB connections.
+"""
 import logging
 import threading
 import queue
@@ -25,6 +28,13 @@ class Transport():
     """
 
     def __init__(self, que):
+        """
+        Initialize with python queue for event handling.
+        Events are strings conforming to the ChessLink protocol as documented in 
+        `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
+
+        :param que: Python queue that will eceive events from chess board.
+        """
         if usb_support == False:
             self.init = False
             return
