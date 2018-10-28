@@ -31,7 +31,7 @@ The Chess Link Protocol
 class ChessLink:
     """
     This implements the 'Chess Link' protocol for Millennium Chess Genius Exclusive and future boards 
-    compatible with that protocol
+    compatible with that protocol.
 
     For the details of the Chess Link protocol, please refer to: 
     `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
@@ -61,7 +61,7 @@ class ChessLink:
 
     Board position has changed::
 
-        {'fen': fen, , 'actor': '<actor-name>'}
+        {'fen': fen, 'actor': '<actor-name>'}
 
     See remarks on `position2fen()`: move counts, castling are not valid, only the position
     part should be used.
