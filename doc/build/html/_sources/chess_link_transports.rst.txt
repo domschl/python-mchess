@@ -1,6 +1,6 @@
-=======================
-USB ChessLink transport
-=======================
+=============
+USB transport
+=============
 
 .. currentmodule:: chess_link_usb
 
@@ -9,9 +9,9 @@ USB ChessLink transport
     :special-members:
     :exclude-members: __dict__,__weakref__
 
-================================
-Bluetooth LE ChessLink transport
-================================
+=============
+BLE transport
+=============
 
 .. currentmodule:: chess_link_bluepy
 

@@ -1,6 +1,6 @@
-====================================
-Chess link protocol helper functions
-====================================
+==================
+ChessLink protocol
+==================
 
 .. automodule:: chess_link_protocol
     :members:
