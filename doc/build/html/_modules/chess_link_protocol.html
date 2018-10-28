@@ -121,8 +121,9 @@
 
 <div class="viewcode-block" id="add_block_crc"><a class="viewcode-back" href="../index.html#chess_link_protocol.add_block_crc">[docs]</a><span class="k">def</span> <span class="nf">add_block_crc</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Add block parity at the end of the message</span>
+
 <span class="sd">    :param msg: a message byte array (each byte must have already been encoded with odd parity). </span>
-<span class="sd">    This function adds two bytes of block CRC at the end of the message.</span>
+<span class="sd">                This function adds two bytes of block CRC at the end of the message.</span>
 <span class="sd">    :param msg: byte array with a message (incl. odd-parity bits set already)</span>
 <span class="sd">    :return: two byte longer message that includes 2 CRC bytes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>

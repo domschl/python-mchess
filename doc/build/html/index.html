@@ -157,11 +157,23 @@ odd-parity-bit. Each block of ASCII+odd-parity bytes gets an additional block pa
 <dl class="function">
 <dt id="chess_link_protocol.add_block_crc">
 <code class="descclassname">chess_link_protocol.</code><code class="descname">add_block_crc</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_protocol.html#add_block_crc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_protocol.add_block_crc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add block parity at the end of the message
-:param msg: a message byte array (each byte must have already been encoded with odd parity). 
-This function adds two bytes of block CRC at the end of the message.
-:param msg: byte array with a message (incl. odd-parity bits set already)
-:return: two byte longer message that includes 2 CRC bytes.</p>
+<dd><p>Add block parity at the end of the message</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>msg</strong> – a message byte array (each byte must have already been encoded with odd parity). 
+This function adds two bytes of block CRC at the end of the message.</li>
+<li><strong>msg</strong> – byte array with a message (incl. odd-parity bits set already)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">two byte longer message that includes 2 CRC bytes.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
