@@ -20,6 +20,12 @@ Welcome to mchess's documentation!
     chess_link_usb.Transport
     chess_link_bluepy.Transport
 
+Other references
+================
+
+* `README <https://github.com/domschl/python-mchess/blob/master/README.md>`_
+* `ChessLink protocol specification <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_
+
 Indices and tables
 ==================
 
