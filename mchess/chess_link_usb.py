@@ -1,3 +1,6 @@
+"""
+ChessLink transport implementation for USB connections.
+"""
 import logging
 import threading
 import queue

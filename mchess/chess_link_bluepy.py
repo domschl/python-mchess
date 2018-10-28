@@ -1,3 +1,6 @@
+"""
+ChessLink transport implementation for Bluetooth LE connections using `bluepy`.
+"""
 import logging
 import threading
 import queue
