@@ -1,0 +1,345 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>chess_link_bluepy &#8212; mchess 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for chess_link_bluepy</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">queue</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">chess_link_protocol</span> <span class="k">as</span> <span class="nn">clp</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">bluepy.btle</span> <span class="k">import</span> <span class="n">Scanner</span><span class="p">,</span> <span class="n">DefaultDelegate</span><span class="p">,</span> <span class="n">Peripheral</span>
+    <span class="n">bluepy_ble_support</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">bluepy_ble_support</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="Transport"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport">[docs]</a><span class="k">class</span> <span class="nc">Transport</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ChessLink transport implementation for Bluetooth LE connections using `bluepy`.</span>
+
+<span class="sd">    This class does automatic hardware detection of any ChessLink board using bluetooth LE</span>
+<span class="sd">    and supports Linux and Raspberry Pi.</span>
+
+<span class="sd">    This transport uses an asynchronous background thread for hardware communcation.</span>
+<span class="sd">    All replies are written to the python queue `que` given during initialization.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">que</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">bluepy_ble_support</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wrque</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;ChessLinkBluePy&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span> <span class="o">=</span> <span class="n">que</span>  <span class="c1"># asyncio.Queue()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;bluepy_ble init ok&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Transport.search_board"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.search_board">[docs]</a>    <span class="k">def</span> <span class="nf">search_board</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Search for ChessLink connections using Bluetooth LE.</span>
+
+<span class="sd">        :returns: Bluetooth address of ChessLink board, or None on failure.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;bluepy_ble: searching for boards&quot;</span><span class="p">)</span>
+
+        <span class="k">class</span> <span class="nc">ScanDelegate</span><span class="p">(</span><span class="n">DefaultDelegate</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
+                <span class="n">DefaultDelegate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">handleDiscovery</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">isNewDev</span><span class="p">,</span> <span class="n">isNewData</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">isNewDev</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Discovered device </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">addr</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">isNewData</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                        <span class="s2">&quot;Received new data from </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">addr</span><span class="p">))</span>
+
+        <span class="n">scanner</span> <span class="o">=</span> <span class="n">Scanner</span><span class="p">()</span><span class="o">.</span><span class="n">withDelegate</span><span class="p">(</span><span class="n">ScanDelegate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">devices</span> <span class="o">=</span> <span class="n">scanner</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s2">&quot;BLE scanning failed. You might need to excecute the scan with root rights: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">devs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">devices</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">rssi</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sorted:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">devs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;sorted by rssi </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">addr</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">rssi</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">bledev</span> <span class="ow">in</span> <span class="n">devs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Device </span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">), RSSI=</span><span class="si">{}</span><span class="s2"> dB&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">bledev</span><span class="o">.</span><span class="n">addr</span><span class="p">,</span> <span class="n">bledev</span><span class="o">.</span><span class="n">addrType</span><span class="p">,</span> <span class="n">bledev</span><span class="o">.</span><span class="n">rssi</span><span class="p">))</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">adtype</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">bledev</span><span class="o">.</span><span class="n">getScanData</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">) = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">desc</span><span class="p">,</span> <span class="n">adtype</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">desc</span> <span class="o">==</span> <span class="s2">&quot;Complete Local Name&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;MILLENNIUM CHESS&quot;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                            <span class="s2">&quot;Autodetected Millennium Chess Link board at Bluetooth LE address: </span><span class="si">{}</span><span class="s2">, signal strength (rssi): </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                <span class="n">bledev</span><span class="o">.</span><span class="n">addr</span><span class="p">,</span> <span class="n">bledev</span><span class="o">.</span><span class="n">rssi</span><span class="p">))</span>
+                        <span class="k">return</span> <span class="n">bledev</span><span class="o">.</span><span class="n">addr</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Transport.test_board"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.test_board">[docs]</a>    <span class="k">def</span> <span class="nf">test_board</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test dummy.</span>
+
+<span class="sd">        :returns: Version string &quot;1.0&quot; always.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># self.open_mt(address)</span>
+        <span class="k">return</span> <span class="s2">&quot;1.0&quot;</span></div>
+
+<div class="viewcode-block" id="Transport.open_mt"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.open_mt">[docs]</a>    <span class="k">def</span> <span class="nf">open_mt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Open a bluetooth LE connection to ChessLink board.</span>
+
+<span class="sd">        :param address: bluetooth address</span>
+<span class="sd">        :returns: True on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Starting worker-thread for bluepy ble&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker_thread_active</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker_threader</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
+            <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">worker_thread</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrque</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker_threader</span><span class="o">.</span><span class="n">setDaemon</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker_threader</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Transport.write_mt"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.write_mt">[docs]</a>    <span class="k">def</span> <span class="nf">write_mt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Encode and asynchronously write a message to ChessLink.</span>
+
+<span class="sd">        :param msg: Message string. Parity will be added, and block CRC appended.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;write-que-entry </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wrque</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Transport.get_name"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get name of this transport.</span>
+
+<span class="sd">        :returns: &#39;chess_link_bluepy&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;chess_link_bluepy&quot;</span></div>
+
+<div class="viewcode-block" id="Transport.is_init"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.is_init">[docs]</a>    <span class="k">def</span> <span class="nf">is_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check, if hardware connection is up.</span>
+
+<span class="sd">        :returns: True on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">init</span></div>
+
+<div class="viewcode-block" id="Transport.worker_thread"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.worker_thread">[docs]</a>    <span class="k">def</span> <span class="nf">worker_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">wrque</span><span class="p">,</span> <span class="n">que</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Background thread that handles bluetooth sending and forwards data received via </span>
+<span class="sd">        bluetooth to the queue `que`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mil</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">message_delta_time</span> <span class="o">=</span> <span class="mf">0.1</span>  <span class="c1"># least 0.1 sec between outgoing btle messages</span>
+
+        <span class="k">class</span> <span class="nc">PeriDelegate</span><span class="p">(</span><span class="n">DefaultDelegate</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">que</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Init delegate for peri&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">chunks</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="n">DefaultDelegate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">handleNotification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cHandle</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;BLE: Handle: </span><span class="si">{}</span><span class="s2">, data: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cHandle</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+                <span class="n">rcv</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="n">rcv</span> <span class="o">+=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">b</span> <span class="o">&amp;</span> <span class="mi">127</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;BLE received [</span><span class="si">{}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rcv</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">chunks</span> <span class="o">+=</span> <span class="n">rcv</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">clp</span><span class="o">.</span><span class="n">protocol_replies</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="s2">&quot;Illegal reply start &#39;</span><span class="si">{}</span><span class="s2">&#39; received, discarding&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chunks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">clp</span><span class="o">.</span><span class="n">protocol_replies</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chunks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">mlen</span> <span class="o">=</span> <span class="n">clp</span><span class="o">.</span><span class="n">protocol_replies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chunks</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">mlen</span><span class="p">:</span>
+                        <span class="n">valmsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunks</span><span class="p">[:</span><span class="n">mlen</span><span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="s1">&#39;bluepy_ble received complete msg: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">valmsg</span><span class="p">))</span>
+                        <span class="k">if</span> <span class="n">clp</span><span class="o">.</span><span class="n">check_block_crc</span><span class="p">(</span><span class="n">valmsg</span><span class="p">):</span>
+                            <span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">valmsg</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="n">mlen</span><span class="p">:]</span>
+
+        <span class="n">rx</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">tx</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;bluepy_ble open_mt </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">address</span><span class="p">))</span>
+        <span class="c1"># time.sleep(0.1)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;per1&quot;</span><span class="p">)</span>
+            <span class="n">mil</span> <span class="o">=</span> <span class="n">Peripheral</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;per2&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;per3&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s1">&#39;Failed to create ble peripheral at </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+            <span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+<span class="c1">#            while True:</span>
+<span class="c1">#                time.sleep(1)</span>
+        <span class="c1"># time.sleep(0.1)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Peripheral generated </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">address</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">services</span> <span class="o">=</span> <span class="n">mil</span><span class="o">.</span><span class="n">getServices</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s1">&#39;Failed to enumerate services for </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+        <span class="c1"># time.sleep(0.1)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;services: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">services</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">ser</span> <span class="ow">in</span> <span class="n">services</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Service: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ser</span><span class="p">))</span>
+            <span class="n">chrs</span> <span class="o">=</span> <span class="n">ser</span><span class="o">.</span><span class="n">getCharacteristics</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">chri</span> <span class="ow">in</span> <span class="n">chrs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">chri</span><span class="o">.</span><span class="n">uuid</span> <span class="o">==</span> <span class="s2">&quot;49535343-1e4d-4bd9-ba61-23c647249616&quot;</span><span class="p">:</span>  <span class="c1"># TX char, rx for us</span>
+                    <span class="n">rx</span> <span class="o">=</span> <span class="n">chri</span>
+                    <span class="n">rxh</span> <span class="o">=</span> <span class="n">chri</span><span class="o">.</span><span class="n">getHandle</span><span class="p">()</span>
+                    <span class="c1"># Enable notification magic:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Enabling notifications&#39;</span><span class="p">)</span>
+                    <span class="n">mil</span><span class="o">.</span><span class="n">writeCharacteristic</span><span class="p">(</span>
+                        <span class="n">rxh</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;little&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">chri</span><span class="o">.</span><span class="n">uuid</span> <span class="o">==</span> <span class="s2">&quot;49535343-8841-43f4-a8d4-ecbe34729bb3&quot;</span><span class="p">:</span>  <span class="c1"># RX char, tx for us</span>
+                    <span class="n">tx</span> <span class="o">=</span> <span class="n">chri</span>
+                    <span class="c1"># txh = chri.getHandle()</span>
+                <span class="k">if</span> <span class="n">chri</span><span class="o">.</span><span class="n">supportsRead</span><span class="p">():</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">{}</span><span class="s2"> UUID=</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> -&gt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chri</span><span class="p">,</span> <span class="n">chri</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+                                                             <span class="n">chri</span><span class="o">.</span><span class="n">propertiesToString</span><span class="p">(),</span> <span class="n">chri</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">{}</span><span class="s2"> UUID=</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">chri</span><span class="p">,</span> <span class="n">chri</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">chri</span><span class="o">.</span><span class="n">propertiesToString</span><span class="p">()))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Installing peripheral delegate&#39;</span><span class="p">)</span>
+            <span class="n">delegate</span> <span class="o">=</span> <span class="n">PeriDelegate</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">que</span><span class="p">)</span>
+            <span class="n">delegate</span><span class="o">.</span><span class="n">que</span> <span class="o">=</span> <span class="n">que</span>
+            <span class="n">mil</span><span class="o">.</span><span class="n">withDelegate</span><span class="p">(</span><span class="n">delegate</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s1">&#39;Failed to install peripheral delegate! </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+        <span class="n">time_last_out</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">+</span><span class="mf">0.2</span>
+
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker_thread_active</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">wrque</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">time_last_out</span> <span class="o">&gt;</span> <span class="n">message_delta_time</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">wrque</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                <span class="n">gpar</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                    <span class="n">gpar</span> <span class="o">=</span> <span class="n">gpar</span> <span class="o">^</span> <span class="nb">ord</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="n">gpar</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;blue_ble write: &lt;</span><span class="si">{}</span><span class="s2">&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+                <span class="n">bts</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                    <span class="n">bo</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">clp</span><span class="o">.</span><span class="n">add_odd_par</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+                    <span class="n">bts</span> <span class="o">+=</span> <span class="n">bo</span>
+                    <span class="n">btsx</span> <span class="o">=</span> <span class="n">bts</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;latin1&#39;</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Sending: &lt;</span><span class="si">{}</span><span class="s2">&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">btsx</span><span class="p">))</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">tx</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">btsx</span><span class="p">,</span> <span class="n">withResponse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">time_last_out</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                        <span class="s2">&quot;bluepy_ble: failed to write </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+                <span class="n">wrque</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+
+            <span class="n">rx</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">mil</span><span class="o">.</span><span class="n">waitForNotifications</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+            <span class="c1"># time.sleep(0.1)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;wt-end&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">mchess</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dominik Schlösser.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

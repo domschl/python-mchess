@@ -653,6 +653,109 @@ if none is found.</td>
 </div>
 <div class="section" id="module-chess_link_bluepy">
 <span id="bluetooth-le-chesslink-transport"></span><h2>Bluetooth LE ChessLink transport<a class="headerlink" href="#module-chess_link_bluepy" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="chess_link_bluepy.Transport">
+<em class="property">class </em><code class="descclassname">chess_link_bluepy.</code><code class="descname">Transport</code><span class="sig-paren">(</span><em>que</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_bluepy.html#Transport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_bluepy.Transport" title="Permalink to this definition">¶</a></dt>
+<dd><p>ChessLink transport implementation for Bluetooth LE connections using <cite>bluepy</cite>.</p>
+<p>This class does automatic hardware detection of any ChessLink board using bluetooth LE
+and supports Linux and Raspberry Pi.</p>
+<p>This transport uses an asynchronous background thread for hardware communcation.
+All replies are written to the python queue <cite>que</cite> given during initialization.</p>
+<dl class="method">
+<dt id="chess_link_bluepy.Transport.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_bluepy.html#Transport.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_bluepy.Transport.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get name of this transport.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">‘chess_link_bluepy’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_bluepy.Transport.is_init">
+<code class="descname">is_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_bluepy.html#Transport.is_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_bluepy.Transport.is_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check, if hardware connection is up.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True on success.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_bluepy.Transport.open_mt">
+<code class="descname">open_mt</code><span class="sig-paren">(</span><em>address</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_bluepy.html#Transport.open_mt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_bluepy.Transport.open_mt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a bluetooth LE connection to ChessLink board.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>address</strong> – bluetooth address</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True on success.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_bluepy.Transport.search_board">
+<code class="descname">search_board</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_bluepy.html#Transport.search_board"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_bluepy.Transport.search_board" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search for ChessLink connections using Bluetooth LE.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Bluetooth address of ChessLink board, or None on failure.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_bluepy.Transport.test_board">
+<code class="descname">test_board</code><span class="sig-paren">(</span><em>address</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_bluepy.html#Transport.test_board"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_bluepy.Transport.test_board" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test dummy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Version string “1.0” always.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_bluepy.Transport.worker_thread">
+<code class="descname">worker_thread</code><span class="sig-paren">(</span><em>log</em>, <em>address</em>, <em>wrque</em>, <em>que</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_bluepy.html#Transport.worker_thread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_bluepy.Transport.worker_thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Background thread that handles bluetooth sending and forwards data received via 
+bluetooth to the queue <cite>que</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_bluepy.Transport.write_mt">
+<code class="descname">write_mt</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_bluepy.html#Transport.write_mt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_bluepy.Transport.write_mt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode and asynchronously write a message to ChessLink.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>msg</strong> – Message string. Parity will be added, and block CRC appended.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 <div class="section" id="indices-and-tables">
