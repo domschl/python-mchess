@@ -77,6 +77,74 @@ Millennium Chess Genius Exclusive or similar boards.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="chess_link.ChessLink.fen_to_position">
+<code class="descname">fen_to_position</code><span class="sig-paren">(</span><em>fen</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.fen_to_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.fen_to_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a FEN position into an 8x8 <cite>position</cite> array.</p>
+<p>Note that the current implementation of <cite>position</cite> arrays does not maintain move-counts,
+castling stati or any history data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">8x8 <cite>position</cite> array.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.get_debounce">
+<code class="descname">get_debounce</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_debounce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_debounce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynchronuosly request the current debounce setting. The answer will be
+written to the queue <cite>appqueue</cite> given during initialization.</p>
+<p>See see <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.get_led_brightness_percent">
+<code class="descname">get_led_brightness_percent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_led_brightness_percent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_led_brightness_percent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynchronuosly request the current led brightness setting. The answer will be
+written to the queue <cite>appqueue</cite> given during initialization.</p>
+<p>See see <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.get_orientation">
+<code class="descname">get_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynchronuosly request the Chess Link board orientation. The answer will be
+written to the queue <cite>appqueue</cite> given during initialization.</p>
+<p>ChessLink tries to autodetect the orientation of the board by looking for
+initial start positions.</p>
+<p>If the board has never been set to the initial start position, the orientation
+must be set using <cite>set_orientation()</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.get_position">
+<code class="descname">get_position</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynchronuosly request the Chess Link board position. The answer will be
+written to the queue <cite>appqueue</cite> given during initialization.</p>
+<p>By default, the Chess Link board sends a position to <cite>appqueue</cite> on all changes
+to the board position, so explicit calls to <cite>get_position()</cite> should not be required
+most of the times.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.get_scan_time_ms">
+<code class="descname">get_scan_time_ms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_scan_time_ms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_scan_time_ms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynchronuosly request the current scan time setting. The answer will be
+written to the queue <cite>appqueue</cite> given during initialization.</p>
+<p>See see <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.get_version">
+<code class="descname">get_version</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynchronuosly request the Chess Link version number. The answer will be
+written to the queue <cite>appqueue</cite> given during initialization.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="chess_link.ChessLink.move_from">
 <code class="descname">move_from</code><span class="sig-paren">(</span><em>fen</em>, <em>legal_moves</em>, <em>color</em>, <em>eval_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.move_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.move_from" title="Permalink to this definition">¶</a></dt>
 <dd><p>Register all legal moves possible in current position. Once the legal moves are
@@ -131,6 +199,45 @@ blinking leds.</td>
 </dd></dl>
 
 <dl class="method">
+<dt id="chess_link.ChessLink.position_to_fen">
+<code class="descname">position_to_fen</code><span class="sig-paren">(</span><em>position</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.position_to_fen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.position_to_fen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a 8x8 <cite>position</cite> array to a fen position. Typically, an 8x8 <cite>position</cite> is generated
+by the Chess Link board, which has no information about the current move, side to move, or
+castling status.</p>
+<p>The returned FEN has always ending <cite>w KQkq - 0 1</cite> after the actual position (only rudimentary
+checks for castling are done)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">FEN string derived from postion-array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset Chess Link module.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.set_debounce">
+<code class="descname">set_debounce</code><span class="sig-paren">(</span><em>count</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_debounce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_debounce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the debounce-value. Debouncing helps to prevent random fluke events. Should be tested
+together with different <cite>set_scan_time_ms()</cite> values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>count</strong> – 0-4, 0: no debounce, 1-4: 1-4 scan times debounce.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="chess_link.ChessLink.set_led">
 <code class="descname">set_led</code><span class="sig-paren">(</span><em>pos</em>, <em>freq</em>, <em>ontime1</em>, <em>ontime2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_led"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_led" title="Permalink to this definition">¶</a></dt>
 <dd><p>Static blinking leds according to <cite>position</cite>.</p>
@@ -152,9 +259,72 @@ blinking leds.</td>
 </dd></dl>
 
 <dl class="method">
+<dt id="chess_link.ChessLink.set_led_brightness">
+<code class="descname">set_led_brightness</code><span class="sig-paren">(</span><em>level=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_led_brightness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_led_brightness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the led brighness.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>level</strong> – 0.0 - 1.0: 0(darkest) up to 1.0(brightest).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="chess_link.ChessLink.set_led_off">
 <code class="descname">set_led_off</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_led_off"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_led_off" title="Permalink to this definition">¶</a></dt>
 <dd><p>Switch off all leds.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.set_orientation">
+<code class="descname">set_orientation</code><span class="sig-paren">(</span><em>orientation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the Chess Link board orientation.</p>
+<p>Setting the orientation is only necessary, when autodecection cannot work,
+because the board has never been set to a start position.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>orientation</strong> – True: cable right, False: cable left.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.set_scan_time_ms">
+<code class="descname">set_scan_time_ms</code><span class="sig-paren">(</span><em>scan_ms=41</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_scan_time_ms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_scan_time_ms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the scan time value. Lower scan times make the board less susceptible to random unexpected
+events and can be used together with <cite>set_debounce()</cite> to prevent random fluke events.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>scan_ms</strong> – 30.72(fastest)-522.24(slowest), scan time in ms. A value around 100ms is 
+recommended, board default is 41ms.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.short_fen">
+<code class="descname">short_fen</code><span class="sig-paren">(</span><em>fen</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.short_fen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.short_fen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility-function to cut off all information after the actual position, since the board
+does not know about move counts or castling.</p>
+<p>E.g. <cite>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</cite> is transformed to
+<cite>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">position-only part of the fen string.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">

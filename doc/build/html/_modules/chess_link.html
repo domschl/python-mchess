@@ -47,17 +47,19 @@
 
 <span class="kn">import</span> <span class="nn">chess_link_protocol</span> <span class="k">as</span> <span class="nn">clp</span>
 
-<span class="c1"># See document `magic-board.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt; for details on the Chess Link protocol.</span>
+<span class="c1"># See document `magic-board.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;_</span>
+<span class="c1"># for details on the Chess Link protocol.</span>
 
-<span class="sd">&quot;&quot;&quot;The Chess Link Protocol</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The Chess Link Protocol</span>
 
+<span class="sd">```</span>
 <span class="sd">&lt;V56&gt;</span>
 <span class="sd">2018-08-31 11:07:31,141 DEBUG ChessLinkBluePy Sending: &lt;b&#39;\xd6\xb5\xb6&#39;&gt;</span>
 <span class="sd">2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy BLE: Handle: 55, data: b&#39;v\xb01\xb0\xb374&#39;</span>
 <span class="sd">2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy BLE received [v010374]</span>
 <span class="sd">2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy bluepy_ble received complete msg: v010374</span>
-
-
+<span class="sd">```</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 
@@ -542,15 +544,27 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">get_debounce</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.get_debounce"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.get_debounce">[docs]</a>    <span class="k">def</span> <span class="nf">get_debounce</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Asynchronuosly request the current debounce setting. The answer will be</span>
+<span class="sd">        written to the queue `appqueue` given during initialization.</span>
+
+<span class="sd">        See see `magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;`_.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span>
+                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_debounce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.set_debounce"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.set_debounce">[docs]</a>    <span class="k">def</span> <span class="nf">set_debounce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the debounce-value. Debouncing helps to prevent random fluke events. Should be tested</span>
+<span class="sd">        together with different `set_scan_time_ms()` values.</span>
+
+<span class="sd">        :param count: 0-4, 0: no debounce, 1-4: 1-4 scan times debounce.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;W02&quot;</span>
         <span class="k">if</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
@@ -559,17 +573,28 @@
             <span class="c1"># 3: no debounce, 4: 2 scans debounce, -&gt; 7: 4 scans</span>
             <span class="n">cmd</span> <span class="o">+=</span> <span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="n">count</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Setting board scan debounce to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">count</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Setting board scan debounce to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">count</span><span class="p">))</span></div>
 
-    <span class="k">def</span> <span class="nf">get_led_brightness_percent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.get_led_brightness_percent"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.get_led_brightness_percent">[docs]</a>    <span class="k">def</span> <span class="nf">get_led_brightness_percent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Asynchronuosly request the current led brightness setting. The answer will be</span>
+<span class="sd">        written to the queue `appqueue` given during initialization.</span>
+
+<span class="sd">        See see `magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;`_.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span>
+                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_led_brightness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.set_led_brightness"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.set_led_brightness">[docs]</a>    <span class="k">def</span> <span class="nf">set_led_brightness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the led brighness.</span>
+
+<span class="sd">        :param level: 0.0 - 1.0: 0(darkest) up to 1.0(brightest).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;W04&quot;</span>
         <span class="k">if</span> <span class="n">level</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">level</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
@@ -579,18 +604,31 @@
             <span class="n">cmd</span> <span class="o">+=</span> <span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="n">ilevel</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="s2">&quot;Setting led brightness to </span><span class="si">{}</span><span class="s2"> (bri=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ilevel</span><span class="p">,</span> <span class="n">level</span><span class="p">))</span>
+                <span class="s2">&quot;Setting led brightness to </span><span class="si">{}</span><span class="s2"> (bri=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ilevel</span><span class="p">,</span> <span class="n">level</span><span class="p">))</span></div>
 
-    <span class="k">def</span> <span class="nf">get_scan_time_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.get_scan_time_ms"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.get_scan_time_ms">[docs]</a>    <span class="k">def</span> <span class="nf">get_scan_time_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Asynchronuosly request the current scan time setting. The answer will be</span>
+<span class="sd">        written to the queue `appqueue` given during initialization.</span>
+
+<span class="sd">        See see `magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;`_.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span>
+                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
 
     <span class="c1"># default is scan every 40.96 ms, 24.4 scans per second.</span>
-    <span class="k">def</span> <span class="nf">set_scan_time_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scan_ms</span><span class="o">=</span><span class="mi">41</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.set_scan_time_ms"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.set_scan_time_ms">[docs]</a>    <span class="k">def</span> <span class="nf">set_scan_time_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scan_ms</span><span class="o">=</span><span class="mi">41</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the scan time value. Lower scan times make the board less susceptible to random unexpected</span>
+<span class="sd">        events and can be used together with `set_debounce()` to prevent random fluke events.</span>
+
+<span class="sd">        :param scan_ms: 30.72(fastest)-522.24(slowest), scan time in ms. A value around 100ms is </span>
+<span class="sd">                        recommended, board default is 41ms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;W01&quot;</span>
         <span class="k">if</span> <span class="n">scan_ms</span> <span class="o">&lt;</span> <span class="mf">2.048</span> <span class="o">*</span> <span class="mf">15.0</span> <span class="ow">or</span> <span class="n">scan_ms</span> <span class="o">&gt;</span> <span class="mf">255.0</span> <span class="o">*</span> <span class="mf">2.048</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
@@ -604,19 +642,38 @@
             <span class="n">cmd</span> <span class="o">+=</span> <span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="n">iscans</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="s2">&quot;Setting scan_ms intervall to </span><span class="si">{}</span><span class="s2"> -&gt; </span><span class="si">{}</span><span class="s2">ms (</span><span class="si">{}</span><span class="s2"> scans per sec)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iscans</span><span class="p">,</span> <span class="n">scan_ms</span><span class="p">,</span> <span class="mf">1000.0</span><span class="o">/</span><span class="n">scan_ms</span><span class="p">))</span>
+                <span class="s2">&quot;Setting scan_ms intervall to </span><span class="si">{}</span><span class="s2"> -&gt; </span><span class="si">{}</span><span class="s2">ms (</span><span class="si">{}</span><span class="s2"> scans per sec)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iscans</span><span class="p">,</span> <span class="n">scan_ms</span><span class="p">,</span> <span class="mf">1000.0</span><span class="o">/</span><span class="n">scan_ms</span><span class="p">))</span></div>
 
     <span class="c1"># TODO: move this?</span>
-    <span class="k">def</span> <span class="nf">short_fen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fen</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.short_fen"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.short_fen">[docs]</a>    <span class="k">def</span> <span class="nf">short_fen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fen</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Utility-function to cut off all information after the actual position, since the board</span>
+<span class="sd">        does not know about move counts or castling.</span>
+
+<span class="sd">        E.g. `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1` is transformed to</span>
+<span class="sd">        `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR`</span>
+
+<span class="sd">        :returns: position-only part of the fen string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">fen</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
                 <span class="s1">&#39;Invalid fen position &lt;</span><span class="si">{}</span><span class="s1">&gt; in short_fen&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fen</span><span class="p">))</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">fen</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">fen</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span></div>
 
-    <span class="k">def</span> <span class="nf">position_to_fen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.position_to_fen"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.position_to_fen">[docs]</a>    <span class="k">def</span> <span class="nf">position_to_fen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert a 8x8 `position` array to a fen position. Typically, an 8x8 `position` is generated</span>
+<span class="sd">        by the Chess Link board, which has no information about the current move, side to move, or</span>
+<span class="sd">        castling status.</span>
+
+<span class="sd">        The returned FEN has always ending `w KQkq - 0 1` after the actual position (only rudimentary</span>
+<span class="sd">        checks for castling are done)</span>
+
+<span class="sd">        :returns: FEN string derived from postion-array </span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">fen</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">blanks</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
@@ -656,9 +713,17 @@
         <span class="k">if</span> <span class="n">castle</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
             <span class="n">castle</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span>
         <span class="n">fen</span> <span class="o">+=</span> <span class="n">castle</span><span class="o">+</span><span class="s1">&#39; - 0 1&#39;</span>
-        <span class="k">return</span> <span class="n">fen</span>
+        <span class="k">return</span> <span class="n">fen</span></div>
 
-    <span class="k">def</span> <span class="nf">fen_to_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fen</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.fen_to_position"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.fen_to_position">[docs]</a>    <span class="k">def</span> <span class="nf">fen_to_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fen</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert a FEN position into an 8x8 `position` array.</span>
+
+<span class="sd">        Note that the current implementation of `position` arrays does not maintain move-counts,</span>
+<span class="sd">        castling stati or any history data.</span>
+
+<span class="sd">        :returns: 8x8 `position` array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">position</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span>
         <span class="n">fenp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">short_fen</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span>
         <span class="n">fi</span> <span class="o">=</span> <span class="mi">0</span>
@@ -686,9 +751,12 @@
                     <span class="s2">&quot;Illegal fen: missing &#39;/&#39; </span><span class="si">{}{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">[</span><span class="si">{}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">fenp</span><span class="p">[</span><span class="n">fi</span><span class="p">],</span> <span class="n">fi</span><span class="p">))</span>
                 <span class="k">return</span> <span class="p">[]</span>
             <span class="n">fi</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="n">position</span>
+        <span class="k">return</span> <span class="n">position</span></div>
 
     <span class="k">def</span> <span class="nf">_open_transport</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transport</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Internal function to load transport modules (USB or bluetooth)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">tri</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">transport</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;imported </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transport</span><span class="p">))</span>
@@ -705,7 +773,10 @@
                 <span class="n">transport</span><span class="p">))</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.reset"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset Chess Link module.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
@@ -713,30 +784,60 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;Not connected to Chess Link, can&#39;t reset.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;?&#39;</span>
+        <span class="k">return</span> <span class="s1">&#39;?&#39;</span></div>
 
-    <span class="k">def</span> <span class="nf">get_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.get_version"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.get_version">[docs]</a>    <span class="k">def</span> <span class="nf">get_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Asynchronuosly request the Chess Link version number. The answer will be</span>
+<span class="sd">        written to the queue `appqueue` given during initialization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;Not connected to Chess Link, can&#39;t get version.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;?&#39;</span>
+        <span class="k">return</span> <span class="s1">&#39;?&#39;</span></div>
 
-    <span class="k">def</span> <span class="nf">get_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.get_position"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.get_position">[docs]</a>    <span class="k">def</span> <span class="nf">get_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Asynchronuosly request the Chess Link board position. The answer will be</span>
+<span class="sd">        written to the queue `appqueue` given during initialization.</span>
+
+<span class="sd">        By default, the Chess Link board sends a position to `appqueue` on all changes</span>
+<span class="sd">        to the board position, so explicit calls to `get_position()` should not be required</span>
+<span class="sd">        most of the times.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="s2">&quot;S&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;Not connected to Chess Link, can&#39;t get position.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;?&#39;</span>
+        <span class="k">return</span> <span class="s1">&#39;?&#39;</span></div>
 
-    <span class="k">def</span> <span class="nf">set_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.set_orientation"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.set_orientation">[docs]</a>    <span class="k">def</span> <span class="nf">set_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the Chess Link board orientation.</span>
+
+<span class="sd">        Setting the orientation is only necessary, when autodecection cannot work,</span>
+<span class="sd">        because the board has never been set to a start position.</span>
+
+<span class="sd">        :param orientation: True: cable right, False: cable left.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">orientation</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_configuration</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_configuration</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">get_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span></div>
+<div class="viewcode-block" id="ChessLink.get_orientation"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.get_orientation">[docs]</a>    <span class="k">def</span> <span class="nf">get_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Asynchronuosly request the Chess Link board orientation. The answer will be</span>
+<span class="sd">        written to the queue `appqueue` given during initialization.</span>
+
+<span class="sd">        ChessLink tries to autodetect the orientation of the board by looking for</span>
+<span class="sd">        initial start positions.</span>
+
+<span class="sd">        If the board has never been set to the initial start position, the orientation</span>
+<span class="sd">        must be set using `set_orientation()`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span></div></div>
 </pre></div>
 
           </div>
