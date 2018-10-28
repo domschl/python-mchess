@@ -23,9 +23,19 @@ class Transport():
 
     This transport uses an asynchronous background thread for hardware communcation.
     All replies are written to the python queue `que` given during initialization.
+
+    For the details of the Chess Link protocol, please refer to: 
+    `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
     """
 
     def __init__(self, que):
+        """
+        Initialize with python queue for event handling.
+        Events are strings conforming to the ChessLink protocol as documented in 
+        `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
+
+        :param que: Python queue that will eceive events from chess board.
+        """
         if bluepy_ble_support == False:
             self.init = False
             return
