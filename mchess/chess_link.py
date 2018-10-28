@@ -44,6 +44,39 @@ class ChessLink:
 
     Communcation with the Chess Link board is asynchronous. Replies from the board are written
     to the python queue (`appqueue`) that is provided during instantiation.
+
+    Every message in `appqueue` is a short json string. Currently implemented are:
+
+    Version::
+
+        {'version': '01.04', 'actor': '<actor-name>'}
+
+    New game detected (board has been set to start position)::
+
+        {'new game', '', 'actor': '<actor-name>', 'orientation': True}
+
+    Transport error::
+
+        {'error': '<error message>', 'actor': '<actor-name>'}
+
+    Board position has changed::
+
+        {'fen': fen, , 'actor': '<actor-name>'}
+
+    See remarks on `position2fen()`: move counts, castling are not valid, only the position
+    part should be used.
+
+    Valid move on board detected::
+
+        {'move': {'uci': '<uci-format move, e.g. e2e4>', 'fen': '<resulting fen position>', 
+         'actor': '<actor-name>'}}
+
+    See remarks on `position2fen()`: move counts, castling are not valid, only the position
+    part should be used.
+
+    In order for the board to detect valid move, a list of possible valid moves has to given
+    to the board using `move_from()`. Typically, this list is generated using the python
+    module `python_chess`. See chess_link_agent.py for an example.
     """
 
     def __init__(self, appque, name):
@@ -212,7 +245,7 @@ class ChessLink:
                 msg = self.trque.get()
                 if msg == 'error':
                     self.appque.put(
-                        {'error': 'transport failure or not available.'})
+                        {'error': 'transport failure or not available.', 'actor': self.name})
                     continue
 
                 if len(msg) > 0:
@@ -297,7 +330,8 @@ class ChessLink:
                         if len(msg) == 7:
                             version = '{}.{}'.format(
                                 msg[1]+msg[2], msg[3]+msg[4])
-                            self.appque.put({'version': version})
+                            self.appque.put(
+                                {'version': version, 'actor': self.name})
                         else:
                             self.log.warning(
                                 "Bad length of version-reply: {}".format(len(version)))
