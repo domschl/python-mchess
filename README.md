@@ -99,4 +99,9 @@ It whould be straight forward to include other agents (e.g. pyqt5 GUI or web GUI
 
 ## Documentation
 
-[API Documentation](https://domschl.github.io/python-mchess/doc/build/html/index.html) (incomplete!)
+[API Documentation for chess_link.py](https://domschl.github.io/python-mchess/doc/build/html/index.html)
+
+## Acknowledgements
+
+* Thanks to Millennium GmbH for providing all information necessary for the implementation and for
+  providing a ChessLink sample. See [for more information](http://computerchess.de/#ChessLink) on ChessLink.
