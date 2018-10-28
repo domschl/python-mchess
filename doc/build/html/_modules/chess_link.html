@@ -63,14 +63,26 @@
 
 <div class="viewcode-block" id="ChessLink"><a class="viewcode-back" href="../index.html#chess_link.ChessLink">[docs]</a><span class="k">class</span> <span class="nc">ChessLink</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This implements the &#39;Chess Link&#39; protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol</span>
+<span class="sd">    This implements the &#39;Chess Link&#39; protocol for Millennium Chess Genius Exclusive and future boards </span>
+<span class="sd">    compatible with that protocol</span>
 
-<span class="sd">    See also: `magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;`_.</span>
+<span class="sd">    For the details of the Chess Link protocol, please refer to: </span>
+<span class="sd">    `magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;`_.</span>
+
+<span class="sd">    `position` array</span>
+
+<span class="sd">    This class refers to chess boards using the `position` 8x8 array. Field values: 1: white pawn, </span>
+<span class="sd">    2: w-knight, 3: w-bishop, 4: w-rook, 5: w-queen, 6: w-king, 0: empty square, -1; black pawn, </span>
+<span class="sd">    -2: b-knight, -3: b-bishop, -4: b-rook, -5: b-queen, -6: b-king.</span>
+
+<span class="sd">    Communcation with the Chess Link board is asynchronous. Replies from the board are written</span>
+<span class="sd">    to the python queue (`appqueue`) that is provided during instantiation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ChessLink.__init__"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">appque</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Constructor, searches, configures and connectors to Chess Link compatible Millennium Chess Genius Exclusive or similar boards.</span>
+<span class="sd">        Constructor, searches, configures and connectors to Chess Link compatible </span>
+<span class="sd">        Millennium Chess Genius Exclusive or similar boards.</span>
 
 <span class="sd">        :param appque: a Queue that receive chess board events</span>
 <span class="sd">        :param name: identifies this protocol</span>
@@ -223,7 +235,9 @@
     <span class="k">def</span> <span class="nf">_event_worker_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">mutex</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This background thread is started on creation of a ChessLink object. </span>
-<span class="sd">        It decodes chess link encoded messages and sends jason messages to the application.</span>
+<span class="sd">        It decodes chess link encoded messages and sends json messages to the application.</span>
+
+<span class="sd">        The event worker thread is automatically started during __init__.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Chess Link worker thread started.&#39;</span><span class="p">)</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">thread_active</span><span class="p">:</span>
@@ -353,7 +367,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initiate a new game</span>
 
-<span class="sd">        :param pos: position array of the current position. If the hardware board has </span>
+<span class="sd">        :param pos: `position` array of the current position. If the hardware board has </span>
 <span class="sd">                    currently a different position, all differences are indicated by </span>
 <span class="sd">                    blinking leds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -364,6 +378,8 @@
     <span class="k">def</span> <span class="nf">_check_move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check, if current change on board is a legal move. If yes, put move into queue</span>
+<span class="sd">        `appqueue`. This function is called by the background thread. In order for</span>
+<span class="sd">        it to be called, `move_from` needs to have been called before.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">fen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">short_fen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position_to_fen</span><span class="p">(</span><span class="n">pos</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span><span class="p">:</span>
@@ -377,11 +393,16 @@
 
 <div class="viewcode-block" id="ChessLink.move_from"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.move_from">[docs]</a>    <span class="k">def</span> <span class="nf">move_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fen</span><span class="p">,</span> <span class="n">legal_moves</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">eval_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Register all legal moves possible in current position.</span>
+<span class="sd">        Register all legal moves possible in current position. Once the legal moves are</span>
+<span class="sd">        registered, the background thread checks for board changes, and signals a legal</span>
+<span class="sd">        move using the python queue `appqueue` given during initialization.</span>
+
+<span class="sd">        Non-legal changes or incomplete moves will cause the affected fields to blink continously.</span>
 
 <span class="sd">        :param fen: current position</span>
-<span class="sd">        :param legal_moves: dictionary of key:fen value: uci_move (e.g. e2e4)</span>
-<span class="sd">        :param color: color to move</span>
+<span class="sd">        :param legal_moves: dictionary of key:fen value: uci_move (e.g. e2e4). python_chess</span>
+<span class="sd">                            is the recommended module to calculate all legal moves.</span>
+<span class="sd">        :param color: color to move (ChessLink.WHITE or ChessLink.BLACK)</span>
 <span class="sd">        :param eval_only: True: indicate ponder evals</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">eval_only</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
@@ -396,8 +417,14 @@
 
 <div class="viewcode-block" id="ChessLink.show_deltas"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.show_deltas">[docs]</a>    <span class="k">def</span> <span class="nf">show_deltas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">freq</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Signal leds to show difference between current position on board, and intended position. This is used</span>
-<span class="sd">        to signal moves by other agents, or discrepancies with the current position.</span>
+<span class="sd">        Signal leds to show difference between current position on board, and intended position.</span>
+<span class="sd">        This is used to signal moves by other agents, or discrepancies with the current position.</span>
+
+<span class="sd">        Up to four half-moves can be indicated at sequence of up to 5 positions.</span>
+
+<span class="sd">        :param positions: array of `position` arrays. Max length is 5 (4 half-moves incl. start</span>
+<span class="sd">                          position)</span>
+<span class="sd">        :param freq: Blink frequency</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
             <span class="n">npos</span> <span class="o">=</span> <span class="mi">5</span>
@@ -413,12 +440,12 @@
                             <span class="n">dpos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">|=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span> <span class="o">-</span> <span class="n">frame</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">dpos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">|=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span> <span class="o">-</span> <span class="p">(</span><span class="n">frame</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_mv_led</span><span class="p">(</span><span class="n">dpos</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_mv_led</span><span class="p">(</span><span class="n">dpos</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ChessLink.set_mv_led"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.set_mv_led">[docs]</a>    <span class="k">def</span> <span class="nf">set_mv_led</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">freq</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_set_mv_led</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">freq</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set the leds on board according to pos array</span>
+<span class="sd">        Set the leds on board according to pos array, used by `show_deltas`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">leds</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
@@ -443,9 +470,18 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
+                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">show_delta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mh">0x20</span><span class="p">,</span> <span class="n">ontime1</span><span class="o">=</span><span class="mh">0x0f</span><span class="p">,</span> <span class="n">ontime2</span><span class="o">=</span><span class="mh">0xf0</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.show_delta"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.show_delta">[docs]</a>    <span class="k">def</span> <span class="nf">show_delta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mh">0x20</span><span class="p">,</span> <span class="n">ontime1</span><span class="o">=</span><span class="mh">0x0f</span><span class="p">,</span> <span class="n">ontime2</span><span class="o">=</span><span class="mh">0xf0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Indicate difference between two `position` arrays using the board&#39;s leds.</span>
+
+<span class="sd">        :param pos1: `position` array of the start position</span>
+<span class="sd">        :param pos2: `position` array of the target position</span>
+<span class="sd">        :param freq: blink frequency, see `magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;`_.</span>
+<span class="sd">        :param ontime1: 8-bit value, bits indicate cycles led is on.</span>
+<span class="sd">        :param ontime2: 8-bit value, bits indicate cycles led is off.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dpos</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span>
         <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
@@ -454,9 +490,17 @@
                         <span class="n">dpos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">dpos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_led</span><span class="p">(</span><span class="n">dpos</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">ontime1</span><span class="p">,</span> <span class="n">ontime2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_led</span><span class="p">(</span><span class="n">dpos</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">ontime1</span><span class="p">,</span> <span class="n">ontime2</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_led</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">ontime1</span><span class="p">,</span> <span class="n">ontime2</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.set_led"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.set_led">[docs]</a>    <span class="k">def</span> <span class="nf">set_led</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">ontime1</span><span class="p">,</span> <span class="n">ontime2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Static blinking leds according to `position`.</span>
+
+<span class="sd">        :param pos: `position` array, field != 0 indicates a led that should blink.</span>
+<span class="sd">        :param freq: blink frequency, see `magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;`_.</span>
+<span class="sd">        :param ontime1: 8-bit value, bits indicate cycles led is on.</span>
+<span class="sd">        :param ontime2: 8-bit value, bits indicate cycles led is off.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">leds</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
             <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;L&quot;</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
@@ -486,14 +530,17 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span>
+                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_led_off</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.set_led_off"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.set_led_off">[docs]</a>    <span class="k">def</span> <span class="nf">set_led_off</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Switch off all leds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span>
+                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">get_debounce</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>

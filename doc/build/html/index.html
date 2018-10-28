@@ -41,12 +41,21 @@
 <dl class="class">
 <dt id="chess_link.ChessLink">
 <em class="property">class </em><code class="descclassname">chess_link.</code><code class="descname">ChessLink</code><span class="sig-paren">(</span><em>appque</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink" title="Permalink to this definition">¶</a></dt>
-<dd><p>This implements the ‘Chess Link’ protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol</p>
-<p>See also: <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
+<dd><p>This implements the ‘Chess Link’ protocol for Millennium Chess Genius Exclusive and future boards 
+compatible with that protocol</p>
+<p>For the details of the Chess Link protocol, please refer to: 
+<a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
+<p><cite>position</cite> array</p>
+<p>This class refers to chess boards using the <cite>position</cite> 8x8 array. Field values: 1: white pawn, 
+2: w-knight, 3: w-bishop, 4: w-rook, 5: w-queen, 6: w-king, 0: empty square, -1; black pawn, 
+-2: b-knight, -3: b-bishop, -4: b-rook, -5: b-queen, -6: b-king.</p>
+<p>Communcation with the Chess Link board is asynchronous. Replies from the board are written
+to the python queue (<cite>appqueue</cite>) that is provided during instantiation.</p>
 <dl class="method">
 <dt id="chess_link.ChessLink.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>appque</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructor, searches, configures and connectors to Chess Link compatible Millennium Chess Genius Exclusive or similar boards.</p>
+<dd><p>Constructor, searches, configures and connectors to Chess Link compatible 
+Millennium Chess Genius Exclusive or similar boards.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -70,15 +79,19 @@
 <dl class="method">
 <dt id="chess_link.ChessLink.move_from">
 <code class="descname">move_from</code><span class="sig-paren">(</span><em>fen</em>, <em>legal_moves</em>, <em>color</em>, <em>eval_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.move_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.move_from" title="Permalink to this definition">¶</a></dt>
-<dd><p>Register all legal moves possible in current position.</p>
+<dd><p>Register all legal moves possible in current position. Once the legal moves are
+registered, the background thread checks for board changes, and signals a legal
+move using the python queue <cite>appqueue</cite> given during initialization.</p>
+<p>Non-legal changes or incomplete moves will cause the affected fields to blink continously.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fen</strong> – current position</li>
-<li><strong>legal_moves</strong> – dictionary of key:fen value: uci_move (e.g. e2e4)</li>
-<li><strong>color</strong> – color to move</li>
+<li><strong>legal_moves</strong> – dictionary of key:fen value: uci_move (e.g. e2e4). python_chess
+is the recommended module to calculate all legal moves.</li>
+<li><strong>color</strong> – color to move (ChessLink.WHITE or ChessLink.BLACK)</li>
 <li><strong>eval_only</strong> – True: indicate ponder evals</li>
 </ul>
 </td>
@@ -95,7 +108,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pos</strong> – position array of the current position. If the hardware board has 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pos</strong> – <cite>position</cite> array of the current position. If the hardware board has 
 currently a different position, all differences are indicated by 
 blinking leds.</td>
 </tr>
@@ -118,16 +131,73 @@ blinking leds.</td>
 </dd></dl>
 
 <dl class="method">
-<dt id="chess_link.ChessLink.set_mv_led">
-<code class="descname">set_mv_led</code><span class="sig-paren">(</span><em>pos</em>, <em>freq</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_mv_led"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_mv_led" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the leds on board according to pos array</p>
+<dt id="chess_link.ChessLink.set_led">
+<code class="descname">set_led</code><span class="sig-paren">(</span><em>pos</em>, <em>freq</em>, <em>ontime1</em>, <em>ontime2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_led"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_led" title="Permalink to this definition">¶</a></dt>
+<dd><p>Static blinking leds according to <cite>position</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pos</strong> – <cite>position</cite> array, field != 0 indicates a led that should blink.</li>
+<li><strong>freq</strong> – <p>blink frequency, see <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
+</li>
+<li><strong>ontime1</strong> – 8-bit value, bits indicate cycles led is on.</li>
+<li><strong>ontime2</strong> – 8-bit value, bits indicate cycles led is off.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.set_led_off">
+<code class="descname">set_led_off</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_led_off"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_led_off" title="Permalink to this definition">¶</a></dt>
+<dd><p>Switch off all leds.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link.ChessLink.show_delta">
+<code class="descname">show_delta</code><span class="sig-paren">(</span><em>pos1</em>, <em>pos2</em>, <em>freq=32</em>, <em>ontime1=15</em>, <em>ontime2=240</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.show_delta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.show_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicate difference between two <cite>position</cite> arrays using the board’s leds.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pos1</strong> – <cite>position</cite> array of the start position</li>
+<li><strong>pos2</strong> – <cite>position</cite> array of the target position</li>
+<li><strong>freq</strong> – <p>blink frequency, see <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
+</li>
+<li><strong>ontime1</strong> – 8-bit value, bits indicate cycles led is on.</li>
+<li><strong>ontime2</strong> – 8-bit value, bits indicate cycles led is off.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="chess_link.ChessLink.show_deltas">
 <code class="descname">show_deltas</code><span class="sig-paren">(</span><em>positions</em>, <em>freq</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.show_deltas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.show_deltas" title="Permalink to this definition">¶</a></dt>
-<dd><p>Signal leds to show difference between current position on board, and intended position. This is used
-to signal moves by other agents, or discrepancies with the current position.</p>
+<dd><p>Signal leds to show difference between current position on board, and intended position.
+This is used to signal moves by other agents, or discrepancies with the current position.</p>
+<p>Up to four half-moves can be indicated at sequence of up to 5 positions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>positions</strong> – array of <cite>position</cite> arrays. Max length is 5 (4 half-moves incl. start
+position)</li>
+<li><strong>freq</strong> – Blink frequency</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -154,7 +224,7 @@ and board orientation to ‘chess_link_config.json’</p>
 message-block-parity.</p>
 <p>The chess link protocol sends ASCII messages. Each ASCII character gets an additional
 odd-parity-bit. Each block of ASCII+odd-parity bytes gets an additional block parity.</p>
-<p>Details of the protocol are documented in <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-board.md</a>.</p>
+<p>Details of the Chess Link protocol are documented in <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-board.md</a>.</p>
 <dl class="function">
 <dt id="chess_link_protocol.add_block_crc">
 <code class="descclassname">chess_link_protocol.</code><code class="descname">add_block_crc</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_protocol.html#add_block_crc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_protocol.add_block_crc" title="Permalink to this definition">¶</a></dt>

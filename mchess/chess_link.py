@@ -39,6 +39,9 @@ class ChessLink:
     This class refers to chess boards using the `position` 8x8 array. Field values: 1: white pawn, 
     2: w-knight, 3: w-bishop, 4: w-rook, 5: w-queen, 6: w-king, 0: empty square, -1; black pawn, 
     -2: b-knight, -3: b-bishop, -4: b-rook, -5: b-queen, -6: b-king.
+
+    Communcation with the Chess Link board is asynchronous. Replies from the board are written
+    to the python queue (`appqueue`) that is provided during instantiation.
     """
 
     def __init__(self, appque, name):
@@ -340,6 +343,8 @@ class ChessLink:
     def _check_move(self, pos):
         """
         Check, if current change on board is a legal move. If yes, put move into queue
+        `appqueue`. This function is called by the background thread. In order for
+        it to be called, `move_from` needs to have been called before.
         """
         fen = self.short_fen(self.position_to_fen(pos))
         if self.legal_moves is not None and fen in self.legal_moves:
@@ -353,11 +358,16 @@ class ChessLink:
 
     def move_from(self, fen, legal_moves, color, eval_only=False):
         """
-        Register all legal moves possible in current position.
+        Register all legal moves possible in current position. Once the legal moves are
+        registered, the background thread checks for board changes, and signals a legal
+        move using the python queue `appqueue` given during initialization.
+
+        Non-legal changes or incomplete moves will cause the affected fields to blink continously.
 
         :param fen: current position
-        :param legal_moves: dictionary of key:fen value: uci_move (e.g. e2e4)
-        :param color: color to move
+        :param legal_moves: dictionary of key:fen value: uci_move (e.g. e2e4). python_chess
+                            is the recommended module to calculate all legal moves.
+        :param color: color to move (ChessLink.WHITE or ChessLink.BLACK)
         :param eval_only: True: indicate ponder evals
         """
         if eval_only is False:
@@ -372,8 +382,14 @@ class ChessLink:
 
     def show_deltas(self, positions, freq):
         """
-        Signal leds to show difference between current position on board, and intended position. This is used
-        to signal moves by other agents, or discrepancies with the current position.
+        Signal leds to show difference between current position on board, and intended position.
+        This is used to signal moves by other agents, or discrepancies with the current position.
+
+        Up to four half-moves can be indicated at sequence of up to 5 positions.
+
+        :param positions: array of `position` arrays. Max length is 5 (4 half-moves incl. start
+                          position)
+        :param freq: Blink frequency
         """
         if len(positions) > 5:
             npos = 5
@@ -389,12 +405,12 @@ class ChessLink:
                             dpos[y][x] |= 1 << (7 - frame)
                         else:
                             dpos[y][x] |= 1 << (7 - (frame + 1))
-        self.set_mv_led(dpos, freq)
+        self._set_mv_led(dpos, freq)
         time.sleep(0.05)
 
-    def set_mv_led(self, pos, freq):
+    def _set_mv_led(self, pos, freq):
         """
-        Set the leds on board according to pos array
+        Set the leds on board according to pos array, used by `show_deltas`.
         """
         if self.connected is True:
             leds = [[0 for x in range(9)] for y in range(9)]
@@ -422,6 +438,15 @@ class ChessLink:
                 "Not connected to Chess Link.")
 
     def show_delta(self, pos1, pos2, freq=0x20, ontime1=0x0f, ontime2=0xf0):
+        """
+        Indicate difference between two `position` arrays using the board's leds.
+
+        :param pos1: `position` array of the start position
+        :param pos2: `position` array of the target position
+        :param freq: blink frequency, see `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
+        :param ontime1: 8-bit value, bits indicate cycles led is on.
+        :param ontime2: 8-bit value, bits indicate cycles led is off.
+        """
         dpos = [[0 for x in range(8)] for y in range(8)]
         for y in range(8):
             for x in range(8):
@@ -433,6 +458,14 @@ class ChessLink:
         self.set_led(dpos, freq, ontime1, ontime2)
 
     def set_led(self, pos, freq, ontime1, ontime2):
+        """
+        Static blinking leds according to `position`.
+
+        :param pos: `position` array, field != 0 indicates a led that should blink.
+        :param freq: blink frequency, see `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
+        :param ontime1: 8-bit value, bits indicate cycles led is on.
+        :param ontime2: 8-bit value, bits indicate cycles led is off.
+        """
         if self.connected is True:
             leds = [[0 for x in range(9)] for y in range(9)]
             cmd = "L"+clp.hex2(freq)
@@ -465,6 +498,9 @@ class ChessLink:
                 "Not connected to Chess Link.")
 
     def set_led_off(self):
+        """
+        Switch off all leds.
+        """
         if self.connected is True:
             self.trans.write_mt("X")
         else:
