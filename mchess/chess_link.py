@@ -12,12 +12,26 @@ import copy
 
 import chess_link_protocol as clp
 
+# TODO: Expand protocol description
+"""The Chess Link Protocol
+
+<V56>
+2018-08-31 11:07:31,141 DEBUG ChessLinkBluePy Sending: <b'\xd6\xb5\xb6'>
+2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy BLE: Handle: 55, data: b'v\xb01\xb0\xb374'
+2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy BLE received [v010374]
+2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy bluepy_ble received complete msg: v010374
+
+
+"""
+
 
 class ChessLink:
     """This implements the 'Chess Link' protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol"""
 
     def __init__(self, appque, name):
-        """Constructor, appque is a Queue that receive chess board events, name identifies this protocol"""
+        """Constructor, searches, configures and connectors to Chess Link compatible Millennium Chess Genius Exclusive or similar boards.
+        :param appque: a Queue that receive chess board events
+        :param name: identifies this protocol"""
         self.name = name
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "ascii": "PNBRQK.pnbrqk"}
@@ -57,7 +71,7 @@ class ChessLink:
 
         self.thread_active = True
         self.event_thread = threading.Thread(
-            target=self.event_worker_thread, args=(self.trque, self.board_mutex))
+            target=self._event_worker_thread, args=(self.trque, self.board_mutex))
         self.event_thread.setDaemon(True)
         self.event_thread.start()
 
@@ -133,7 +147,8 @@ class ChessLink:
                     self.mill_config['transport'], self.mill_config['address']))
 
     def position_initialized(self):
-        """Check, if a board position has been received and chess link board is online. Returns True on success"""
+        """Check, if a board position has been received and chess link board is online.
+        :return: True, if board position has been received."""
         if self.connected is True:
             pos = None
             with self.board_mutex:
@@ -143,16 +158,22 @@ class ChessLink:
         return False
 
     def write_configuration(self):
-        """Write the configuration for hardware connection (USB/Bluetooth LE) and board orientation"""
+        """Write the configuration for hardware connection (USB/Bluetooth LE) 
+        and board orientation to 'chess_link_config.json
+        :return: True on success, False on error"""
         self.mill_config['orientation'] = self.orientation
         try:
             with open("chess_link_config.json", "w") as f:
                 json.dump(self.mill_config, f)
+                return True
         except Exception as e:
             self.log.error("Failed to save default configuration {} to {}: {}".format(
                 self.mill_config, "chess_link_config.json", e))
+        return False
 
-    def event_worker_thread(self, que, mutex):
+    def _event_worker_thread(self, que, mutex):
+        """This background thread is started on creation of a ChessLink object. 
+        It decodes chess link encoded messages and sends jason messages to the application."""
         self.log.debug('Chess Link worker thread started.')
         while self.thread_active:
             if self.trque.empty() is False:
@@ -238,7 +259,7 @@ class ChessLink:
                                 self.reference_position, self.position)
                             # self.print_position_ascii(position)
                             self.appque.put({'fen': fen, 'actor': self.name})
-                            self.check_move(position)
+                            self._check_move(position)
                     if msg[0] == 'v':
                         self.log.debug('got version reply')
                         if len(msg) == 7:
@@ -278,12 +299,15 @@ class ChessLink:
                 time.sleep(0.01)
 
     def new_game(self, pos):
-        """Initiate a new game"""
+        """Initiate a new game
+        :param pos: position array of the current position. If the hardware board has 
+        currently a different position, all differences are indicated by blinking leds.
+        """
         self.reference_position = pos
         self.set_led_off()
         self.legal_moves = None
 
-    def check_move(self, pos):
+    def _check_move(self, pos):
         """Check, if current change on board is a legal move. If yes, put move into queue"""
         fen = self.short_fen(self.position_to_fen(pos))
         if self.legal_moves is not None and fen in self.legal_moves:
@@ -296,7 +320,12 @@ class ChessLink:
         return False
 
     def move_from(self, fen, legal_moves, color, eval_only=False):
-        """Register all legal moves possible in current position"""
+        """Register all legal moves possible in current position.
+        :param fen: current position
+        :param legal_moves: dictionary of key:fen value: uci_move (e.g. e2e4)
+        :param color: color to move
+        :param eval_only: True: indicate ponder evals
+        """
         if eval_only is False:
             self.legal_moves = legal_moves
             self.turn = color
@@ -423,7 +452,7 @@ class ChessLink:
             self.trans.write_mt(cmd)
             self.log.debug("Setting board scan debounce to {}".format(count))
 
-    def get_led_brightness_precent(self):
+    def get_led_brightness_percent(self):
         cmd = "R"+clp.hex2(4)
         if self.connected is True:
             self.trans.write_mt(cmd)

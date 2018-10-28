@@ -150,11 +150,23 @@ class TerminalAgent:
 
         return ams
 
-    def display_board(self, board):
-        txa = self.position_to_text(board)
-        ams = self.moves_to_text(board, lines=len(txa))
+    def display_board(self, board, use_unicode_chess_figures=True):
+        txa = self.position_to_text(
+            board, use_unicode_chess_figures=use_unicode_chess_figures)
+        ams = self.moves_to_text(board, lines=len(
+            txa), use_unicode_chess_figures=use_unicode_chess_figures)
         for i in range(len(txa)):
             print('{}  {}'.format(txa[i], ams[i]))
+
+    def display_move(self, move_msg):
+        if 'score' in move_msg['move']:
+            print('\nMove {} (ev: {}) by {}'.format(
+                move_msg['move']['uci'], move_msg['move']['score'], move_msg['move']['actor']))
+        else:
+            print('\nMove {} by {}'.format(
+                move_msg['move']['uci'], move_msg['move']['actor']))
+        if 'ponder' in move_msg['move']:
+            print('Ponder: {}'.format(move_msg['move']['ponder']))
 
     def display_info(self, board, info):
         st = '['
@@ -166,9 +178,11 @@ class TerminalAgent:
             d = 'Depth: {}'.format(info['depth'])
             if 'seldepth' in info:
                 d += '/{} '.format(info['seldepth'])
-            else:
-                d += ' '
             st += d
+        if 'tbhits' in info:
+            st += 'TB: {}] '.format(info['tbhits'])
+        else:
+            st += '] '
         if 'variant' in info:
             moves = info['variant']
             mvs = len(moves)
@@ -234,8 +248,9 @@ class TerminalAgent:
                     n = int(cmd[2:])
                     appque.put({'max_ply': n})
                 elif cmd == 'p':
-                    log.debug('position')
-                    appque.put({'position': '', 'actor': self.name})
+                    log.debug('position_fetch')
+                    appque.put(
+                        {'position_fetch': 'ChessLinkAgent', 'actor': self.name})
                 elif cmd == 'g':
                     log.debug('go')
                     appque.put({'go': 'current', 'actor': self.name})
@@ -260,7 +275,7 @@ class TerminalAgent:
                     log.debug('stop')
                     appque.put({'stop': '', 'actor': self.name})
                 elif cmd[:4] == 'fen ':
-                    appque.put({'fen': cmd[4:], 'actor': self.name})
+                    appque.put({'fen_setup': cmd[4:], 'actor': self.name})
                 elif cmd == 'help':
                     log.info(
                         'a - analyze current position, ab: analyze black, aw: analyses white')

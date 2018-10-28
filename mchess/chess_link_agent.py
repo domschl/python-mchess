@@ -37,6 +37,9 @@ class ChessLinkAgent:
     def agent_ready(self):
         return self.init_position
 
+    def get_fen(self):
+        return self.cl_brd.position_to_fen(self.cl_brd.position)
+
     def variant_to_positions(self, board, moves, plies):
         pos = []
         mvs = len(moves)

@@ -66,6 +66,10 @@ if __name__ == '__main__':
     if 'max_plies_board' not in prefs:
         prefs['max_plies_board'] = 3
         changed_prefs = True
+    if 'import_chesslink_position' not in prefs:
+        prefs['import_chesslink_position'] = True
+        changed_prefs = True
+
     if changed_prefs is True:
         try:
             with open('preferences.json', 'w') as fw:
@@ -96,6 +100,11 @@ if __name__ == '__main__':
     board = chess.Board()
     state = States.IDLE
     last_info = 0
+    ponder_move = None
+
+    if cla.agent_ready() and prefs['import_chesslink_position'] is True:
+        appque.put({'position_fetch': 'ChessLinkAgent', 'agent': 'prefs'})
+        state = States.BUSY
 
     ags = ""
     for p in player_w + player_b:
@@ -109,16 +118,33 @@ if __name__ == '__main__':
 
     while True:
         if state == States.IDLE:
-            if board.turn == chess.WHITE:
+            if mode == 'player-engine':
+                if board.turn == chess.WHITE:
+                    active_player = player_w
+                    passive_player = player_b
+                else:
+                    active_player = player_b
+                    passive_player = player_w
+            if mode == 'engine-player':
+                if board.turn == chess.BLACK:
+                    active_player = player_w
+                    passive_player = player_b
+                else:
+                    active_player = player_b
+                    passive_player = player_w
+            if mode == 'player-player':
                 active_player = player_w
-                passive_player = player_b
-            else:
-                active_player = player_b
                 passive_player = player_w
+
             for agent in passive_player:
                 setm = getattr(agent, "set_valid_moves", None)
                 if callable(setm):
                     agent.set_valid_moves(board, [])
+                if ponder_move != None:
+                    setp = getattr(agent, "set_ponder", None)
+                    if callable(setp):
+                        agent.set_ponder(board, ponder_move)
+
             val = valid_moves(board)
             for agent in active_player:
                 setm = getattr(agent, "set_valid_moves", None)
@@ -131,12 +157,6 @@ if __name__ == '__main__':
                     agent.go(board, prefs['think_ms'])
                     break
             state = States.BUSY
-        else:
-            pass
-            # for agent in player_w:
-            #     setm = getattr(agent, "set_valid_moves", None)
-            #     if callable(setm):
-            #         agent.set_valid_moves(None)
 
         if appque.empty() is False:
             msg = appque.get()
@@ -146,24 +166,66 @@ if __name__ == '__main__':
                 logging.info(
                     "New game initiated by {}".format(msg['actor']))
                 board.reset()
-                txa = ta.position_to_text(
-                    board, use_unicode_chess_figures=True)
-                for t in txa:
-                    print(t)
+                for agent in player_b+player_w:
+                    dispb = getattr(agent, "display_board", None)
+                    if callable(dispb):
+                        agent.display_board(
+                            board, use_unicode_chess_figures=prefs['use_unicode_figures'])
+                state = States.IDLE
+
+            if 'position_fetch' in msg:
+                for agent in player_b+player_w:
+                    if agent.name == msg['position_fetch']:
+                        fen = agent.get_fen()
+                        # Only treat as setup, if it's not the start position
+                        if short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
+                            board = chess.Board(fen)
+                            for agent2 in player_b+player_w:
+                                dispb = getattr(agent2, "display_board", None)
+                                if callable(dispb):
+                                    agent2.display_board(
+                                        board, use_unicode_chess_figures=prefs['use_unicode_figures'])
+                            break
+                state = States.IDLE
+
+            if 'fen_setup' in msg:
+                board = chess.Board(msg['fen'])
+                for agent in player_b+player_w:
+                    dispb = getattr(agent, "display_board", None)
+                    if callable(dispb):
+                        agent.display_board(
+                            board, use_unicode_chess_figures=prefs['use_unicode_figures'])
                 state = States.IDLE
 
             if 'move' in msg:
-                if 'score' in msg['move']:
-                    sc = msg['move']['score']
-                else:
-                    sc = '?'
-                logging.info('Move {} (ev: {}) by {}'.format(
-                    msg['move']['uci'], sc, msg['move']['actor']))
                 board.push(chess.Move.from_uci(msg['move']['uci']))
+                for agent in player_b+player_w:
+                    dispm = getattr(agent, "display_move", None)
+                    if callable(dispm):
+                        agent.display_move(msg)
+                    dispb = getattr(agent, "display_board", None)
+                    if callable(dispb):
+                        agent.display_board(
+                            board, use_unicode_chess_figures=prefs['use_unicode_figures'])
+                if 'ponder' in msg['move']:
+                    ponder_move = msg['move']['ponder']
+                state = States.IDLE
+
+            if 'back' in msg:
+                board.pop()
                 for agent in player_b+player_w:
                     disp = getattr(agent, "display_board", None)
                     if callable(disp):
-                        agent.display_board(board)
+                        agent.display_board(
+                            board, use_unicode_chess_figures=prefs['use_unicode_figures'])
+                mode = 'player-player'
+                state = States.IDLE
+
+            if 'go' in msg:
+                if board.turn == chess.WHITE:
+                    mode = 'engine-player'
+                else:
+                    mode = 'player-engine'
                 state = States.IDLE
 
             if 'curmove' in msg:
