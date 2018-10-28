@@ -10,8 +10,19 @@ Welcome to mchess's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: chess_link
+.. currentmodule:: chess_link
+
+================
+ChessLink object
+================
+
+.. autoclass:: ChessLink
     :members:
+    :special-members:
+
+====================================
+Chess link protocol helper functions
+====================================
 
 .. automodule:: chess_link_protocol
     :members:

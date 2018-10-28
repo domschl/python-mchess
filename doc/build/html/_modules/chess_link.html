@@ -63,7 +63,7 @@
 <div class="viewcode-block" id="ChessLink"><a class="viewcode-back" href="../index.html#chess_link.ChessLink">[docs]</a><span class="k">class</span> <span class="nc">ChessLink</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;This implements the &#39;Chess Link&#39; protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">appque</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.__init__"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">appque</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructor, searches, configures and connectors to Chess Link compatible Millennium Chess Genius Exclusive or similar boards.</span>
 <span class="sd">        :param appque: a Queue that receive chess board events</span>
 <span class="sd">        :param name: identifies this protocol&quot;&quot;&quot;</span>
@@ -179,7 +179,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Connection to Chess Link via </span><span class="si">{}</span><span class="s1"> at </span><span class="si">{}</span><span class="s1"> FAILED.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span></div>
 
 <div class="viewcode-block" id="ChessLink.position_initialized"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.position_initialized">[docs]</a>    <span class="k">def</span> <span class="nf">position_initialized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check, if a board position has been received and chess link board is online.</span>
