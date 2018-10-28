@@ -29,9 +29,12 @@ class ChessLink:
     """This implements the 'Chess Link' protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol"""
 
     def __init__(self, appque, name):
-        """Constructor, searches, configures and connectors to Chess Link compatible Millennium Chess Genius Exclusive or similar boards.
+        """
+        Constructor, searches, configures and connectors to Chess Link compatible Millennium Chess Genius Exclusive or similar boards.
+
         :param appque: a Queue that receive chess board events
-        :param name: identifies this protocol"""
+        :param name: identifies this protocol
+        """
         self.name = name
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "ascii": "PNBRQK.pnbrqk"}
@@ -147,8 +150,11 @@ class ChessLink:
                     self.mill_config['transport'], self.mill_config['address']))
 
     def position_initialized(self):
-        """Check, if a board position has been received and chess link board is online.
-        :return: True, if board position has been received."""
+        """
+        Check, if a board position has been received and chess link board is online.
+
+        :return: True, if board position has been received.
+        """
         if self.connected is True:
             pos = None
             with self.board_mutex:
@@ -158,9 +164,12 @@ class ChessLink:
         return False
 
     def write_configuration(self):
-        """Write the configuration for hardware connection (USB/Bluetooth LE) 
-        and board orientation to 'chess_link_config.json
-        :return: True on success, False on error"""
+        """
+        Write the configuration for hardware connection (USB/Bluetooth LE) 
+        and board orientation to 'chess_link_config.json'
+
+        :return: True on success, False on error
+        """
         self.mill_config['orientation'] = self.orientation
         try:
             with open("chess_link_config.json", "w") as f:
@@ -172,8 +181,10 @@ class ChessLink:
         return False
 
     def _event_worker_thread(self, que, mutex):
-        """This background thread is started on creation of a ChessLink object. 
-        It decodes chess link encoded messages and sends jason messages to the application."""
+        """
+        This background thread is started on creation of a ChessLink object. 
+        It decodes chess link encoded messages and sends jason messages to the application.
+        """
         self.log.debug('Chess Link worker thread started.')
         while self.thread_active:
             if self.trque.empty() is False:
@@ -299,7 +310,9 @@ class ChessLink:
                 time.sleep(0.01)
 
     def new_game(self, pos):
-        """Initiate a new game
+        """
+        Initiate a new game
+
         :param pos: position array of the current position. If the hardware board has 
         currently a different position, all differences are indicated by blinking leds.
         """
@@ -308,7 +321,9 @@ class ChessLink:
         self.legal_moves = None
 
     def _check_move(self, pos):
-        """Check, if current change on board is a legal move. If yes, put move into queue"""
+        """
+        Check, if current change on board is a legal move. If yes, put move into queue
+        """
         fen = self.short_fen(self.position_to_fen(pos))
         if self.legal_moves is not None and fen in self.legal_moves:
             self.appque.put(
@@ -320,7 +335,9 @@ class ChessLink:
         return False
 
     def move_from(self, fen, legal_moves, color, eval_only=False):
-        """Register all legal moves possible in current position.
+        """
+        Register all legal moves possible in current position.
+
         :param fen: current position
         :param legal_moves: dictionary of key:fen value: uci_move (e.g. e2e4)
         :param color: color to move
@@ -337,8 +354,10 @@ class ChessLink:
                             freq=0x15, ontime1=0x02, ontime2=0x01)
 
     def show_deltas(self, positions, freq):
-        """Signal leds to show difference between current position on board, and intended position. This is used
-        to signal moves by other agents, or discrepancies with the current position."""
+        """
+        Signal leds to show difference between current position on board, and intended position. This is used
+        to signal moves by other agents, or discrepancies with the current position.
+        """
         if len(positions) > 5:
             npos = 5
         else:
@@ -357,7 +376,9 @@ class ChessLink:
         time.sleep(0.05)
 
     def set_mv_led(self, pos, freq):
-        """Set the leds on board according to pos array"""
+        """
+        Set the leds on board according to pos array
+        """
         if self.connected is True:
             leds = [[0 for x in range(9)] for y in range(9)]
             cmd = "L"+clp.hex2(freq)

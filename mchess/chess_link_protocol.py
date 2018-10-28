@@ -39,7 +39,7 @@ def hexd(digit):
     Returns a hex digit '0'..'F' for an integer 0..15
 
     :param digit: integer 0..15
-    :return: an ASCII hex character '0'..'F'
+    :returns: an ASCII hex character '0'..'F'
     """
     if digit < 10:
         return chr(ord('0')+digit)
@@ -50,8 +50,9 @@ def hexd(digit):
 def hex2(num):
     """
     Convert integer to 2-digit hex string. Most numeric parameters and the block CRC are encoded as such 2-digit hex-string.
+
     :param num: uint_8 integer 0..255
-    :return: Returns a 2-digit hex code '00'..'FF' 
+    :returns: Returns a 2-digit hex code '00'..'FF' 
     """
     d1 = num//16
     d2 = num % 16
@@ -64,8 +65,9 @@ def check_block_crc(msg):
     Chess link messages consist of 7-bit-ASCII characters with odd parity. At the end of each
     message, an additional block-parity is added. Valid chess link messages must have correct odd
     parity for each character and a valid block parity at the end.
+
     :param msg: a byte array with the message.
-    :return: True, if the last two bytes of msg contain a correct CRC, False otherwise.
+    :returns: True, if the last two bytes of msg contain a correct CRC, False otherwise.
     """
     if len(msg) > 2:
         gpar = 0
