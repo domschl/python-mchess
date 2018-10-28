@@ -14,6 +14,16 @@ except:
 
 
 class Transport():
+    """
+    ChessLink transport implementation for USB connections.
+
+    This class does automatic hardware detection of any ChessLink board connected
+    via USB and support Linux, macOS and Windows.
+
+    This transport uses an asynchronous background thread for hardware communcation.
+    All replies are written to the python queue `que` given during initialization.
+    """
+
     def __init__(self, que):
         if usb_support == False:
             self.init = False
@@ -24,6 +34,11 @@ class Transport():
         self.log.debug("USB init ok")
 
     def search_board(self):
+        """
+        Search for ChessLink connections on all USB ports.
+
+        :returns: Name of the port with a ChessLink board, None on failure.
+        """
         self.log.debug("USB: searching for boards")
         port = None
         ports = self.usb_port_search()
@@ -37,6 +52,11 @@ class Transport():
         return port
 
     def test_board(self, port):
+        """
+        Test an usb port for correct answer on get version command.
+
+        :returns: Version string on ok, None on failure.
+        """
         self.log.debug("Testing port: {}".format(port))
         try:
             self.usb_dev = serial.Serial(port, 38400, timeout=2)
@@ -67,6 +87,11 @@ class Transport():
         return None
 
     def usb_port_check(self, port):
+        """
+        Check usb port for valid ChessLink connection
+
+        :returns: True on success, False on failure.
+        """
         self.log.debug("Testing port: {}".format(port))
         try:
             s = serial.Serial(port, 38400)
@@ -77,6 +102,12 @@ class Transport():
             return False
 
     def usb_port_search(self):
+        """
+        Get a list of all usb ports that have a connected ChessLink board.
+
+        :returns: array of usb port names with valid ChessLink boards, an empty array 
+                  if none is found.
+        """
         ports = list(
             [port.device for port in serial.tools.list_ports.comports(True)])
         vports = []
@@ -90,6 +121,11 @@ class Transport():
         return vports
 
     def write_mt(self, msg):
+        """
+        Encode and write a message to ChessLink.
+
+        :param msg: Message string. Parity will be added, and block CRC appended.
+        """
         msg = clp.add_block_crc(msg)
         bts = []
         for c in msg:
@@ -106,6 +142,9 @@ class Transport():
         return True
 
     def usb_read_synchr(self, usbdev, cmd, num):
+        """
+        Synchronous reads for initial hardware detection.
+        """
         rep = []
         start = False
         while start is False:
@@ -128,6 +167,11 @@ class Transport():
         return rep
 
     def open_mt(self, port):
+        """
+        Open an usb port to a connected ChessLink board.
+
+        :returns: True on success.
+        """
         try:
             self.usb_dev = serial.Serial(port, 38400, timeout=0.1)
             self.usb_dev.dtr = 0
@@ -143,6 +187,9 @@ class Transport():
         return True
 
     def event_worker_thread(self, usb_dev, que):
+        """
+        Background thread that sends data received via usb to the queue `que`.
+        """
         self.log.debug('USB worker thread started.')
         cmd_started = False
         cmd_size = 0
@@ -188,8 +235,18 @@ class Transport():
                         cmd = ""
 
     def get_name(self):
+        """
+        Get name of this transport.
+
+        :returns: 'chess_link_usb'
+        """
         return "chess_link_usb"
 
     def is_init(self):
+        """
+        Check, if hardware connection is up.
+
+        :returns: True on success.
+        """
         self.log.debug("Ask for init")
         return self.init

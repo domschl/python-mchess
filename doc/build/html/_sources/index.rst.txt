@@ -26,7 +26,21 @@ Chess link protocol helper functions
 
 .. automodule:: chess_link_protocol
     :members:
-    
+
+=======================
+USB ChessLink transport
+=======================
+
+.. automodule:: chess_link_bluepy
+    :members:
+
+================================
+Bluetooth LE ChessLink transport
+================================
+
+.. automodule:: chess_link_usb
+    :members:
+
 Indices and tables
 ==================
 
