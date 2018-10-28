@@ -30,7 +30,7 @@ class ChessLink:
     """
     This implements the 'Chess Link' protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol
 
-    See also: `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`.
+    See also: `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
     """
 
     def __init__(self, appque, name):

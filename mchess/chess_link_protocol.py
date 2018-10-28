@@ -6,7 +6,7 @@ message-block-parity.
 The chess link protocol sends ASCII messages. Each ASCII character gets an additional
 odd-parity-bit. Each block of ASCII+odd-parity bytes gets an additional block parity.
 
-Details of the protocol are documented in `magic-board.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`.
+Details of the protocol are documented in `magic-board.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
 """
 
 import logging
