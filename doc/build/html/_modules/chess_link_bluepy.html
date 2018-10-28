@@ -33,7 +33,10 @@
           <div class="body" role="main">
             
   <h1>Source code for chess_link_bluepy</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">ChessLink transport implementation for Bluetooth LE connections using `bluepy`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">queue</span>
 <span class="kn">import</span> <span class="nn">time</span>
@@ -55,9 +58,19 @@
 
 <span class="sd">    This transport uses an asynchronous background thread for hardware communcation.</span>
 <span class="sd">    All replies are written to the python queue `que` given during initialization.</span>
+
+<span class="sd">    For the details of the Chess Link protocol, please refer to: </span>
+<span class="sd">    `magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;`_.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Transport.__init__"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_bluepy.Transport.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">que</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize with python queue for event handling.</span>
+<span class="sd">        Events are strings conforming to the ChessLink protocol as documented in </span>
+<span class="sd">        `magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;`_.</span>
+
+<span class="sd">        :param que: Python queue that will eceive events from chess board.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">bluepy_ble_support</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">return</span>

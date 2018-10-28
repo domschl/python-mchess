@@ -46,7 +46,17 @@ All replies are written to the python queue <cite>que</cite> given during initia
 <dl class="method">
 <dt id="chess_link_usb.Transport.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>que</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<dd><p>Initialize with python queue for event handling.
+Events are strings conforming to the ChessLink protocol as documented in 
+<a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>que</strong> – Python queue that will eceive events from chess board.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -187,10 +197,22 @@ if none is found.</td>
 and supports Linux and Raspberry Pi.</p>
 <p>This transport uses an asynchronous background thread for hardware communcation.
 All replies are written to the python queue <cite>que</cite> given during initialization.</p>
+<p>For the details of the Chess Link protocol, please refer to: 
+<a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
 <dl class="method">
 <dt id="chess_link_bluepy.Transport.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>que</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_bluepy.html#Transport.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_bluepy.Transport.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<dd><p>Initialize with python queue for event handling.
+Events are strings conforming to the ChessLink protocol as documented in 
+<a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>que</strong> – Python queue that will eceive events from chess board.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
