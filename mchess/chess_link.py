@@ -28,14 +28,23 @@ import chess_link_protocol as clp
 
 class ChessLink:
     """
-    This implements the 'Chess Link' protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol
+    This implements the 'Chess Link' protocol for Millennium Chess Genius Exclusive and future boards 
+    compatible with that protocol
 
-    See also: `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
+    For the details of the Chess Link protocol, please refer to: 
+    `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
+
+    `position` array
+
+    This class refers to chess boards using the `position` 8x8 array. Field values: 1: white pawn, 
+    2: w-knight, 3: w-bishop, 4: w-rook, 5: w-queen, 6: w-king, 0: empty square, -1; black pawn, 
+    -2: b-knight, -3: b-bishop, -4: b-rook, -5: b-queen, -6: b-king.
     """
 
     def __init__(self, appque, name):
         """
-        Constructor, searches, configures and connectors to Chess Link compatible Millennium Chess Genius Exclusive or similar boards.
+        Constructor, searches, configures and connectors to Chess Link compatible 
+        Millennium Chess Genius Exclusive or similar boards.
 
         :param appque: a Queue that receive chess board events
         :param name: identifies this protocol
@@ -188,7 +197,9 @@ class ChessLink:
     def _event_worker_thread(self, que, mutex):
         """
         This background thread is started on creation of a ChessLink object. 
-        It decodes chess link encoded messages and sends jason messages to the application.
+        It decodes chess link encoded messages and sends json messages to the application.
+
+        The event worker thread is automatically started during __init__.
         """
         self.log.debug('Chess Link worker thread started.')
         while self.thread_active:
@@ -318,7 +329,7 @@ class ChessLink:
         """
         Initiate a new game
 
-        :param pos: position array of the current position. If the hardware board has 
+        :param pos: `position` array of the current position. If the hardware board has 
                     currently a different position, all differences are indicated by 
                     blinking leds.
         """
