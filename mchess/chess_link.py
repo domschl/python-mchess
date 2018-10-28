@@ -12,7 +12,8 @@ import copy
 
 import chess_link_protocol as clp
 
-# See document magic-board.md for details on the Chess Link protocol.
+# See document `magic-board.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md> for details on the Chess Link protocol.
+
 """The Chess Link Protocol
 
 <V56>
@@ -26,7 +27,11 @@ import chess_link_protocol as clp
 
 
 class ChessLink:
-    """This implements the 'Chess Link' protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol"""
+    """
+    This implements the 'Chess Link' protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol
+
+    See also: `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`.
+    """
 
     def __init__(self, appque, name):
         """
