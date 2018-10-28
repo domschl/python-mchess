@@ -42,6 +42,7 @@
 <dt id="chess_link.ChessLink">
 <em class="property">class </em><code class="descclassname">chess_link.</code><code class="descname">ChessLink</code><span class="sig-paren">(</span><em>appque</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink" title="Permalink to this definition">¶</a></dt>
 <dd><p>This implements the ‘Chess Link’ protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol</p>
+<p>See also: <cite>magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;</cite>.</p>
 <dl class="method">
 <dt id="chess_link.ChessLink.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>appque</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.__init__" title="Permalink to this definition">¶</a></dt>
@@ -153,7 +154,7 @@ and board orientation to ‘chess_link_config.json’</p>
 message-block-parity.</p>
 <p>The chess link protocol sends ASCII messages. Each ASCII character gets an additional
 odd-parity-bit. Each block of ASCII+odd-parity bytes gets an additional block parity.</p>
-<p>Details of the protocol are documented in ‘magic-board.md’.</p>
+<p>Details of the protocol are documented in <cite>magic-board.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;</cite>.</p>
 <dl class="function">
 <dt id="chess_link_protocol.add_block_crc">
 <code class="descclassname">chess_link_protocol.</code><code class="descname">add_block_crc</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_protocol.html#add_block_crc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_protocol.add_block_crc" title="Permalink to this definition">¶</a></dt>
