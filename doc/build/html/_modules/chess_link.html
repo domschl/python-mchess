@@ -79,6 +79,39 @@
 
 <span class="sd">    Communcation with the Chess Link board is asynchronous. Replies from the board are written</span>
 <span class="sd">    to the python queue (`appqueue`) that is provided during instantiation.</span>
+
+<span class="sd">    Every message in `appqueue` is a short json string. Currently implemented are:</span>
+
+<span class="sd">    Version::</span>
+
+<span class="sd">        {&#39;version&#39;: &#39;01.04&#39;, &#39;actor&#39;: &#39;&lt;actor-name&gt;&#39;}</span>
+
+<span class="sd">    New game detected (board has been set to start position)::</span>
+
+<span class="sd">        {&#39;new game&#39;, &#39;&#39;, &#39;actor&#39;: &#39;&lt;actor-name&gt;&#39;, &#39;orientation&#39;: True}</span>
+
+<span class="sd">    Transport error::</span>
+
+<span class="sd">        {&#39;error&#39;: &#39;&lt;error message&gt;&#39;, &#39;actor&#39;: &#39;&lt;actor-name&gt;&#39;}</span>
+
+<span class="sd">    Board position has changed::</span>
+
+<span class="sd">        {&#39;fen&#39;: fen, , &#39;actor&#39;: &#39;&lt;actor-name&gt;&#39;}</span>
+
+<span class="sd">    See remarks on `position2fen()`: move counts, castling are not valid, only the position</span>
+<span class="sd">    part should be used.</span>
+
+<span class="sd">    Valid move on board detected::</span>
+
+<span class="sd">        {&#39;move&#39;: {&#39;uci&#39;: &#39;&lt;uci-format move, e.g. e2e4&gt;&#39;, &#39;fen&#39;: &#39;&lt;resulting fen position&gt;&#39;, </span>
+<span class="sd">         &#39;actor&#39;: &#39;&lt;actor-name&gt;&#39;}}</span>
+
+<span class="sd">    See remarks on `position2fen()`: move counts, castling are not valid, only the position</span>
+<span class="sd">    part should be used.</span>
+
+<span class="sd">    In order for the board to detect valid move, a list of possible valid moves has to given</span>
+<span class="sd">    to the board using `move_from()`. Typically, this list is generated using the python</span>
+<span class="sd">    module `python_chess`. See chess_link_agent.py for an example.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ChessLink.__init__"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">appque</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
@@ -247,7 +280,7 @@
                 <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trque</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">msg</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">appque</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
-                        <span class="p">{</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;transport failure or not available.&#39;</span><span class="p">})</span>
+                        <span class="p">{</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;transport failure or not available.&#39;</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
                     <span class="k">continue</span>
 
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -332,7 +365,8 @@
                         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
                             <span class="n">version</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                                 <span class="n">msg</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">msg</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">+</span><span class="n">msg</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">appque</span><span class="o">.</span><span class="n">put</span><span class="p">({</span><span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="n">version</span><span class="p">})</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">appque</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
+                                <span class="p">{</span><span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                                 <span class="s2">&quot;Bad length of version-reply: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">version</span><span class="p">)))</span>

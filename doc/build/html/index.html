@@ -51,6 +51,35 @@ compatible with that protocol</p>
 -2: b-knight, -3: b-bishop, -4: b-rook, -5: b-queen, -6: b-king.</p>
 <p>Communcation with the Chess Link board is asynchronous. Replies from the board are written
 to the python queue (<cite>appqueue</cite>) that is provided during instantiation.</p>
+<p>Every message in <cite>appqueue</cite> is a short json string. Currently implemented are:</p>
+<p>Version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;01.04&#39;</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;actor-name&gt;&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>New game detected (board has been set to start position):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;new game&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;actor-name&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;orientation&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Transport error:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;error message&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;actor-name&gt;&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Board position has changed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;fen&#39;</span><span class="p">:</span> <span class="n">fen</span><span class="p">,</span> <span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;actor-name&gt;&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>See remarks on <cite>position2fen()</cite>: move counts, castling are not valid, only the position
+part should be used.</p>
+<p>Valid move on board detected:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;move&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;uci&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;uci-format move, e.g. e2e4&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;fen&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;resulting fen position&gt;&#39;</span><span class="p">,</span> 
+ <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;actor-name&gt;&#39;</span><span class="p">}}</span>
+</pre></div>
+</div>
+<p>See remarks on <cite>position2fen()</cite>: move counts, castling are not valid, only the position
+part should be used.</p>
+<p>In order for the board to detect valid move, a list of possible valid moves has to given
+to the board using <cite>move_from()</cite>. Typically, this list is generated using the python
+module <cite>python_chess</cite>. See chess_link_agent.py for an example.</p>
 <dl class="method">
 <dt id="chess_link.ChessLink.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>appque</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.__init__" title="Permalink to this definition">¶</a></dt>
