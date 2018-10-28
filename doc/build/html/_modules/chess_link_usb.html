@@ -59,14 +59,14 @@
 <span class="sd">    All replies are written to the python queue `que` given during initialization.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">que</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.__init__"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">que</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">usb_support</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">return</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;ChessLinkUSB&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">que</span> <span class="o">=</span> <span class="n">que</span>  <span class="c1"># asyncio.Queue()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;USB init ok&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;USB init ok&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Transport.search_board"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport.search_board">[docs]</a>    <span class="k">def</span> <span class="nf">search_board</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -308,7 +308,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../chess_link.html">ChessLink object</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chess_link_protocol.html">Chess link protocol helper functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chess_link_transports.html">USB ChessLink transport</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chess_link_transports.html#module-chess_link_bluepy">Bluetooth LE ChessLink transport</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chess_link_transports.html#bluetooth-le-chesslink-transport">Bluetooth LE ChessLink transport</a></li>
 </ul>
 
 <div class="relations">

@@ -2,12 +2,19 @@
 USB ChessLink transport
 =======================
 
-.. automodule:: chess_link_usb
+.. currentmodule:: chess_link_usb
+
+.. autoclass:: Transport
     :members:
+    :special-members:
 
 ================================
 Bluetooth LE ChessLink transport
 ================================
 
-.. automodule:: chess_link_bluepy
+.. currentmodule:: chess_link_bluepy
+
+.. autoclass:: Transport
     :members:
+    :special-members:
+

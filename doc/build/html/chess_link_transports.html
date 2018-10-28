@@ -33,8 +33,8 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="module-chess_link_usb">
-<span id="usb-chesslink-transport"></span><h1>USB ChessLink transport<a class="headerlink" href="#module-chess_link_usb" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="usb-chesslink-transport">
+<h1>USB ChessLink transport<a class="headerlink" href="#usb-chesslink-transport" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="chess_link_usb.Transport">
 <em class="property">class </em><code class="descclassname">chess_link_usb.</code><code class="descname">Transport</code><span class="sig-paren">(</span><em>que</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport" title="Permalink to this definition">¶</a></dt>
@@ -43,6 +43,18 @@
 via USB and support Linux, macOS and Windows.</p>
 <p>This transport uses an asynchronous background thread for hardware communcation.
 All replies are written to the python queue <cite>que</cite> given during initialization.</p>
+<dl class="method">
+<dt id="chess_link_usb.Transport.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>que</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="chess_link_usb.Transport.__weakref__">
+<code class="descname">__weakref__</code><a class="headerlink" href="#chess_link_usb.Transport.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="chess_link_usb.Transport.event_worker_thread">
 <code class="descname">event_worker_thread</code><span class="sig-paren">(</span><em>usb_dev</em>, <em>que</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.event_worker_thread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.event_worker_thread" title="Permalink to this definition">¶</a></dt>
@@ -171,8 +183,8 @@ if none is found.</td>
 </dd></dl>
 
 </div>
-<div class="section" id="module-chess_link_bluepy">
-<span id="bluetooth-le-chesslink-transport"></span><h1>Bluetooth LE ChessLink transport<a class="headerlink" href="#module-chess_link_bluepy" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="bluetooth-le-chesslink-transport">
+<h1>Bluetooth LE ChessLink transport<a class="headerlink" href="#bluetooth-le-chesslink-transport" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="chess_link_bluepy.Transport">
 <em class="property">class </em><code class="descclassname">chess_link_bluepy.</code><code class="descname">Transport</code><span class="sig-paren">(</span><em>que</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_bluepy.html#Transport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_bluepy.Transport" title="Permalink to this definition">¶</a></dt>
@@ -181,6 +193,18 @@ if none is found.</td>
 and supports Linux and Raspberry Pi.</p>
 <p>This transport uses an asynchronous background thread for hardware communcation.
 All replies are written to the python queue <cite>que</cite> given during initialization.</p>
+<dl class="method">
+<dt id="chess_link_bluepy.Transport.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>que</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_bluepy.html#Transport.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_bluepy.Transport.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="chess_link_bluepy.Transport.__weakref__">
+<code class="descname">__weakref__</code><a class="headerlink" href="#chess_link_bluepy.Transport.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="chess_link_bluepy.Transport.get_name">
 <code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_bluepy.html#Transport.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_bluepy.Transport.get_name" title="Permalink to this definition">¶</a></dt>
@@ -300,7 +324,7 @@ bluetooth to the queue <cite>que</cite>.</p>
 <li class="toctree-l1"><a class="reference internal" href="chess_link.html">ChessLink object</a></li>
 <li class="toctree-l1"><a class="reference internal" href="chess_link_protocol.html">Chess link protocol helper functions</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">USB ChessLink transport</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#module-chess_link_bluepy">Bluetooth LE ChessLink transport</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#bluetooth-le-chesslink-transport">Bluetooth LE ChessLink transport</a></li>
 </ul>
 
 <div class="relations">
