@@ -42,7 +42,7 @@
 <dt id="chess_link.ChessLink">
 <em class="property">class </em><code class="descclassname">chess_link.</code><code class="descname">ChessLink</code><span class="sig-paren">(</span><em>appque</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink" title="Permalink to this definition">¶</a></dt>
 <dd><p>This implements the ‘Chess Link’ protocol for Millennium Chess Genius Exclusive and future boards 
-compatible with that protocol</p>
+compatible with that protocol.</p>
 <p>For the details of the Chess Link protocol, please refer to: 
 <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
 <p><cite>position</cite> array</p>
@@ -65,7 +65,7 @@ to the python queue (<cite>appqueue</cite>) that is provided during instantiatio
 </pre></div>
 </div>
 <p>Board position has changed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;fen&#39;</span><span class="p">:</span> <span class="n">fen</span><span class="p">,</span> <span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;actor-name&gt;&#39;</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;fen&#39;</span><span class="p">:</span> <span class="n">fen</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;actor-name&gt;&#39;</span><span class="p">}</span>
 </pre></div>
 </div>
 <p>See remarks on <cite>position2fen()</cite>: move counts, castling are not valid, only the position
@@ -513,11 +513,146 @@ parity for each character and a valid block parity at the end.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-chess_link_bluepy">
-<span id="usb-chesslink-transport"></span><h2>USB ChessLink transport<a class="headerlink" href="#module-chess_link_bluepy" title="Permalink to this headline">¶</a></h2>
-</div>
 <div class="section" id="module-chess_link_usb">
-<span id="bluetooth-le-chesslink-transport"></span><h2>Bluetooth LE ChessLink transport<a class="headerlink" href="#module-chess_link_usb" title="Permalink to this headline">¶</a></h2>
+<span id="usb-chesslink-transport"></span><h2>USB ChessLink transport<a class="headerlink" href="#module-chess_link_usb" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="chess_link_usb.Transport">
+<em class="property">class </em><code class="descclassname">chess_link_usb.</code><code class="descname">Transport</code><span class="sig-paren">(</span><em>que</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport" title="Permalink to this definition">¶</a></dt>
+<dd><p>ChessLink transport implementation for USB connections.</p>
+<p>This class does automatic hardware detection of any ChessLink board connected
+via USB and support Linux, macOS and Windows.</p>
+<p>This transport uses an asynchronous background thread for hardware communcation.
+All replies are written to the python queue <cite>que</cite> given during initialization.</p>
+<dl class="method">
+<dt id="chess_link_usb.Transport.event_worker_thread">
+<code class="descname">event_worker_thread</code><span class="sig-paren">(</span><em>usb_dev</em>, <em>que</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.event_worker_thread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.event_worker_thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Background thread that sends data received via usb to the queue <cite>que</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_usb.Transport.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get name of this transport.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">‘chess_link_usb’</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_usb.Transport.is_init">
+<code class="descname">is_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.is_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.is_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check, if hardware connection is up.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True on success.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_usb.Transport.open_mt">
+<code class="descname">open_mt</code><span class="sig-paren">(</span><em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.open_mt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.open_mt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open an usb port to a connected ChessLink board.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True on success.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_usb.Transport.search_board">
+<code class="descname">search_board</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.search_board"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.search_board" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search for ChessLink connections on all USB ports.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Name of the port with a ChessLink board, None on failure.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_usb.Transport.test_board">
+<code class="descname">test_board</code><span class="sig-paren">(</span><em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.test_board"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.test_board" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test an usb port for correct answer on get version command.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Version string on ok, None on failure.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_usb.Transport.usb_port_check">
+<code class="descname">usb_port_check</code><span class="sig-paren">(</span><em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.usb_port_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.usb_port_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check usb port for valid ChessLink connection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True on success, False on failure.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_usb.Transport.usb_port_search">
+<code class="descname">usb_port_search</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.usb_port_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.usb_port_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all usb ports that have a connected ChessLink board.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">array of usb port names with valid ChessLink boards, an empty array 
+if none is found.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_usb.Transport.usb_read_synchr">
+<code class="descname">usb_read_synchr</code><span class="sig-paren">(</span><em>usbdev</em>, <em>cmd</em>, <em>num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.usb_read_synchr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.usb_read_synchr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synchronous reads for initial hardware detection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="chess_link_usb.Transport.write_mt">
+<code class="descname">write_mt</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_usb.html#Transport.write_mt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_usb.Transport.write_mt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode and write a message to ChessLink.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>msg</strong> – Message string. Parity will be added, and block CRC appended.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-chess_link_bluepy">
+<span id="bluetooth-le-chesslink-transport"></span><h2>Bluetooth LE ChessLink transport<a class="headerlink" href="#module-chess_link_bluepy" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 <div class="section" id="indices-and-tables">

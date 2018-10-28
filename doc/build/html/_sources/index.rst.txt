@@ -31,14 +31,14 @@ Chess link protocol helper functions
 USB ChessLink transport
 =======================
 
-.. automodule:: chess_link_bluepy
+.. automodule:: chess_link_usb
     :members:
 
 ================================
 Bluetooth LE ChessLink transport
 ================================
 
-.. automodule:: chess_link_usb
+.. automodule:: chess_link_bluepy
     :members:
 
 Indices and tables
