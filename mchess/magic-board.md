@@ -13,7 +13,6 @@ This command retrieves the piece status of the complete board.
 
 ```
 S           Command character
-
 <Chk>       Block parity check byte - 2 hex digits
 
 Reply:-
