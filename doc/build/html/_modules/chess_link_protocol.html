@@ -74,7 +74,7 @@
 <span class="sd">    Returns a hex digit &#39;0&#39;..&#39;F&#39; for an integer 0..15</span>
 
 <span class="sd">    :param digit: integer 0..15</span>
-<span class="sd">    :return: an ASCII hex character &#39;0&#39;..&#39;F&#39;</span>
+<span class="sd">    :returns: an ASCII hex character &#39;0&#39;..&#39;F&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">digit</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">)</span><span class="o">+</span><span class="n">digit</span><span class="p">)</span>
@@ -85,8 +85,9 @@
 <div class="viewcode-block" id="hex2"><a class="viewcode-back" href="../index.html#chess_link_protocol.hex2">[docs]</a><span class="k">def</span> <span class="nf">hex2</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert integer to 2-digit hex string. Most numeric parameters and the block CRC are encoded as such 2-digit hex-string.</span>
+
 <span class="sd">    :param num: uint_8 integer 0..255</span>
-<span class="sd">    :return: Returns a 2-digit hex code &#39;00&#39;..&#39;FF&#39; </span>
+<span class="sd">    :returns: Returns a 2-digit hex code &#39;00&#39;..&#39;FF&#39; </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">d1</span> <span class="o">=</span> <span class="n">num</span><span class="o">//</span><span class="mi">16</span>
     <span class="n">d2</span> <span class="o">=</span> <span class="n">num</span> <span class="o">%</span> <span class="mi">16</span>
@@ -99,8 +100,9 @@
 <span class="sd">    Chess link messages consist of 7-bit-ASCII characters with odd parity. At the end of each</span>
 <span class="sd">    message, an additional block-parity is added. Valid chess link messages must have correct odd</span>
 <span class="sd">    parity for each character and a valid block parity at the end.</span>
+
 <span class="sd">    :param msg: a byte array with the message.</span>
-<span class="sd">    :return: True, if the last two bytes of msg contain a correct CRC, False otherwise.</span>
+<span class="sd">    :returns: True, if the last two bytes of msg contain a correct CRC, False otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">gpar</span> <span class="o">=</span> <span class="mi">0</span>

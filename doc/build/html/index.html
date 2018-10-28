@@ -45,9 +45,19 @@
 <dl class="method">
 <dt id="chess_link.ChessLink.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>appque</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructor, searches, configures and connectors to Chess Link compatible Millennium Chess Genius Exclusive or similar boards.
-:param appque: a Queue that receive chess board events
-:param name: identifies this protocol</p>
+<dd><p>Constructor, searches, configures and connectors to Chess Link compatible Millennium Chess Genius Exclusive or similar boards.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>appque</strong> – a Queue that receive chess board events</li>
+<li><strong>name</strong> – identifies this protocol</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -59,26 +69,51 @@
 <dl class="method">
 <dt id="chess_link.ChessLink.move_from">
 <code class="descname">move_from</code><span class="sig-paren">(</span><em>fen</em>, <em>legal_moves</em>, <em>color</em>, <em>eval_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.move_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.move_from" title="Permalink to this definition">¶</a></dt>
-<dd><p>Register all legal moves possible in current position.
-:param fen: current position
-:param legal_moves: dictionary of key:fen value: uci_move (e.g. e2e4)
-:param color: color to move
-:param eval_only: True: indicate ponder evals</p>
+<dd><p>Register all legal moves possible in current position.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fen</strong> – current position</li>
+<li><strong>legal_moves</strong> – dictionary of key:fen value: uci_move (e.g. e2e4)</li>
+<li><strong>color</strong> – color to move</li>
+<li><strong>eval_only</strong> – True: indicate ponder evals</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="chess_link.ChessLink.new_game">
 <code class="descname">new_game</code><span class="sig-paren">(</span><em>pos</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.new_game"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.new_game" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initiate a new game
-:param pos: position array of the current position. If the hardware board has 
-currently a different position, all differences are indicated by blinking leds.</p>
+<dd><p>Initiate a new game</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pos</strong> – position array of the current position. If the hardware board has 
+currently a different position, all differences are indicated by 
+blinking leds.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="chess_link.ChessLink.position_initialized">
 <code class="descname">position_initialized</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.position_initialized"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.position_initialized" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check, if a board position has been received and chess link board is online.
-:return: True, if board position has been received.</p>
+<dd><p>Check, if a board position has been received and chess link board is online.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True, if board position has been received.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -98,8 +133,15 @@ to signal moves by other agents, or discrepancies with the current position.</p>
 <dt id="chess_link.ChessLink.write_configuration">
 <code class="descname">write_configuration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.write_configuration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.write_configuration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the configuration for hardware connection (USB/Bluetooth LE) 
-and board orientation to ‘chess_link_config.json
-:return: True on success, False on error</p>
+and board orientation to ‘chess_link_config.json’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True on success, False on error</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -143,17 +185,33 @@ This function adds two bytes of block CRC at the end of the message.
 <code class="descclassname">chess_link_protocol.</code><code class="descname">check_block_crc</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_protocol.html#check_block_crc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_protocol.check_block_crc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Chess link messages consist of 7-bit-ASCII characters with odd parity. At the end of each
 message, an additional block-parity is added. Valid chess link messages must have correct odd
-parity for each character and a valid block parity at the end.
-:param msg: a byte array with the message.
-:return: True, if the last two bytes of msg contain a correct CRC, False otherwise.</p>
+parity for each character and a valid block parity at the end.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>msg</strong> – a byte array with the message.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True, if the last two bytes of msg contain a correct CRC, False otherwise.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="chess_link_protocol.hex2">
 <code class="descclassname">chess_link_protocol.</code><code class="descname">hex2</code><span class="sig-paren">(</span><em>num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_protocol.html#hex2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_protocol.hex2" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert integer to 2-digit hex string. Most numeric parameters and the block CRC are encoded as such 2-digit hex-string.
-:param num: uint_8 integer 0..255
-:return: Returns a 2-digit hex code ‘00’..’FF’</p>
+<dd><p>Convert integer to 2-digit hex string. Most numeric parameters and the block CRC are encoded as such 2-digit hex-string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>num</strong> – uint_8 integer 0..255</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Returns a 2-digit hex code ‘00’..’FF’</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">

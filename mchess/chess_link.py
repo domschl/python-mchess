@@ -314,7 +314,8 @@ class ChessLink:
         Initiate a new game
 
         :param pos: position array of the current position. If the hardware board has 
-        currently a different position, all differences are indicated by blinking leds.
+                    currently a different position, all differences are indicated by 
+                    blinking leds.
         """
         self.reference_position = pos
         self.set_led_off()
