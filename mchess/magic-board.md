@@ -1,4 +1,6 @@
-# Magic Chessboard Communications Protocol - Dave Woodfield 25/10/17
+# ChessLink: Magic Chessboard Communications Protocol
+
+Version: _Dave Woodfield 25/10/17_
 
 Data transfer to/from the Magic Chessboard (MB) will be at 38400 baud, odd parity, 7 bit, 1 stop.
 All data is printable ASCII. All data strings are terminated in a block-parity check character.
