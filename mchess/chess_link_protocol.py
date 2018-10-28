@@ -86,6 +86,7 @@ def check_block_crc(msg):
 
 def add_block_crc(msg):
     """Add block parity at the end of the message
+
     :param msg: a message byte array (each byte must have already been encoded with odd parity). 
                 This function adds two bytes of block CRC at the end of the message.
     :param msg: byte array with a message (incl. odd-parity bits set already)
