@@ -48,7 +48,7 @@
     <span class="n">usb_support</span> <span class="o">=</span> <span class="kc">False</span>
 
 
-<div class="viewcode-block" id="Transport"><a class="viewcode-back" href="../index.html#chess_link_usb.Transport">[docs]</a><span class="k">class</span> <span class="nc">Transport</span><span class="p">():</span>
+<div class="viewcode-block" id="Transport"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport">[docs]</a><span class="k">class</span> <span class="nc">Transport</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    ChessLink transport implementation for USB connections.</span>
 
@@ -68,7 +68,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;USB init ok&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Transport.search_board"><a class="viewcode-back" href="../index.html#chess_link_usb.Transport.search_board">[docs]</a>    <span class="k">def</span> <span class="nf">search_board</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.search_board"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport.search_board">[docs]</a>    <span class="k">def</span> <span class="nf">search_board</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Search for ChessLink connections on all USB ports.</span>
 
@@ -86,7 +86,7 @@
                 <span class="s2">&quot;Autodetected Millennium board at USB port: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">port</span></div>
 
-<div class="viewcode-block" id="Transport.test_board"><a class="viewcode-back" href="../index.html#chess_link_usb.Transport.test_board">[docs]</a>    <span class="k">def</span> <span class="nf">test_board</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.test_board"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport.test_board">[docs]</a>    <span class="k">def</span> <span class="nf">test_board</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Test an usb port for correct answer on get version command.</span>
 
@@ -121,7 +121,7 @@
             <span class="k">pass</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="Transport.usb_port_check"><a class="viewcode-back" href="../index.html#chess_link_usb.Transport.usb_port_check">[docs]</a>    <span class="k">def</span> <span class="nf">usb_port_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.usb_port_check"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport.usb_port_check">[docs]</a>    <span class="k">def</span> <span class="nf">usb_port_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check usb port for valid ChessLink connection</span>
 
@@ -136,7 +136,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Can&#39;t open port </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="Transport.usb_port_search"><a class="viewcode-back" href="../index.html#chess_link_usb.Transport.usb_port_search">[docs]</a>    <span class="k">def</span> <span class="nf">usb_port_search</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.usb_port_search"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport.usb_port_search">[docs]</a>    <span class="k">def</span> <span class="nf">usb_port_search</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get a list of all usb ports that have a connected ChessLink board.</span>
 
@@ -155,7 +155,7 @@
                     <span class="k">break</span>  <span class="c1"># only one port necessary</span>
         <span class="k">return</span> <span class="n">vports</span></div>
 
-<div class="viewcode-block" id="Transport.write_mt"><a class="viewcode-back" href="../index.html#chess_link_usb.Transport.write_mt">[docs]</a>    <span class="k">def</span> <span class="nf">write_mt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.write_mt"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport.write_mt">[docs]</a>    <span class="k">def</span> <span class="nf">write_mt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Encode and write a message to ChessLink.</span>
 
@@ -176,7 +176,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Written &#39;</span><span class="si">{}</span><span class="s2">&#39; as &lt; </span><span class="si">{}</span><span class="s2"> &gt; ok&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">bts</span><span class="p">))</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="Transport.usb_read_synchr"><a class="viewcode-back" href="../index.html#chess_link_usb.Transport.usb_read_synchr">[docs]</a>    <span class="k">def</span> <span class="nf">usb_read_synchr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">usbdev</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.usb_read_synchr"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport.usb_read_synchr">[docs]</a>    <span class="k">def</span> <span class="nf">usb_read_synchr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">usbdev</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Synchronous reads for initial hardware detection.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -201,7 +201,7 @@
             <span class="k">return</span> <span class="p">[]</span>
         <span class="k">return</span> <span class="n">rep</span></div>
 
-<div class="viewcode-block" id="Transport.open_mt"><a class="viewcode-back" href="../index.html#chess_link_usb.Transport.open_mt">[docs]</a>    <span class="k">def</span> <span class="nf">open_mt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.open_mt"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport.open_mt">[docs]</a>    <span class="k">def</span> <span class="nf">open_mt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Open an usb port to a connected ChessLink board.</span>
 
@@ -221,7 +221,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">event_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="Transport.event_worker_thread"><a class="viewcode-back" href="../index.html#chess_link_usb.Transport.event_worker_thread">[docs]</a>    <span class="k">def</span> <span class="nf">event_worker_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">usb_dev</span><span class="p">,</span> <span class="n">que</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.event_worker_thread"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport.event_worker_thread">[docs]</a>    <span class="k">def</span> <span class="nf">event_worker_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">usb_dev</span><span class="p">,</span> <span class="n">que</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Background thread that sends data received via usb to the queue `que`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -269,7 +269,7 @@
                             <span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
                         <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="Transport.get_name"><a class="viewcode-back" href="../index.html#chess_link_usb.Transport.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.get_name"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get name of this transport.</span>
 
@@ -277,7 +277,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;chess_link_usb&quot;</span></div>
 
-<div class="viewcode-block" id="Transport.is_init"><a class="viewcode-back" href="../index.html#chess_link_usb.Transport.is_init">[docs]</a>    <span class="k">def</span> <span class="nf">is_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.is_init"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_usb.Transport.is_init">[docs]</a>    <span class="k">def</span> <span class="nf">is_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check, if hardware connection is up.</span>
 
@@ -303,6 +303,13 @@
 
 
 <h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chess_link.html">ChessLink object</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chess_link_protocol.html">Chess link protocol helper functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chess_link_transports.html">USB ChessLink transport</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chess_link_transports.html#module-chess_link_bluepy">Bluetooth LE ChessLink transport</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>

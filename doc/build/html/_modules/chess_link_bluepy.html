@@ -46,7 +46,7 @@
     <span class="n">bluepy_ble_support</span> <span class="o">=</span> <span class="kc">False</span>
 
 
-<div class="viewcode-block" id="Transport"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport">[docs]</a><span class="k">class</span> <span class="nc">Transport</span><span class="p">():</span>
+<div class="viewcode-block" id="Transport"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_bluepy.Transport">[docs]</a><span class="k">class</span> <span class="nc">Transport</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    ChessLink transport implementation for Bluetooth LE connections using `bluepy`.</span>
 
@@ -67,7 +67,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;bluepy_ble init ok&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Transport.search_board"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.search_board">[docs]</a>    <span class="k">def</span> <span class="nf">search_board</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.search_board"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_bluepy.Transport.search_board">[docs]</a>    <span class="k">def</span> <span class="nf">search_board</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Search for ChessLink connections using Bluetooth LE.</span>
 
@@ -114,7 +114,7 @@
                         <span class="k">return</span> <span class="n">bledev</span><span class="o">.</span><span class="n">addr</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="Transport.test_board"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.test_board">[docs]</a>    <span class="k">def</span> <span class="nf">test_board</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.test_board"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_bluepy.Transport.test_board">[docs]</a>    <span class="k">def</span> <span class="nf">test_board</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Test dummy.</span>
 
@@ -123,7 +123,7 @@
         <span class="c1"># self.open_mt(address)</span>
         <span class="k">return</span> <span class="s2">&quot;1.0&quot;</span></div>
 
-<div class="viewcode-block" id="Transport.open_mt"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.open_mt">[docs]</a>    <span class="k">def</span> <span class="nf">open_mt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.open_mt"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_bluepy.Transport.open_mt">[docs]</a>    <span class="k">def</span> <span class="nf">open_mt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Open a bluetooth LE connection to ChessLink board.</span>
 
@@ -138,7 +138,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">worker_threader</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="Transport.write_mt"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.write_mt">[docs]</a>    <span class="k">def</span> <span class="nf">write_mt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.write_mt"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_bluepy.Transport.write_mt">[docs]</a>    <span class="k">def</span> <span class="nf">write_mt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Encode and asynchronously write a message to ChessLink.</span>
 
@@ -147,7 +147,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;write-que-entry </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wrque</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Transport.get_name"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.get_name"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_bluepy.Transport.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get name of this transport.</span>
 
@@ -155,7 +155,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;chess_link_bluepy&quot;</span></div>
 
-<div class="viewcode-block" id="Transport.is_init"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.is_init">[docs]</a>    <span class="k">def</span> <span class="nf">is_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.is_init"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_bluepy.Transport.is_init">[docs]</a>    <span class="k">def</span> <span class="nf">is_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check, if hardware connection is up.</span>
 
@@ -163,7 +163,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">init</span></div>
 
-<div class="viewcode-block" id="Transport.worker_thread"><a class="viewcode-back" href="../index.html#chess_link_bluepy.Transport.worker_thread">[docs]</a>    <span class="k">def</span> <span class="nf">worker_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">wrque</span><span class="p">,</span> <span class="n">que</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.worker_thread"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_bluepy.Transport.worker_thread">[docs]</a>    <span class="k">def</span> <span class="nf">worker_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">wrque</span><span class="p">,</span> <span class="n">que</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Background thread that handles bluetooth sending and forwards data received via </span>
 <span class="sd">        bluetooth to the queue `que`.</span>
@@ -303,6 +303,13 @@
 
 
 <h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chess_link.html">ChessLink object</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chess_link_protocol.html">Chess link protocol helper functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chess_link_transports.html">USB ChessLink transport</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chess_link_transports.html#module-chess_link_bluepy">Bluetooth LE ChessLink transport</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>

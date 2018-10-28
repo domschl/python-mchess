@@ -10,36 +10,15 @@ Welcome to mchess's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-.. currentmodule:: chess_link
+   chess_link
+   chess_link_protocol
+   chess_link_transports
 
-================
-ChessLink object
-================
-
-.. autoclass:: ChessLink
-    :members:
-    :special-members:
-
-====================================
-Chess link protocol helper functions
-====================================
-
-.. automodule:: chess_link_protocol
-    :members:
-
-=======================
-USB ChessLink transport
-=======================
-
-.. automodule:: chess_link_usb
-    :members:
-
-================================
-Bluetooth LE ChessLink transport
-================================
-
-.. automodule:: chess_link_bluepy
-    :members:
+.. autosummary::
+    chess_link.ChessLink
+    chess_link_protocol
+    chess_link_usb
+    chess_link_bluepy
 
 Indices and tables
 ==================
