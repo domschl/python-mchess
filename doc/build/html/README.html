@@ -1,0 +1,228 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>&lt;no title&gt; &#8212; mchess 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p># python-mchess</p>
+<p>![Alpha status](<a class="reference external" href="https://img.shields.io/badge/Project%20status-Alpha-red.svg">https://img.shields.io/badge/Project%20status-Alpha-red.svg</a>)
+[![License](<a class="reference external" href="http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE">http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE</a>)</p>
+<p><cite>python-mchess</cite> is a collections of libraries to work with Millennium’s Chess Genius Exclusive chess board via the Chess Link interface.</p>
+<p>It provides two layers of functionality:
+* A hardware driver for the Chess Genius Exclusive chess board, supporting piece recognition and leds via USB or Bluetooth LE
+* A sample implementation to connect arbitrary UCI engines to the chess board.</p>
+<p>Currently, the following platforms are under development:</p>
+<div class="line-block">
+<div class="line">| Linux | Raspberry Pi | macOS | Windows</div>
+</div>
+<p><a href="#id13"><span class="problematic" id="id14">|--------------|</span></a>——-<a href="#id15"><span class="problematic" id="id16">|--------------|</span></a>——-<a href="#id1"><span class="problematic" id="id2">|</span></a>——–
+| USB          |    x  |     x        |   x   |    x
+| Bluetooth LE |    x  |     x        |       |</p>
+<p>## Alpha installation instructions</p>
+<p>This project is under heavy development, and basically everything described below might change at some point.</p>
+<p>### Dependencies
+<cite>python-mchess</cite> is written for Python 3.x</p>
+<p><cite>python-mchess</cite> board driver for Chess Link depends on <cite>PySerial</cite> and (Linux/Raspberry Pi only) <cite>BluePy</cite></p>
+<p>In order to use UCI engines with mchess, additionally <cite>python-chess</cite> is used.</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">pyserial</span> <span class="pre">[bluepy]</span> <span class="pre">[python-chess]</span>
+<span class="pre">`</span></code></p>
+<p>Then clone the repository
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/domschl/python-mchess</span>
+<span class="pre">`</span></code></p>
+<p>Now copy:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">cd</span> <span class="pre">mchess</span>
+<span class="pre">cp</span> <span class="pre">uci_engines.json.default</span> <span class="pre">uci_engines.json</span>
+<span class="pre">`</span></code>
+and edit the paths to valid UCI engines.</p>
+<p>Then simply start from console:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">python3</span> <span class="pre">chess_mboard.py</span>
+<span class="pre">`</span></code></p>
+<p>This will start chess agents for the chess board, automatically detecting board hardware via USB or BLuetooth LE (Linux, Raspberry PI only), and load the UCI engine (testet with Leela Chess Zero (Lc0) and Stockfish 9).</p>
+<p>Note: Bluetooth LE hardware detection requires admin privileges for the one-time intial bluetooth scan. For first time start with Bluetooth LE support, use:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">sudo</span> <span class="pre">python3</span> <span class="pre">chess_mboard.py</span>
+<span class="pre">`</span></code>
+Once the board is found, stop the program and restart without <cite>sudo</cite>. You might want to set ownership for <cite>chess_link_config.json</cite> to your user-account, since the file will be rewritten, if the detected board orientation is changed.</p>
+<p><cite>uci_engines.json</cite> will now contain the UCI options. Those can be edited e.g. to enable tablebases or other UCI options.</p>
+<p>![Console mchess](<a class="reference external" href="https://raw.github.com/domschl/python-mchess/master/images/MchessAlpha.png">https://raw.github.com/domschl/python-mchess/master/images/MchessAlpha.png</a>)</p>
+<p>## Usage</p>
+<p>On start, the current position from Chess Genius Exclusive board is imported and displayed on the console.
+Simply start making a move on the board, and the UCI engine will reply. During the time, the engine calculates,
+the best current line is displayed on the board for up to 3 half-moves (see <cite>preferences.json</cite> to enable/disable this
+feature).</p>
+<p>## Architecture
+<a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+<blockquote>
+<div><blockquote>
+<div><blockquote>
+<div><blockquote>
+<div><blockquote>
+<div><div class="line-block">
+<div class="line">|     |</div>
+</div>
+</div></blockquote>
+</div></blockquote>
+<p>+———-+     |     +———+
+|                |               |</p>
+</div></blockquote>
+<p>+———————+  +————–+  +——————-+
+| chess_link_agent.py |  | uci_agent.py |  | terminal_agent.py |   agents represent
++———————+  +————–+  +——————-+   player activities</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">uci-engines         I/O hardware</div>
+<div class="line">Stockfish,</div>
+<div class="line">Lc0 etc.</div>
+</div>
+</div></blockquote>
+</div></blockquote>
+<ul>
+<li><ul class="first">
+<li><ul class="first">
+<li><ul class="first">
+<li><ul class="first">
+<li><ul class="first">
+<li><ul class="first">
+<li><ul class="first">
+<li><div class="first line-block">
+<div class="line">-  -  -  -  -  -  -  -  -  -  -  -</div>
+</div>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<div><blockquote>
+<div><div class="line-block">
+<div class="line"><a href="#id7"><span class="problematic" id="id8">|</span></a></div>
+</div>
+</div></blockquote>
+</div></blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<div><p>+——————-+  +———————-+
+| chess_link_usb.py |  | chess_link_bluepy.py |
++——————-+  +———————-+</p>
+<blockquote>
+<div>Chess Genius Exclusive board hardware
+via Chess Link</div></blockquote>
+</div></blockquote>
+</div></blockquote>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a></p>
+<p>It whould be straight forward to include other agents (e.g. pyqt5 GUI or web GUIs) at a later point.</p>
+<p>## Documentation</p>
+<p>[API Documentation for chess_link.py](<a class="reference external" href="https://domschl.github.io/python-mchess/doc/build/html/index.html">https://domschl.github.io/python-mchess/doc/build/html/index.html</a>)</p>
+<p>## Acknowledgements</p>
+<ul class="simple">
+<li>Thanks to Millennium GmbH for providing all information necessary for the implementation and for
+providing a ChessLink sample. See: [for more information](<a class="reference external" href="http://computerchess.de/#ChessLink">http://computerchess.de/#ChessLink</a>) on ChessLink.</li>
+</ul>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">mchess</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="chess_link.html">ChessLink object</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chess_link_protocol.html">ChessLink protocol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chess_link_transports.html">USB transport</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chess_link_transports.html#ble-transport">BLE transport</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dominik Schlösser.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/README.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
