@@ -12,7 +12,7 @@ import copy
 
 import chess_link_protocol as clp
 
-# TODO: Expand protocol description
+# See document magic-board.md for details on the Chess Link protocol.
 """The Chess Link Protocol
 
 <V56>
