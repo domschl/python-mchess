@@ -13,6 +13,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -40,27 +41,28 @@
 <em class="property">class </em><code class="descclassname">chess_link.</code><code class="descname">ChessLink</code><span class="sig-paren">(</span><em>appque</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink" title="Permalink to this definition">¶</a></dt>
 <dd><p>This implements the ‘Chess Link’ protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol</p>
 <dl class="method">
-<dt id="chess_link.ChessLink.check_move">
-<code class="descname">check_move</code><span class="sig-paren">(</span><em>pos</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.check_move"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.check_move" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check, if current change on board is a legal move. If yes, put move into queue</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="chess_link.ChessLink.move_from">
 <code class="descname">move_from</code><span class="sig-paren">(</span><em>fen</em>, <em>legal_moves</em>, <em>color</em>, <em>eval_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.move_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.move_from" title="Permalink to this definition">¶</a></dt>
-<dd><p>Register all legal moves possible in current position</p>
+<dd><p>Register all legal moves possible in current position.
+:param fen: current position
+:param legal_moves: dictionary of key:fen value: uci_move (e.g. e2e4)
+:param color: color to move
+:param eval_only: True: indicate ponder evals</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="chess_link.ChessLink.new_game">
 <code class="descname">new_game</code><span class="sig-paren">(</span><em>pos</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.new_game"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.new_game" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initiate a new game</p>
+<dd><p>Initiate a new game
+:param pos: position array of the current position. If the hardware board has 
+currently a different position, all differences are indicated by blinking leds.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="chess_link.ChessLink.position_initialized">
 <code class="descname">position_initialized</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.position_initialized"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.position_initialized" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check, if a board position has been received and chess link board is online. Returns True on success</p>
+<dd><p>Check, if a board position has been received and chess link board is online.
+:return: True, if board position has been received.</p>
 </dd></dl>
 
 <dl class="method">
@@ -79,7 +81,9 @@ to signal moves by other agents, or discrepancies with the current position.</p>
 <dl class="method">
 <dt id="chess_link.ChessLink.write_configuration">
 <code class="descname">write_configuration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.write_configuration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.write_configuration" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the configuration for hardware connection (USB/Bluetooth LE) and board orientation</p>
+<dd><p>Write the configuration for hardware connection (USB/Bluetooth LE) 
+and board orientation to ‘chess_link_config.json
+:return: True on success, False on error</p>
 </dd></dl>
 
 </dd></dl>
@@ -91,7 +95,11 @@ odd-parity-bit. Each block of ASCII+odd-parity bytes gets an additional block pa
 <dl class="function">
 <dt id="chess_link_protocol.add_block_crc">
 <code class="descclassname">chess_link_protocol.</code><code class="descname">add_block_crc</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_protocol.html#add_block_crc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_protocol.add_block_crc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add block parity at the end of the message</p>
+<dd><p>Add block parity at the end of the message
+:param msg: a message byte array (each byte must have already been encoded with odd parity). 
+This function adds two bytes of block CRC at the end of the message.
+:param msg: byte array with a message (incl. odd-parity bits set already)
+:return: two byte longer message that includes 2 CRC bytes.</p>
 </dd></dl>
 
 <dl class="function">
@@ -115,13 +123,17 @@ odd-parity-bit. Each block of ASCII+odd-parity bytes gets an additional block pa
 <code class="descclassname">chess_link_protocol.</code><code class="descname">check_block_crc</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_protocol.html#check_block_crc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_protocol.check_block_crc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Chess link messages consist of 7-bit-ASCII characters with odd parity. At the end of each
 message, an additional block-parity is added. Valid chess link messages must have correct odd
-parity for each character and a valid block parity at the end.</p>
+parity for each character and a valid block parity at the end.
+:param msg: a byte array with the message.
+:return: True, if the last two bytes of msg contain a correct CRC, False otherwise.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="chess_link_protocol.hex2">
 <code class="descclassname">chess_link_protocol.</code><code class="descname">hex2</code><span class="sig-paren">(</span><em>num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link_protocol.html#hex2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link_protocol.hex2" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a 2-digit hex code ‘00’..FF for an uint_8 integer 0..255</p>
+<dd><p>Convert integer to 2-digit hex string. Most numeric parameters and the block CRC are encoded as such 2-digit hex-string.
+:param num: uint_8 integer 0..255
+:return: Returns a 2-digit hex code ‘00’..’FF’</p>
 </dd></dl>
 
 <dl class="function">
@@ -195,7 +207,7 @@ parity for each character and a valid block parity at the end.</p>
       &copy;2018, Dominik Schlösser.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

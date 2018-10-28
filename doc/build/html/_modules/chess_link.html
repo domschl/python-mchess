@@ -13,6 +13,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
    
@@ -46,12 +47,26 @@
 
 <span class="kn">import</span> <span class="nn">chess_link_protocol</span> <span class="k">as</span> <span class="nn">clp</span>
 
+<span class="c1"># TODO: Expand protocol description</span>
+<span class="sd">&quot;&quot;&quot;The Chess Link Protocol</span>
+
+<span class="sd">&lt;V56&gt;</span>
+<span class="sd">2018-08-31 11:07:31,141 DEBUG ChessLinkBluePy Sending: &lt;b&#39;\xd6\xb5\xb6&#39;&gt;</span>
+<span class="sd">2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy BLE: Handle: 55, data: b&#39;v\xb01\xb0\xb374&#39;</span>
+<span class="sd">2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy BLE received [v010374]</span>
+<span class="sd">2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy bluepy_ble received complete msg: v010374</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
 
 <div class="viewcode-block" id="ChessLink"><a class="viewcode-back" href="../index.html#chess_link.ChessLink">[docs]</a><span class="k">class</span> <span class="nc">ChessLink</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;This implements the &#39;Chess Link&#39; protocol for Millennium Chess Genius Exclusive and future boards compatible with that protocol&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">appque</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Constructor, appque is a Queue that receive chess board events, name identifies this protocol&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Constructor, searches, configures and connectors to Chess Link compatible Millennium Chess Genius Exclusive or similar boards.</span>
+<span class="sd">        :param appque: a Queue that receive chess board events</span>
+<span class="sd">        :param name: identifies this protocol&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">figrep</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;int&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">6</span><span class="p">],</span>
                        <span class="s2">&quot;ascii&quot;</span><span class="p">:</span> <span class="s2">&quot;PNBRQK.pnbrqk&quot;</span><span class="p">}</span>
@@ -91,7 +106,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">thread_active</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">event_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
-            <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_worker_thread</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trque</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">board_mutex</span><span class="p">))</span>
+            <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_worker_thread</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trque</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">board_mutex</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">event_thread</span><span class="o">.</span><span class="n">setDaemon</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">event_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
@@ -167,7 +182,8 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span>
 
 <div class="viewcode-block" id="ChessLink.position_initialized"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.position_initialized">[docs]</a>    <span class="k">def</span> <span class="nf">position_initialized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check, if a board position has been received and chess link board is online. Returns True on success&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Check, if a board position has been received and chess link board is online.</span>
+<span class="sd">        :return: True, if board position has been received.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">pos</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">board_mutex</span><span class="p">:</span>
@@ -177,16 +193,22 @@
         <span class="k">return</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="ChessLink.write_configuration"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.write_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">write_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Write the configuration for hardware connection (USB/Bluetooth LE) and board orientation&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Write the configuration for hardware connection (USB/Bluetooth LE) </span>
+<span class="sd">        and board orientation to &#39;chess_link_config.json</span>
+<span class="sd">        :return: True on success, False on error&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;orientation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;chess_link_config.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to save default configuration </span><span class="si">{}</span><span class="s2"> to </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">,</span> <span class="s2">&quot;chess_link_config.json&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">,</span> <span class="s2">&quot;chess_link_config.json&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
-    <span class="k">def</span> <span class="nf">event_worker_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">mutex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_event_worker_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">mutex</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This background thread is started on creation of a ChessLink object. </span>
+<span class="sd">        It decodes chess link encoded messages and sends jason messages to the application.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Chess Link worker thread started.&#39;</span><span class="p">)</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">thread_active</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trque</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
@@ -272,7 +294,7 @@
                                 <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
                             <span class="c1"># self.print_position_ascii(position)</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">appque</span><span class="o">.</span><span class="n">put</span><span class="p">({</span><span class="s1">&#39;fen&#39;</span><span class="p">:</span> <span class="n">fen</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">check_move</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_check_move</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;got version reply&#39;</span><span class="p">)</span>
                         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
@@ -312,12 +334,15 @@
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ChessLink.new_game"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.new_game">[docs]</a>    <span class="k">def</span> <span class="nf">new_game</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initiate a new game&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Initiate a new game</span>
+<span class="sd">        :param pos: position array of the current position. If the hardware board has </span>
+<span class="sd">        currently a different position, all differences are indicated by blinking leds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span> <span class="o">=</span> <span class="n">pos</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_led_off</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span> <span class="o">=</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="ChessLink.check_move"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.check_move">[docs]</a>    <span class="k">def</span> <span class="nf">check_move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_check_move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check, if current change on board is a legal move. If yes, put move into queue&quot;&quot;&quot;</span>
         <span class="n">fen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">short_fen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position_to_fen</span><span class="p">(</span><span class="n">pos</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span><span class="p">:</span>
@@ -327,10 +352,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span> <span class="o">=</span> <span class="n">pos</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_led_off</span><span class="p">()</span>
             <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
+        <span class="k">return</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="ChessLink.move_from"><a class="viewcode-back" href="../index.html#chess_link.ChessLink.move_from">[docs]</a>    <span class="k">def</span> <span class="nf">move_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fen</span><span class="p">,</span> <span class="n">legal_moves</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">eval_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Register all legal moves possible in current position&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Register all legal moves possible in current position.</span>
+<span class="sd">        :param fen: current position</span>
+<span class="sd">        :param legal_moves: dictionary of key:fen value: uci_move (e.g. e2e4)</span>
+<span class="sd">        :param color: color to move</span>
+<span class="sd">        :param eval_only: True: indicate ponder evals</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">eval_only</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span> <span class="o">=</span> <span class="n">legal_moves</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">turn</span> <span class="o">=</span> <span class="n">color</span>
@@ -457,7 +487,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Setting board scan debounce to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">count</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">get_led_brightness_precent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_led_brightness_percent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
@@ -681,7 +711,7 @@
       &copy;2018, Dominik Schlösser.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
     </div>
