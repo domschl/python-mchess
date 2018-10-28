@@ -7,6 +7,7 @@ USB ChessLink transport
 .. autoclass:: Transport
     :members:
     :special-members:
+    :exclude-members: __dict__,__weakref__
 
 ================================
 Bluetooth LE ChessLink transport
@@ -17,4 +18,5 @@ Bluetooth LE ChessLink transport
 .. autoclass:: Transport
     :members:
     :special-members:
+    :exclude-members: __dict__,__weakref__
 
