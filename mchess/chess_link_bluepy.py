@@ -12,6 +12,16 @@ except:
 
 
 class Transport():
+    """
+    ChessLink transport implementation for Bluetooth LE connections using `bluepy`.
+
+    This class does automatic hardware detection of any ChessLink board using bluetooth LE
+    and supports Linux and Raspberry Pi.
+
+    This transport uses an asynchronous background thread for hardware communcation.
+    All replies are written to the python queue `que` given during initialization.
+    """
+
     def __init__(self, que):
         if bluepy_ble_support == False:
             self.init = False
@@ -23,6 +33,11 @@ class Transport():
         self.log.debug("bluepy_ble init ok")
 
     def search_board(self):
+        """
+        Search for ChessLink connections using Bluetooth LE.
+
+        :returns: Bluetooth address of ChessLink board, or None on failure.
+        """
         self.log.debug("bluepy_ble: searching for boards")
 
         class ScanDelegate(DefaultDelegate):
@@ -65,10 +80,21 @@ class Transport():
         return None
 
     def test_board(self, address):
+        """
+        Test dummy.
+
+        :returns: Version string "1.0" always.
+        """
         # self.open_mt(address)
         return "1.0"
 
     def open_mt(self, address):
+        """
+        Open a bluetooth LE connection to ChessLink board.
+
+        :param address: bluetooth address
+        :returns: True on success.
+        """
         self.log.debug('Starting worker-thread for bluepy ble')
         self.worker_thread_active = True
         self.worker_threader = threading.Thread(
@@ -78,16 +104,35 @@ class Transport():
         return True
 
     def write_mt(self, msg):
+        """
+        Encode and asynchronously write a message to ChessLink.
+
+        :param msg: Message string. Parity will be added, and block CRC appended.
+        """
         self.log.debug('write-que-entry {}'.format(msg))
         self.wrque.put(msg)
 
     def get_name(self):
+        """
+        Get name of this transport.
+
+        :returns: 'chess_link_bluepy'
+        """
         return "chess_link_bluepy"
 
     def is_init(self):
+        """
+        Check, if hardware connection is up.
+
+        :returns: True on success.
+        """
         return self.init
 
     def worker_thread(self, log, address, wrque, que):
+        """
+        Background thread that handles bluetooth sending and forwards data received via 
+        bluetooth to the queue `que`.
+        """
         mil = None
         message_delta_time = 0.1  # least 0.1 sec between outgoing btle messages
 
