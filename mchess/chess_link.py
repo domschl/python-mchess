@@ -71,7 +71,7 @@ class ChessLink:
         {'move': {'uci': '<uci-format move, e.g. e2e4>', 'fen': '<resulting fen position>', 
          'actor': '<actor-name>'}}
 
-    See remarks on `position2fen()`: move counts, castling are not valid, only the position
+    See remarks on `position_to_fen()`: move counts, castling are not valid, only the position
     part should be used.
 
     In order for the board to detect valid move, a list of possible valid moves has to given
