@@ -17,12 +17,11 @@ Welcome to mchess's documentation!
 .. autosummary::
     chess_link.ChessLink
     chess_link_protocol
-    chess_link_usb
-    chess_link_bluepy
+    chess_link_usb.Transport
+    chess_link_bluepy.Transport
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
