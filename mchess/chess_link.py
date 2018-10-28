@@ -12,17 +12,19 @@ import copy
 
 import chess_link_protocol as clp
 
-# See document `magic-board.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md> for details on the Chess Link protocol.
+# See document `magic-board.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>_
+# for details on the Chess Link protocol.
 
-"""The Chess Link Protocol
+"""
+The Chess Link Protocol
 
+```
 <V56>
 2018-08-31 11:07:31,141 DEBUG ChessLinkBluePy Sending: <b'\xd6\xb5\xb6'>
 2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy BLE: Handle: 55, data: b'v\xb01\xb0\xb374'
 2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy BLE received [v010374]
 2018-08-31 11:07:31,212 DEBUG ChessLinkBluePy bluepy_ble received complete msg: v010374
-
-
+```
 """
 
 
@@ -508,6 +510,12 @@ class ChessLink:
                 "Not connected to Chess Link.")
 
     def get_debounce(self):
+        """
+        Asynchronuosly request the current debounce setting. The answer will be
+        written to the queue `appqueue` given during initialization.
+
+        See see `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
+        """
         cmd = "R"+clp.hex2(2)
         if self.connected is True:
             self.trans.write_mt(cmd)
@@ -516,6 +524,12 @@ class ChessLink:
                 "Not connected to Chess Link.")
 
     def set_debounce(self, count):
+        """
+        Set the debounce-value. Debouncing helps to prevent random fluke events. Should be tested
+        together with different `set_scan_time_ms()` values.
+
+        :param count: 0-4, 0: no debounce, 1-4: 1-4 scan times debounce.
+        """
         cmd = "W02"
         if count < 0 or count > 4:
             self.log.error(
@@ -527,6 +541,12 @@ class ChessLink:
             self.log.debug("Setting board scan debounce to {}".format(count))
 
     def get_led_brightness_percent(self):
+        """
+        Asynchronuosly request the current led brightness setting. The answer will be
+        written to the queue `appqueue` given during initialization.
+
+        See see `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
+        """
         cmd = "R"+clp.hex2(4)
         if self.connected is True:
             self.trans.write_mt(cmd)
@@ -535,6 +555,11 @@ class ChessLink:
                 "Not connected to Chess Link.")
 
     def set_led_brightness(self, level=1.0):
+        """
+        Set the led brighness.
+
+        :param level: 0.0 - 1.0: 0(darkest) up to 1.0(brightest).
+        """
         cmd = "W04"
         if level < 0.0 or level > 1.0:
             self.log.error(
@@ -547,6 +572,12 @@ class ChessLink:
                 "Setting led brightness to {} (bri={})".format(ilevel, level))
 
     def get_scan_time_ms(self):
+        """
+        Asynchronuosly request the current scan time setting. The answer will be
+        written to the queue `appqueue` given during initialization.
+
+        See see `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
+        """
         cmd = "R"+clp.hex2(1)
         if self.connected is True:
             self.trans.write_mt(cmd)
@@ -556,6 +587,13 @@ class ChessLink:
 
     # default is scan every 40.96 ms, 24.4 scans per second.
     def set_scan_time_ms(self, scan_ms=41):
+        """
+        Set the scan time value. Lower scan times make the board less susceptible to random unexpected
+        events and can be used together with `set_debounce()` to prevent random fluke events.
+
+        :param scan_ms: 30.72(fastest)-522.24(slowest), scan time in ms. A value around 100ms is 
+                        recommended, board default is 41ms.
+        """
         cmd = "W01"
         if scan_ms < 2.048 * 15.0 or scan_ms > 255.0 * 2.048:
             self.log.error(
@@ -573,6 +611,15 @@ class ChessLink:
 
     # TODO: move this?
     def short_fen(self, fen):
+        """
+        Utility-function to cut off all information after the actual position, since the board
+        does not know about move counts or castling.
+
+        E.g. `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1` is transformed to
+        `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR`
+
+        :returns: position-only part of the fen string.
+        """
         i = fen.find(' ')
         if i == -1:
             self.log.error(
@@ -582,6 +629,16 @@ class ChessLink:
             return fen[:i]
 
     def position_to_fen(self, position):
+        """
+        Convert a 8x8 `position` array to a fen position. Typically, an 8x8 `position` is generated
+        by the Chess Link board, which has no information about the current move, side to move, or
+        castling status.
+
+        The returned FEN has always ending `w KQkq - 0 1` after the actual position (only rudimentary
+        checks for castling are done)
+
+        :returns: FEN string derived from postion-array 
+        """
         fen = ""
         blanks = 0
         for y in range(8):
@@ -624,6 +681,14 @@ class ChessLink:
         return fen
 
     def fen_to_position(self, fen):
+        """
+        Convert a FEN position into an 8x8 `position` array.
+
+        Note that the current implementation of `position` arrays does not maintain move-counts,
+        castling stati or any history data.
+
+        :returns: 8x8 `position` array.
+        """
         position = [[0 for x in range(8)] for y in range(8)]
         fenp = self.short_fen(fen)
         fi = 0
@@ -654,6 +719,9 @@ class ChessLink:
         return position
 
     def _open_transport(self, transport):
+        """
+        Internal function to load transport modules (USB or bluetooth)
+        """
         try:
             tri = importlib.import_module(transport)
             self.log.debug("imported {}".format(transport))
@@ -671,6 +739,9 @@ class ChessLink:
         return None
 
     def reset(self):
+        """
+        Reset Chess Link module.
+        """
         if self.connected is True:
             self.trans.write_mt("T")
             self.log.warning(
@@ -681,6 +752,10 @@ class ChessLink:
         return '?'
 
     def get_version(self):
+        """
+        Asynchronuosly request the Chess Link version number. The answer will be
+        written to the queue `appqueue` given during initialization.
+        """
         if self.connected is True:
             self.trans.write_mt("V")
         else:
@@ -689,6 +764,14 @@ class ChessLink:
         return '?'
 
     def get_position(self):
+        """
+        Asynchronuosly request the Chess Link board position. The answer will be
+        written to the queue `appqueue` given during initialization.
+
+        By default, the Chess Link board sends a position to `appqueue` on all changes
+        to the board position, so explicit calls to `get_position()` should not be required
+        most of the times.
+        """
         if self.connected is True:
             self.trans.write_mt("S")
         else:
@@ -697,8 +780,26 @@ class ChessLink:
         return '?'
 
     def set_orientation(self, orientation):
+        """
+        Set the Chess Link board orientation.
+
+        Setting the orientation is only necessary, when autodecection cannot work,
+        because the board has never been set to a start position.
+
+        :param orientation: True: cable right, False: cable left.
+        """
         self.orientation = orientation
         self.write_configuration()
 
     def get_orientation(self):
+        """
+        Asynchronuosly request the Chess Link board orientation. The answer will be
+        written to the queue `appqueue` given during initialization.
+
+        ChessLink tries to autodetect the orientation of the board by looking for
+        initial start positions.
+
+        If the board has never been set to the initial start position, the orientation
+        must be set using `set_orientation()`.
+        """
         return self.orientation
