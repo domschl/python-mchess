@@ -38,19 +38,30 @@ Then clone the repository
 git clone https://github.com/domschl/python-mchess
 ```
 
-Now copy:
+Now configure some engines:
 ```
-cd mchess
-cp uci_engines.json.default uci_engines.json
+cd mchess/engines
 ```
-and edit the paths to valid UCI engines.
+Copy `engine-template.json` for each UCI engine to a file `<engine-name>.json`, and edit the fields `'name'` and `'path'`. 
 
-Then simply start from console:
+A sample content for stockfish in Linux would be: 
+`engines/stockfish.json`:
+
+```json
+{
+    "name": "stockfish",
+    "path": "/usr/bin/stockfish",
+    "active": true
+}
+```
+Note: Windows users need to use paths with `\\` for proper json encoding.
+
+Then in directory `mchess`, simply start from console:
 ```bash
 python3 chess_mboard.py
 ```
 
-This will start chess agents for the chess board, automatically detecting board hardware via USB or BLuetooth LE (Linux, Raspberry PI only), and load the UCI engine (testet with Leela Chess Zero (Lc0) and Stockfish 9).
+This will start chess agents for the chess board, automatically detecting board hardware via USB or BLuetooth LE (Linux, Raspberry PI only), and load the [first active] UCI engine (testet with Leela Chess Zero (Lc0) and Stockfish 9).
 
 Note: Bluetooth LE hardware detection requires admin privileges for the one-time intial bluetooth scan. For first time start with Bluetooth LE support, use:
 ```bash
@@ -58,7 +69,7 @@ sudo python3 chess_mboard.py
 ```
 Once the board is found, stop the program and restart without `sudo`. You might want to set ownership for `chess_link_config.json` to your user-account, since the file will be rewritten, if the detected board orientation is changed.
 
-`uci_engines.json` will now contain the UCI options. Those can be edited e.g. to enable tablebases or other UCI options.
+All engine descriptions in directory 'engines' will now contain the default-UCI options for each engine. Those can be edited e.g. to enable tablebases or other UCI options.
 
 ![Console mchess](https://raw.github.com/domschl/python-mchess/master/images/MchessAlpha.png)
 
