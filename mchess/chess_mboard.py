@@ -10,7 +10,7 @@ import chess.uci
 
 from chess_link_agent import ChessLinkAgent
 from terminal_agent import TerminalAgent
-from uci_agent import UciAgent
+from uci_agent import UciAgent, UciEngines
 
 
 def write_preferences(prefs):
@@ -83,6 +83,9 @@ if __name__ == '__main__':
     cla.max_plies = prefs['max_plies_board']
     ta = TerminalAgent(appque)
     ta.max_plies = prefs['max_plies_terminal']
+
+    uatest = UciEngines(appque)
+
     ua = UciAgent(appque)
 
     modes = ("analysis", "setup", "player-engine",
