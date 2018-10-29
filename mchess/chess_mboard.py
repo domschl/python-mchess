@@ -85,8 +85,16 @@ if __name__ == '__main__':
     ta.max_plies = prefs['max_plies_terminal']
 
     uatest = UciEngines(appque)
+    avail_engines = ""
+    for en in uatest.engines:
+        if len(avail_engines) > 0:
+            avail_engines += ', '
+        else:
+            to_use = en
+        avail_engines += en
+    logging.info(f'Available UCI engines: {avail_engines}')
 
-    ua = UciAgent(appque)
+    ua = UciAgent(uatest.engines[to_use])
 
     modes = ("analysis", "setup", "player-engine",
              "engine-player", "engine-engine", "player-player")
