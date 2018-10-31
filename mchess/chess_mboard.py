@@ -1,5 +1,4 @@
 import logging
-import chess
 import json
 import queue
 import time
@@ -13,12 +12,12 @@ from terminal_agent import TerminalAgent
 from uci_agent import UciAgent, UciEngines
 
 
-def write_preferences(prefs):
+def write_preferences(pref):
     try:
-        with open("preferences.json", "w") as f:
-            json.dump(prefs, f)
+        with open("preferences.json", "w") as fp:
+            json.dump(pref, fp)
     except Exception as e:
-        logging.error("Failed to write preferences.json, {}".format(e))
+        logging.error(f"Failed to write preferences.json, {e}")
 
 
 def short_fen(fen):
