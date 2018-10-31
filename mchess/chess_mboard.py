@@ -84,17 +84,24 @@ if __name__ == '__main__':
     ta = TerminalAgent(appque)
     ta.max_plies = prefs['max_plies_terminal']
 
-    uatest = UciEngines(appque)
+    uci_engines = UciEngines(appque)
     avail_engines = ""
-    for en in uatest.engines:
+    ua1_name = None
+    ua2_name = None
+    n = 0
+    for en in uci_engines.engines:
         if len(avail_engines) > 0:
             avail_engines += ', '
-        else:
-            to_use = en
         avail_engines += en
+        if n == 0:
+            ua1_name = en
+        if n == 1:
+            ua2_name = en
+        n += 1
     logging.info(f'Available UCI engines: {avail_engines}')
 
-    ua = UciAgent(uatest.engines[to_use])
+    ua1 = UciAgent(uci_engines.engines[ua1_name])
+    ua2 = UciAgent(uci_engines.engines[ua2_name])
 
     modes = ("analysis", "setup", "player-engine",
              "engine-player", "engine-engine", "player-player")
@@ -106,19 +113,24 @@ if __name__ == '__main__':
     # time.sleep(10.0)
 
     mode = "player-engine"
+    # mode = "engine-engine"
     player_w = [ta, cla]
-    player_b = [ua]
+    player_b = [ua1]
+    player_c = [ua2]
     board = chess.Board()
     state = States.IDLE
     last_info = 0
     ponder_move = None
+
+    player_w_name = 'Human'
+    player_b_name = ua1_name
 
     if cla.agent_ready() and prefs['import_chesslink_position'] is True:
         appque.put({'position_fetch': 'ChessLinkAgent', 'agent': 'prefs'})
         state = States.BUSY
 
     ags = ""
-    for p in player_w + player_b:
+    for p in player_w + player_b + player_c:
         if p.agent_ready() is False:
             logging.error('Failed to initialize agent {}.'.format(p.name))
             exit(-1)
@@ -129,6 +141,11 @@ if __name__ == '__main__':
 
     while True:
         if state == States.IDLE:
+            if board.is_game_over() is True:
+                logging.info('Result: {}'.format(board.result()))
+                mode = 'Undefined'
+                active_player = []
+                passive_player = []
             if mode == 'player-engine':
                 if board.turn == chess.WHITE:
                     active_player = player_w
@@ -146,6 +163,13 @@ if __name__ == '__main__':
             if mode == 'player-player':
                 active_player = player_w
                 passive_player = player_w
+            if mode == 'engine-engine':
+                if board.turn == chess.WHITE:
+                    active_player = [ua1]
+                    passive_player = [ua2]
+                else:
+                    active_player = [ua2]
+                    passive_player = [ua1]
 
             for agent in passive_player:
                 setm = getattr(agent, "set_valid_moves", None)
@@ -174,14 +198,22 @@ if __name__ == '__main__':
             appque.task_done()
             logging.debug("App received msg: {}".format(msg))
             if 'new game' in msg:
+                if mode == 'engine-engine':
+                    logging.error(
+                        'Currently not handling engine-engine new game situation!')
+                    continue
                 logging.info(
                     "New game initiated by {}".format(msg['actor']))
                 board.reset()
                 for agent in player_b+player_w:
                     dispb = getattr(agent, "display_board", None)
                     if callable(dispb):
+                        attribs = {'unicode': prefs['use_unicode_figures'],
+                                   'white_name': player_w_name,
+                                   'black_name': player_b_name
+                                   }
                         agent.display_board(
-                            board, use_unicode_chess_figures=prefs['use_unicode_figures'])
+                            board, attribs=attribs)
                 state = States.IDLE
 
             if 'position_fetch' in msg:
@@ -194,8 +226,12 @@ if __name__ == '__main__':
                             for agent2 in player_b+player_w:
                                 dispb = getattr(agent2, "display_board", None)
                                 if callable(dispb):
+                                    attribs = {'unicode': prefs['use_unicode_figures'],
+                                               'white_name': player_w_name,
+                                               'black_name': player_b_name
+                                               }
                                     agent2.display_board(
-                                        board, use_unicode_chess_figures=prefs['use_unicode_figures'])
+                                        board, attribs=attribs)
                             break
                 state = States.IDLE
 
@@ -204,8 +240,12 @@ if __name__ == '__main__':
                 for agent in player_b+player_w:
                     dispb = getattr(agent, "display_board", None)
                     if callable(dispb):
+                        attribs = {'unicode': prefs['use_unicode_figures'],
+                                   'white_name': player_w_name,
+                                   'black_name': player_b_name
+                                   }
                         agent.display_board(
-                            board, use_unicode_chess_figures=prefs['use_unicode_figures'])
+                            board, attribs=attribs)
                 state = States.IDLE
 
             if 'move' in msg:
@@ -216,8 +256,12 @@ if __name__ == '__main__':
                         agent.display_move(msg)
                     dispb = getattr(agent, "display_board", None)
                     if callable(dispb):
+                        attribs = {'unicode': prefs['use_unicode_figures'],
+                                   'white_name': player_w_name,
+                                   'black_name': player_b_name
+                                   }
                         agent.display_board(
-                            board, use_unicode_chess_figures=prefs['use_unicode_figures'])
+                            board, attribs=attribs)
                 if 'ponder' in msg['move']:
                     ponder_move = msg['move']['ponder']
                 state = States.IDLE
@@ -227,8 +271,12 @@ if __name__ == '__main__':
                 for agent in player_b+player_w:
                     disp = getattr(agent, "display_board", None)
                     if callable(disp):
+                        attribs = {'unicode': prefs['use_unicode_figures'],
+                                   'white_name': player_w_name,
+                                   'black_name': player_b_name
+                                   }
                         agent.display_board(
-                            board, use_unicode_chess_figures=prefs['use_unicode_figures'])
+                            board, attribs=attribs)
                 mode = 'player-player'
                 state = States.IDLE
 

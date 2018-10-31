@@ -150,11 +150,14 @@ class TerminalAgent:
 
         return ams
 
-    def display_board(self, board, use_unicode_chess_figures=True):
+    def display_board(self, board, attribs={'unicode': True, 'white_name': 'white', 'black_name': 'black'}):
         txa = self.position_to_text(
-            board, use_unicode_chess_figures=use_unicode_chess_figures)
+            board, use_unicode_chess_figures=attribs['unicode'])
         ams = self.moves_to_text(board, lines=len(
-            txa), use_unicode_chess_figures=use_unicode_chess_figures)
+            txa), use_unicode_chess_figures=attribs['unicode'])
+
+        print('                                {:>10.10s} - {:10.10s}'.format(
+            attribs['white_name'], attribs['black_name']))
         for i in range(len(txa)):
             print('{}  {}'.format(txa[i], ams[i]))
 
