@@ -12,293 +12,340 @@ from terminal_agent import TerminalAgent
 from uci_agent import UciAgent, UciEngines
 
 
-def write_preferences(pref):
-    try:
-        with open("preferences.json", "w") as fp:
-            json.dump(pref, fp)
-    except Exception as e:
-        logging.error(f"Failed to write preferences.json, {e}")
-
-
-def short_fen(fen):
-    i = fen.find(' ')
-    if i == -1:
-        logging.error(
-            'Invalid fen position <{}> in short_fen'.format(fen))
-        return None
-    else:
-        return fen[:i]
-
-
-def valid_moves(cbrd):
-    vals = {}
-    for mv in cbrd.legal_moves:
-        cbrd.push(mv)
-        vals[short_fen(cbrd.fen())] = mv.uci()
-        cbrd.pop()
-    return vals
-
-
-if __name__ == '__main__':
-    logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
-
-    prefs = {}
-    changed_prefs = False
-    try:
-        with open('preferences.json', 'r') as f:
-            prefs = json.load(f)
-    except Exception as e:
-        changed_prefs = True
-        logging.warning(
-            'Failed to read preferences.json, initializing defaults: {}'.format(e))
-
-    if 'think_ms' not in prefs:
-        prefs['think_ms'] = 500
-        changed_prefs = True
-    if 'use_unicode_figures' not in prefs:
-        prefs['use_unicode_figures'] = True
-        changed_prefs = True
-    if 'max_plies_terminal' not in prefs:
-        prefs['max_plies_terminal'] = 6
-        changed_prefs = True
-    if 'max_plies_board' not in prefs:
-        prefs['max_plies_board'] = 3
-        changed_prefs = True
-    if 'import_chesslink_position' not in prefs:
-        prefs['import_chesslink_position'] = True
-        changed_prefs = True
-
-    if changed_prefs is True:
+class Mchess:
+    def write_preferences(self, pref):
         try:
-            with open('preferences.json', 'w') as fw:
-                json.dump(prefs, fw)
+            with open("preferences.json", "w") as fp:
+                json.dump(pref, fp, indent=4)
         except Exception as e:
-            logging.error('Failed to save preferences {}'.format(e))
+            self.log.error(f"Failed to write preferences.json, {e}")
 
-    appque = queue.Queue()
+    def read_preferences(self):
+        prefs = {}
+        changed_prefs = False
+        try:
+            with open('preferences.json', 'r') as f:
+                prefs = json.load(f)
+        except Exception as e:
+            changed_prefs = True
+            self.log.warning(
+                'Failed to read preferences.json, initializing defaults: {}'.format(e))
 
-    cla = ChessLinkAgent(appque)
-    cla.max_plies = prefs['max_plies_board']
-    ta = TerminalAgent(appque)
-    ta.max_plies = prefs['max_plies_terminal']
+        if 'think_ms' not in prefs:
+            prefs['think_ms'] = 500
+            changed_prefs = True
+        if 'use_unicode_figures' not in prefs:
+            prefs['use_unicode_figures'] = True
+            changed_prefs = True
+        if 'max_plies_terminal' not in prefs:
+            prefs['max_plies_terminal'] = 6
+            changed_prefs = True
+        if 'max_plies_board' not in prefs:
+            prefs['max_plies_board'] = 3
+            changed_prefs = True
+        if 'import_chesslink_position' not in prefs:
+            prefs['import_chesslink_position'] = True
+            changed_prefs = True
+        if 'computer_player_name' not in prefs:
+            prefs['computer_player_name'] = 'stockfish'
+            changed_prefs = True
+        if 'computer_player2_name' not in prefs:
+            prefs['computer_player2_name'] = ''
+            changed_prefs = True
 
-    uci_engines = UciEngines(appque)
-    avail_engines = ""
-    ua1_name = None
-    ua2_name = None
-    n = 0
-    for en in uci_engines.engines:
-        if len(avail_engines) > 0:
-            avail_engines += ', '
-        avail_engines += en
-        if n == 0:
-            ua1_name = en
-        if n == 1:
-            ua2_name = en
-        n += 1
-    logging.info(f'Available UCI engines: {avail_engines}')
+        if changed_prefs is True:
+            self.write_preferences(prefs)
+        return prefs
 
-    ua1 = UciAgent(uci_engines.engines[ua1_name])
-    ua2 = UciAgent(uci_engines.engines[ua2_name])
+    def short_fen(self, fen):
+        i = fen.find(' ')
+        if i == -1:
+            self.log.error(
+                'Invalid fen position <{}> in short_fen'.format(fen))
+            return None
+        else:
+            return fen[:i]
 
-    modes = ("analysis", "setup", "player-engine",
-             "engine-player", "engine-engine", "player-player")
+    def valid_moves(self, v_board):
+        vals = {}
+        for mv in v_board.legal_moves:
+            v_board.push(mv)
+            vals[self.short_fen(v_board.fen())] = mv.uci()
+            v_board.pop()
+        return vals
+
+    def init_agents(self):
+        self.chess_link_agent = ChessLinkAgent(self.appque)
+        self.chess_link_agent.max_plies = self.prefs['max_plies_board']
+
+        self.term_agent = TerminalAgent(self.appque)
+        self.term_agent.max_plies = self.prefs['max_plies_terminal']
+
+        self.uci_engines = UciEngines(self.appque)
+        avail_engines = ""
+        for en in self.uci_engines.engines:
+            if len(avail_engines) > 0:
+                avail_engines += ', '
+            avail_engines += en
+        self.log.info(f'Available UCI engines: {avail_engines}')
+
+        if len(self.uci_engines.engines) > 0:
+            if self.prefs['computer_player_name'] in self.uci_engines.engines:
+                self.uci_agent = UciAgent(
+                    self.uci_engines.engines[self.prefs['computer_player_name']])
+            else:
+                self.uci_agent = UciAgent(
+                    self.uci_engines.engines.keys()[0])
+            if self.prefs['computer_player2_name'] in self.uci_engines.engines and self.prefs['computer_player2_name'] != '':
+                self.uci_agent2 = UciAgent(
+                    self.uci_engines.engines[self.prefs['computer_player2_name']])
+            else:
+                self.uci_agent2 = None
+        else:
+            self.uci_agent = None
+            self.uci_agent2 = None
+
+    class Mode(Enum):
+        NONE = 0
+        ANALYSIS = 1
+        SETUP = 2
+        PLAYER_ENGINE = 3
+        ENGINE_PLAYER = 4
+        ENGINE_ENGINE = 5
+        PLAYER_PLAYER = 6
+
+    def set_default_mode(self):
+        self.mode = self.Mode.PLAYER_PLAYER
+        self.player_w_name = 'Human'
+        self.player_b_name = 'Human'
+        self.player_w = []
+        if self.term_agent.agent_ready() is True:
+            self.player_w += [self.term_agent]
+        if self.chess_link_agent.agent_ready() is True:
+            self.player_w += [self.chess_link_agent]
+        self.player_b = []
+        if self.uci_agent is not None:
+            self.player_b += [self.uci_agent]
+            self.mode = self.mode.PLAYER_ENGINE
+            self.player_b_name = self.uci_agent.name
+        else:
+            self.player_b = self.player_w
+
+    def set_mode(self, mode):
+        if mode == self.Mode.NONE:
+            self.player_w = []
+            self.player_b = []
+            self.player_w_name = "None"
+            self.player_b_name = "None"
+        # TODO: Incomplete
 
     class States(Enum):
         IDLE = 0
         BUSY = 1
 
-    # time.sleep(10.0)
+    def init_board_agents(self):
+        self.board = chess.Board()
+        self.state = self.States.IDLE
+        self.last_info = 0
+        self.ponder_move = None
 
-    mode = "player-engine"
-    # mode = "engine-engine"
-    player_w = [ta, cla]
-    player_b = [ua1]
-    player_c = [ua2]
-    board = chess.Board()
-    state = States.IDLE
-    last_info = 0
-    ponder_move = None
+        if self.chess_link_agent.agent_ready() and self.prefs['import_chesslink_position'] is True:
+            self.appque.put(
+                {'position_fetch': 'ChessLinkAgent', 'agent': 'prefs'})
+            self.state = self.States.BUSY
 
-    player_w_name = 'Human'
-    player_b_name = ua1_name
+        ags = ""
+        for p in self.player_w + self.player_b:
+            if p.agent_ready() is False:
+                self.log.error('Failed to initialize agent {}.'.format(p.name))
+                exit(-1)
+            if len(ags) > 0:
+                ags += ", "
+            ags += '"'+p.name+'"'
+        self.log.info("Agents {} initialized".format(ags))
 
-    if cla.agent_ready() and prefs['import_chesslink_position'] is True:
-        appque.put({'position_fetch': 'ChessLinkAgent', 'agent': 'prefs'})
-        state = States.BUSY
+    def __init__(self):
+        logging.basicConfig(
+            format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
+        self.log = logging.getLogger('mchess')
 
-    ags = ""
-    for p in player_w + player_b + player_c:
-        if p.agent_ready() is False:
-            logging.error('Failed to initialize agent {}.'.format(p.name))
-            exit(-1)
-        if len(ags) > 0:
-            ags += ", "
-        ags += '"'+p.name+'"'
-    logging.info("Agents {} initialized".format(ags))
+        self.prefs = self.read_preferences()
+        self.appque = queue.Queue()
 
-    while True:
-        if state == States.IDLE:
-            if board.is_game_over() is True:
-                logging.info('Result: {}'.format(board.result()))
-                mode = 'Undefined'
-                active_player = []
-                passive_player = []
-            if mode == 'player-engine':
-                if board.turn == chess.WHITE:
-                    active_player = player_w
-                    passive_player = player_b
-                else:
-                    active_player = player_b
-                    passive_player = player_w
-            if mode == 'engine-player':
-                if board.turn == chess.BLACK:
-                    active_player = player_w
-                    passive_player = player_b
-                else:
-                    active_player = player_b
-                    passive_player = player_w
-            if mode == 'player-player':
-                active_player = player_w
-                passive_player = player_w
-            if mode == 'engine-engine':
-                if board.turn == chess.WHITE:
-                    active_player = [ua1]
-                    passive_player = [ua2]
-                else:
-                    active_player = [ua2]
-                    passive_player = [ua1]
+        self.init_agents()
+        self.set_default_mode()
+        self.init_board_agents()
 
-            for agent in passive_player:
-                setm = getattr(agent, "set_valid_moves", None)
-                if callable(setm):
-                    agent.set_valid_moves(board, [])
-                if ponder_move != None:
-                    setp = getattr(agent, "set_ponder", None)
-                    if callable(setp):
-                        agent.set_ponder(board, ponder_move)
+        self.state_machine_active = True
 
-            val = valid_moves(board)
-            for agent in active_player:
-                setm = getattr(agent, "set_valid_moves", None)
-                if callable(setm):
-                    agent.set_valid_moves(board, val)
-                gom = getattr(agent, "go", None)
-                if callable(gom):
-                    logging.debug(
-                        'Initiating GO for agent {}'.format(agent.name))
-                    agent.go(board, prefs['think_ms'])
-                    break
-            state = States.BUSY
+    def game_state_machine(self):
+        while self.state_machine_active:
+            if self.state == self.States.IDLE:
+                if self.board.is_game_over() is True:
+                    self.log.info('Result: {}'.format(self.board.result()))
+                    self.set_mode(self.Mode.NONE)
+                    active_player = []
+                    passive_player = []
+                if self.mode == self.Mode.PLAYER_ENGINE:
+                    if self.board.turn == chess.WHITE:
+                        active_player = self.player_w
+                        passive_player = self.player_b
+                    else:
+                        active_player = self.player_b
+                        passive_player = self.player_w
+                if self.mode == self.Mode.ENGINE_PLAYER:
+                    if self.board.turn == chess.BLACK:
+                        active_player = self.player_w
+                        passive_player = self.player_b
+                    else:
+                        active_player = self.player_b
+                        passive_player = self.player_w
+                if self.mode == self.Mode.PLAYER_PLAYER:
+                    active_player = self.player_w
+                    passive_player = self.player_w
+                if self.mode == self.Mode.ENGINE_ENGINE:
+                    if self.board.turn == chess.WHITE:
+                        active_player = [self.uci_agent]
+                        passive_player = [self.uci_agent2]
+                    else:
+                        active_player = [self.uci_agent2]
+                        passive_player = [self.uci_agent]
 
-        if appque.empty() is False:
-            msg = appque.get()
-            appque.task_done()
-            logging.debug("App received msg: {}".format(msg))
-            if 'new game' in msg:
-                if mode == 'engine-engine':
-                    logging.error(
-                        'Currently not handling engine-engine new game situation!')
-                    continue
-                logging.info(
-                    "New game initiated by {}".format(msg['actor']))
-                board.reset()
-                for agent in player_b+player_w:
-                    dispb = getattr(agent, "display_board", None)
-                    if callable(dispb):
-                        attribs = {'unicode': prefs['use_unicode_figures'],
-                                   'white_name': player_w_name,
-                                   'black_name': player_b_name
-                                   }
-                        agent.display_board(
-                            board, attribs=attribs)
-                state = States.IDLE
+                for agent in passive_player:
+                    setm = getattr(agent, "set_valid_moves", None)
+                    if callable(setm):
+                        agent.set_valid_moves(self.board, [])
+                    if self.ponder_move != None:
+                        setp = getattr(agent, "set_ponder", None)
+                        if callable(setp):
+                            agent.set_ponder(self.board, self.ponder_move)
 
-            if 'position_fetch' in msg:
-                for agent in player_b+player_w:
-                    if agent.name == msg['position_fetch']:
-                        fen = agent.get_fen()
-                        # Only treat as setup, if it's not the start position
-                        if short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
-                            board = chess.Board(fen)
-                            for agent2 in player_b+player_w:
-                                dispb = getattr(agent2, "display_board", None)
-                                if callable(dispb):
-                                    attribs = {'unicode': prefs['use_unicode_figures'],
-                                               'white_name': player_w_name,
-                                               'black_name': player_b_name
-                                               }
-                                    agent2.display_board(
-                                        board, attribs=attribs)
-                            break
-                state = States.IDLE
+                val = self.valid_moves(self.board)
+                for agent in active_player:
+                    setm = getattr(agent, "set_valid_moves", None)
+                    if callable(setm):
+                        agent.set_valid_moves(self.board, val)
+                    gom = getattr(agent, "go", None)
+                    if callable(gom):
+                        self.log.debug(
+                            'Initiating GO for agent {}'.format(agent.name))
+                        agent.go(self.board, self.prefs['think_ms'])
+                        break
+                self.state = self.States.BUSY
 
-            if 'fen_setup' in msg:
-                board = chess.Board(msg['fen'])
-                for agent in player_b+player_w:
-                    dispb = getattr(agent, "display_board", None)
-                    if callable(dispb):
-                        attribs = {'unicode': prefs['use_unicode_figures'],
-                                   'white_name': player_w_name,
-                                   'black_name': player_b_name
-                                   }
-                        agent.display_board(
-                            board, attribs=attribs)
-                state = States.IDLE
+            if self.appque.empty() is False:
+                msg = self.appque.get()
+                self.appque.task_done()
+                self.log.debug("App received msg: {}".format(msg))
+                if 'new game' in msg:
+                    if self.mode == self.Mode.ENGINE_ENGINE:
+                        # TODO: implement
+                        self.log.error(
+                            'Currently not handling engine-engine new game situation!')
+                        continue
+                    self.log.info(
+                        "New game initiated by {}".format(msg['actor']))
+                    self.board.reset()
+                    for agent in self.player_b+self.player_w:
+                        dispb = getattr(agent, "display_board", None)
+                        if callable(dispb):
+                            attribs = {'unicode': self.prefs['use_unicode_figures'],
+                                       'white_name': self.player_w_name,
+                                       'black_name': self.player_b_name
+                                       }
+                            agent.display_board(
+                                self.board, attribs=attribs)
+                    self.state = self.States.IDLE
 
-            if 'move' in msg:
-                board.push(chess.Move.from_uci(msg['move']['uci']))
-                for agent in player_b+player_w:
-                    dispm = getattr(agent, "display_move", None)
-                    if callable(dispm):
-                        agent.display_move(msg)
-                    dispb = getattr(agent, "display_board", None)
-                    if callable(dispb):
-                        attribs = {'unicode': prefs['use_unicode_figures'],
-                                   'white_name': player_w_name,
-                                   'black_name': player_b_name
-                                   }
-                        agent.display_board(
-                            board, attribs=attribs)
-                if 'ponder' in msg['move']:
-                    ponder_move = msg['move']['ponder']
-                state = States.IDLE
+                if 'position_fetch' in msg:
+                    for agent in self.player_b+self.player_w:
+                        if agent.name == msg['position_fetch']:
+                            fen = agent.get_fen()
+                            # Only treat as setup, if it's not the start position
+                            if self.short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
+                                board = chess.Board(fen)
+                                for agent2 in self.player_b+self.player_w:
+                                    dispb = getattr(
+                                        agent2, "display_board", None)
+                                    if callable(dispb):
+                                        attribs = {'unicode': self.prefs['use_unicode_figures'],
+                                                   'white_name': self.player_w_name,
+                                                   'black_name': self.player_b_name
+                                                   }
+                                        agent2.display_board(
+                                            self.board, attribs=attribs)
+                                break
+                    self.state = self.States.IDLE
 
-            if 'back' in msg:
-                board.pop()
-                for agent in player_b+player_w:
-                    disp = getattr(agent, "display_board", None)
-                    if callable(disp):
-                        attribs = {'unicode': prefs['use_unicode_figures'],
-                                   'white_name': player_w_name,
-                                   'black_name': player_b_name
-                                   }
-                        agent.display_board(
-                            board, attribs=attribs)
-                mode = 'player-player'
-                state = States.IDLE
+                if 'fen_setup' in msg:
+                    self.board = chess.Board(msg['fen'])
+                    for agent in self.player_b+self.player_w:
+                        dispb = getattr(agent, "display_board", None)
+                        if callable(dispb):
+                            attribs = {'unicode': self.prefs['use_unicode_figures'],
+                                       'white_name': self.player_w_name,
+                                       'black_name': self.player_b_name
+                                       }
+                            agent.display_board(
+                                self.board, attribs=attribs)
+                    self.state = self.States.IDLE
 
-            if 'go' in msg:
-                if board.turn == chess.WHITE:
-                    mode = 'engine-player'
-                else:
-                    mode = 'player-engine'
-                state = States.IDLE
+                if 'move' in msg:
+                    self.board.push(chess.Move.from_uci(msg['move']['uci']))
+                    for agent in self.player_b+self.player_w:
+                        dispm = getattr(agent, "display_move", None)
+                        if callable(dispm):
+                            agent.display_move(msg)
+                        dispb = getattr(agent, "display_board", None)
+                        if callable(dispb):
+                            attribs = {'unicode': self.prefs['use_unicode_figures'],
+                                       'white_name': self.player_w_name,
+                                       'black_name': self.player_b_name
+                                       }
+                            agent.display_board(
+                                self.board, attribs=attribs)
+                    if 'ponder' in msg['move']:
+                        self.ponder_move = msg['move']['ponder']
+                    self.state = self.States.IDLE
 
-            if 'curmove' in msg:
-                if time.time()-last_info > 1.0:  # throttle
-                    last_info = time.time()
-                    uci = msg['curmove']['variant']
-                    for agent in player_b+player_w:
-                        dinfo = getattr(agent, "display_info", None)
-                        if callable(dinfo):
-                            agent.display_info(
-                                board, info=msg['curmove'])
+                if 'back' in msg:
+                    self.board.pop()
+                    for agent in self.player_b+self.player_w:
+                        disp = getattr(agent, "display_board", None)
+                        if callable(disp):
+                            attribs = {'unicode': self.prefs['use_unicode_figures'],
+                                       'white_name': self.player_w_name,
+                                       'black_name': self.player_b_name
+                                       }
+                            agent.display_board(
+                                self.board, attribs=attribs)
+                    self.mode = self.Mode.PLAYER_PLAYER
+                    self.state = self.States.IDLE
 
-        else:
-            time.sleep(0.05)
+                if 'go' in msg:
+                    if self.board.turn == chess.WHITE:
+                        self.mode = self.Mode.ENGINE_PLAYER
+                    else:
+                        self.mode = self.Mode.PLAYER_ENGINE
+                    self.state = self.States.IDLE
 
+                if 'curmove' in msg:
+                    if time.time()-self.last_info > 1.0:  # throttle
+                        self.last_info = time.time()
+                        # uci = msg['curmove']['variant']
+                        for agent in self.player_b+self.player_w:
+                            dinfo = getattr(agent, "display_info", None)
+                            if callable(dinfo):
+                                agent.display_info(
+                                    self.board, info=msg['curmove'])
+
+            else:
+                time.sleep(0.05)
+
+
+if __name__ == '__main__':
+    mc = Mchess()
+    mc.game_state_machine()
 
 """
     try:
