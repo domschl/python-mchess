@@ -11,10 +11,10 @@ It provides two layers of functionality:
 
 Currently, the following platforms are under development:
 
-|              | Linux | Raspberry Pi | macOS | Windows
-|--------------|-------|--------------|-------|--------
-| USB          |    x  |     x        |   x   |    x
-| Bluetooth LE |    x  |     x        |       | 
+|              | Linux | Raspberry Pi | macOS | Windows |
+| ------------ | ----- | ------------ | ----- | ------- |
+| USB          | x     | x            | x     | x       |
+| Bluetooth LE | x     | x            |       |
 
 
 ## Alpha installation instructions
@@ -58,7 +58,7 @@ Note: Windows users need to use paths with `\\` for proper json encoding.
 
 Then in directory `mchess`, simply start from console:
 ```bash
-python3 chess_mboard.py
+python3 mchess.py
 ```
 
 This will start chess agents for the chess board, automatically detecting board hardware via USB or BLuetooth LE (Linux, Raspberry PI only), and load the [first active] UCI engine (testet with Leela Chess Zero (Lc0) and Stockfish 9).
