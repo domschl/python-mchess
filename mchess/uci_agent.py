@@ -242,8 +242,8 @@ class UciEngines:
 class UciAgent:
     def __init__(self, engine_spec):
         self.active = False
-        self.name = 'UciAgent_'+engine_spec['params']['name']
-        self.log = logging.getLogger(self.name)
+        self.name = engine_spec['params']['name']
+        self.log = logging.getLogger('UciAgent_'+self.name)
         self.engine = engine_spec['engine']
         # self.ponder_board = None
         self.active = True

@@ -52,6 +52,9 @@ class Mchess:
         if 'computer_player2_name' not in prefs:
             prefs['computer_player2_name'] = ''
             changed_prefs = True
+        if 'human_name' not in prefs:
+            prefs['human_name'] = 'human'
+            changed_prefs = True
 
         if changed_prefs is True:
             self.write_preferences(prefs)
@@ -94,8 +97,8 @@ class Mchess:
                 self.uci_agent = UciAgent(
                     self.uci_engines.engines[self.prefs['computer_player_name']])
             else:
-                self.uci_agent = UciAgent(
-                    self.uci_engines.engines.keys()[0])
+                uci_names = list(self.uci_engines.engines.keys())
+                self.uci_agent = UciAgent(uci_names[0])
             if self.prefs['computer_player2_name'] in self.uci_engines.engines and self.prefs['computer_player2_name'] != '':
                 self.uci_agent2 = UciAgent(
                     self.uci_engines.engines[self.prefs['computer_player2_name']])
@@ -115,21 +118,30 @@ class Mchess:
         PLAYER_PLAYER = 6
 
     def set_default_mode(self):
-        self.mode = self.Mode.PLAYER_PLAYER
-        self.player_w_name = 'Human'
-        self.player_b_name = 'Human'
-        self.player_w = []
-        if self.term_agent.agent_ready() is True:
-            self.player_w += [self.term_agent]
-        if self.chess_link_agent.agent_ready() is True:
-            self.player_w += [self.chess_link_agent]
-        self.player_b = []
         if self.uci_agent is not None:
-            self.player_b += [self.uci_agent]
-            self.mode = self.mode.PLAYER_ENGINE
-            self.player_b_name = self.uci_agent.name
+            self.set_mode(self.Mode.PLAYER_ENGINE)
         else:
-            self.player_b = self.player_w
+            self.set_mode(self.Mode.PLAYER_PLAYER)
+
+    def get_human_agents(self):
+        agents = []
+        if self.term_agent.agent_ready() is True:
+            agents += [self.term_agent]
+        if self.chess_link_agent.agent_ready() is True:
+            agents += [self.chess_link_agent]
+        return agents
+
+    def get_uci_agent(self):
+        agents = []
+        if self.uci_agent is not None:
+            agents = [self.uci_agent]
+        return agents
+
+    def get_uci_agent2(self):
+        agents = []
+        if self.uci_agent2 is not None:
+            agents = [self.uci_agent2]
+        return agents
 
     def set_mode(self, mode):
         if mode == self.Mode.NONE:
@@ -137,7 +149,37 @@ class Mchess:
             self.player_b = []
             self.player_w_name = "None"
             self.player_b_name = "None"
-        # TODO: Incomplete
+        elif mode == self.Mode.PLAYER_PLAYER:
+            self.player_w_name = self.prefs['human_name']
+            self.player_b_name = self.prefs['human_name']
+            self.player_w = self.get_human_agents()
+            self.player_b = self.player_w
+        elif mode == self.Mode.PLAYER_ENGINE:
+            self.player_w_name = self.prefs['human_name']
+            self.player_w = self.get_human_agents()
+            self.player_b = self.get_uci_agent()
+            self.player_b_name = self.player_b[0].name
+        elif mode == self.Mode.ENGINE_PLAYER:
+            self.player_w = self.get_uci_agent()
+            self.player_w_name = self.player_w[0].name
+            self.player_b_name = self.prefs['human_name']
+            self.player_b = self.get_human_agents()
+        elif mode == self.Mode.ENGINE_ENGINE:
+            self.player_w = self.get_uci_agent()
+            self.player_w_name = self.player_w[0].name
+            self.player_b = self.get_uci_agent2()
+            self.player_b_name = self.player_b[0].name
+        elif mode == self.Mode.ANALYSIS:
+            self.log.error("ANALYSIS mode not yet implemented.")
+            return False
+        elif mode == self.Mode.SETUP:
+            self.log.error("SETUP mode not yet implemented.")
+            return False
+        else:
+            self.log.error("Undefined set_mode situation: {}".format(mode))
+            return False
+        self.mode = mode
+        return True
 
     class States(Enum):
         IDLE = 0
@@ -175,8 +217,33 @@ class Mchess:
         self.init_agents()
         self.set_default_mode()
         self.init_board_agents()
+        self.set_default_mode()
 
         self.state_machine_active = True
+
+    def update_display_board(self):
+        for agent in self.player_b+self.player_w:
+            dispb = getattr(agent, "display_board", None)
+            if callable(dispb):
+                attribs = {'unicode': self.prefs['use_unicode_figures'],
+                           'white_name': self.player_w_name,
+                           'black_name': self.player_b_name
+                           }
+                agent.display_board(
+                    self.board, attribs=attribs)
+
+    def update_display_move(self, msg):
+        for agent in self.player_b+self.player_w:
+            dispm = getattr(agent, "display_move", None)
+            if callable(dispm):
+                agent.display_move(msg)
+
+    def update_display_info(self, msg):
+        for agent in self.player_b+self.player_w:
+            dinfo = getattr(agent, "display_info", None)
+            if callable(dinfo):
+                agent.display_info(
+                    self.board, info=msg['curmove'])
 
     def game_state_machine(self):
         while self.state_machine_active:
@@ -246,15 +313,7 @@ class Mchess:
                     self.log.info(
                         "New game initiated by {}".format(msg['actor']))
                     self.board.reset()
-                    for agent in self.player_b+self.player_w:
-                        dispb = getattr(agent, "display_board", None)
-                        if callable(dispb):
-                            attribs = {'unicode': self.prefs['use_unicode_figures'],
-                                       'white_name': self.player_w_name,
-                                       'black_name': self.player_b_name
-                                       }
-                            agent.display_board(
-                                self.board, attribs=attribs)
+                    self.update_display_board()
                     self.state = self.States.IDLE
 
                 if 'position_fetch' in msg:
@@ -263,81 +322,41 @@ class Mchess:
                             fen = agent.get_fen()
                             # Only treat as setup, if it's not the start position
                             if self.short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
-                                board = chess.Board(fen)
-                                for agent2 in self.player_b+self.player_w:
-                                    dispb = getattr(
-                                        agent2, "display_board", None)
-                                    if callable(dispb):
-                                        attribs = {'unicode': self.prefs['use_unicode_figures'],
-                                                   'white_name': self.player_w_name,
-                                                   'black_name': self.player_b_name
-                                                   }
-                                        agent2.display_board(
-                                            self.board, attribs=attribs)
+                                self.board = chess.Board(fen)
+                                self.update_display_board()
                                 break
                     self.state = self.States.IDLE
 
                 if 'fen_setup' in msg:
                     self.board = chess.Board(msg['fen'])
-                    for agent in self.player_b+self.player_w:
-                        dispb = getattr(agent, "display_board", None)
-                        if callable(dispb):
-                            attribs = {'unicode': self.prefs['use_unicode_figures'],
-                                       'white_name': self.player_w_name,
-                                       'black_name': self.player_b_name
-                                       }
-                            agent.display_board(
-                                self.board, attribs=attribs)
+                    self.update_display_board()
                     self.state = self.States.IDLE
 
                 if 'move' in msg:
                     self.board.push(chess.Move.from_uci(msg['move']['uci']))
-                    for agent in self.player_b+self.player_w:
-                        dispm = getattr(agent, "display_move", None)
-                        if callable(dispm):
-                            agent.display_move(msg)
-                        dispb = getattr(agent, "display_board", None)
-                        if callable(dispb):
-                            attribs = {'unicode': self.prefs['use_unicode_figures'],
-                                       'white_name': self.player_w_name,
-                                       'black_name': self.player_b_name
-                                       }
-                            agent.display_board(
-                                self.board, attribs=attribs)
+                    self.update_display_move(msg)
+                    self.update_display_board()
                     if 'ponder' in msg['move']:
                         self.ponder_move = msg['move']['ponder']
                     self.state = self.States.IDLE
 
                 if 'back' in msg:
                     self.board.pop()
-                    for agent in self.player_b+self.player_w:
-                        disp = getattr(agent, "display_board", None)
-                        if callable(disp):
-                            attribs = {'unicode': self.prefs['use_unicode_figures'],
-                                       'white_name': self.player_w_name,
-                                       'black_name': self.player_b_name
-                                       }
-                            agent.display_board(
-                                self.board, attribs=attribs)
-                    self.mode = self.Mode.PLAYER_PLAYER
+                    self.update_display_board()
+                    self.set_mode(self.Mode.PLAYER_PLAYER)
                     self.state = self.States.IDLE
 
                 if 'go' in msg:
                     if self.board.turn == chess.WHITE:
-                        self.mode = self.Mode.ENGINE_PLAYER
+                        self.set_mode(self.Mode.ENGINE_PLAYER)
                     else:
-                        self.mode = self.Mode.PLAYER_ENGINE
+                        self.set_mode(self.Mode.PLAYER_ENGINE)
                     self.state = self.States.IDLE
 
                 if 'curmove' in msg:
                     if time.time()-self.last_info > 1.0:  # throttle
                         self.last_info = time.time()
-                        # uci = msg['curmove']['variant']
-                        for agent in self.player_b+self.player_w:
-                            dinfo = getattr(agent, "display_info", None)
-                            if callable(dinfo):
-                                agent.display_info(
-                                    self.board, info=msg['curmove'])
+                        self.update_display_info(msg)
 
             else:
                 time.sleep(0.05)
