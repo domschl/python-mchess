@@ -232,6 +232,8 @@ class ChessLink:
         :return: True on success, False on error
         """
         self.mill_config['orientation'] = self.orientation
+        if 'autodetect' not in self.mill_config:
+            self.mill_config['autodetect']=True
         try:
             with open("chess_link_config.json", "w") as f:
                 json.dump(self.mill_config, f, indent=4)
