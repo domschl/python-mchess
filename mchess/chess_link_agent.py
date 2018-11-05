@@ -25,6 +25,9 @@ class ChessLinkAgent:
         self.log.debug("waiting for board position")
         start = time.time()
         while time.time()-start < timeout and self.init_position is False:
+            if self.cl_brd.error_condition is True:
+                self.log.info("ChessLink board not available.")
+                return
             self.init_position = self.cl_brd.position_initialized()
             time.sleep(0.1)
 

@@ -381,5 +381,5 @@ if __name__ == '__main__':
         format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
 
     mc = Mchess()
-    mc.set_mode(mc.Mode.ENGINE_ENGINE)
+    # mc.set_mode(mc.Mode.ENGINE_ENGINE)
     mc.game_state_machine()

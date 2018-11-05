@@ -97,6 +97,7 @@ class ChessLink:
         self.log.debug("Chess Link starting")
         self.WHITE = 0
         self.BLACK = 1
+        self.error_condition=False
         self.turn = self.WHITE
         if sys.version_info[0] < 3:
             self.log.critical("FATAL: You need Python 3.x to run this module.")
@@ -141,13 +142,19 @@ class ChessLink:
                 trans = self._open_transport(self.mill_config['transport'])
                 if trans is not None:
                     if trans.test_board(self.mill_config['address']) is not None:
-                        self.log.debug('Default board operational.')
+                        self.log.debug('Default board config used.')
                         found_board = True
                         self.trans = trans
                     else:
-                        self.log.warning(
-                            'Default board not available, start scan.')
-                        self.mill_config = None
+                        if self.mill_config['autodetect']==False:
+                            self.log.warning(
+                                'Default board not available and autodetect=False.')
+                            self.error_condition=True
+                            return
+                        else:
+                            self.log.warning(
+                                'Default board not available, start scan.')
+                            self.mill_config = None
         except Exception as e:
             self.mill_config = None
             self.log.debug(
@@ -183,6 +190,7 @@ class ChessLink:
         if self.mill_config is None or self.trans is None:
             self.log.error(
                 "No transport available, cannot connect.")
+            self.error_condition=True
             return
         else:
             self.log.debug('Valid board available on {} at {}'.format(
@@ -200,6 +208,7 @@ class ChessLink:
             else:
                 self.log.error('Connection to Chess Link via {} at {} FAILED.'.format(
                     self.mill_config['transport'], self.mill_config['address']))
+                self.error_condition=True
 
     def position_initialized(self):
         """
@@ -225,7 +234,7 @@ class ChessLink:
         self.mill_config['orientation'] = self.orientation
         try:
             with open("chess_link_config.json", "w") as f:
-                json.dump(self.mill_config, f)
+                json.dump(self.mill_config, f, indent=4)
                 return True
         except Exception as e:
             self.log.error("Failed to save default configuration {} to {}: {}".format(
@@ -244,6 +253,8 @@ class ChessLink:
             if self.trque.empty() is False:
                 msg = self.trque.get()
                 if msg == 'error':
+                    self.log.error("Commication error")
+                    self.error_condition=True
                     self.appque.put(
                         {'error': 'transport failure or not available.', 'actor': self.name})
                     continue
