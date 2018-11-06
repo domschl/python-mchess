@@ -97,7 +97,7 @@ class ChessLink:
         self.log.debug("Chess Link starting")
         self.WHITE = 0
         self.BLACK = 1
-        self.error_condition=False
+        self.error_condition = False
         self.turn = self.WHITE
         if sys.version_info[0] < 3:
             self.log.critical("FATAL: You need Python 3.x to run this module.")
@@ -131,66 +131,71 @@ class ChessLink:
         self.event_thread.setDaemon(True)
         self.event_thread.start()
 
+        self.mill_config = None
         try:
             with open("chess_link_config.json", "r") as f:
                 self.mill_config = json.load(f)
                 if 'orientation' not in self.mill_config:
                     self.mill_config['orientation'] = True
-                self.log.debug('Checking default configuration for board via {} at {}'.format(
-                    self.mill_config['transport'], self.mill_config['address']))
-                self.orientation = self.mill_config['orientation']
-                trans = self._open_transport(self.mill_config['transport'])
-                if trans is not None:
-                    if trans.test_board(self.mill_config['address']) is not None:
-                        self.log.debug('Default board config used.')
-                        found_board = True
-                        self.trans = trans
-                    else:
-                        if self.mill_config['autodetect']==False:
-                            self.log.warning(
-                                'Default board not available and autodetect=False.')
-                            self.error_condition=True
-                            return
+                if 'transport' in self.mill_config and 'address' in self.mill_config:
+                    self.log.debug('Checking default configuration for board via {} at {}'.format(
+                        self.mill_config['transport'], self.mill_config['address']))
+                    self.orientation = self.mill_config['orientation']
+                    trans = self._open_transport(self.mill_config['transport'])
+                    if trans is not None:
+                        if trans.test_board(self.mill_config['address']) is not None:
+                            self.log.debug('Default board config used.')
+                            found_board = True
+                            self.trans = trans
                         else:
-                            self.log.warning(
-                                'Default board not available, start scan.')
-                            self.mill_config = None
+                            if self.mill_config['autodetect'] == False:
+                                self.log.warning(
+                                    'Default board not available and autodetect=False.')
+                                self.error_condition = True
+                                return
+                            else:
+                                self.log.warning(
+                                    'Default board not available, start scan.')
+                                self.mill_config = None
         except Exception as e:
-            self.mill_config = None
             self.log.debug(
                 'No valid default configuration, starting board-scan: {}'.format(e))
 
         if found_board is False:
             address = None
-            for transport in self.transports[platform.system()]:
-                try:
-                    tri = importlib.import_module(transport)
-                    self.log.debug("imported {}".format(transport))
-                    tr = tri.Transport(self.trque)
-                    self.log.debug("created obj")
-                    if tr.is_init() is True:
-                        self.log.debug(
-                            "Transport {} loaded.".format(tr.get_name()))
-                        address = tr.search_board()
-                        if address is not None:
-                            self.log.debug("Found board on transport {} at address {}".format(
-                                tr.get_name(), address))
-                            self.mill_config = {
-                                'transport': tr.get_name(), 'address': address}
-                            self.trans = tr
-                            self.write_configuration()
-                            break
-                    else:
-                        self.log.warning("Transport {} failed to initialize".format(
-                            tr.get_name()))
-                except Exception as e:
-                    self.log.warning("Internal error, import of {} failed: {}".format(
-                        transport, e))
+            if self.mill_config is None or 'autodetect' not in self.mill_config or self.mill_config['autodetect'] is True:
+                for transport in self.transports[platform.system()]:
+                    try:
+                        tri = importlib.import_module(transport)
+                        self.log.debug("imported {}".format(transport))
+                        tr = tri.Transport(self.trque)
+                        self.log.debug("created obj")
+                        if tr.is_init() is True:
+                            self.log.debug(
+                                "Transport {} loaded.".format(tr.get_name()))
+                            address = tr.search_board()
+                            if address is not None:
+                                self.log.debug("Found board on transport {} at address {}".format(
+                                    tr.get_name(), address))
+                                self.mill_config = {
+                                    'transport': tr.get_name(), 'address': address}
+                                self.trans = tr
+                                self.write_configuration()
+                                break
+                        else:
+                            self.log.warning("Transport {} failed to initialize".format(
+                                tr.get_name()))
+                    except Exception as e:
+                        self.log.warning("Internal error, import of {} failed: {}".format(
+                            transport, e))
 
         if self.mill_config is None or self.trans is None:
             self.log.error(
                 "No transport available, cannot connect.")
-            self.error_condition=True
+            if self.mill_config is None:
+                self.mill_config = {}
+                self.write_configuration()
+            self.error_condition = True
             return
         else:
             self.log.debug('Valid board available on {} at {}'.format(
@@ -208,7 +213,7 @@ class ChessLink:
             else:
                 self.log.error('Connection to Chess Link via {} at {} FAILED.'.format(
                     self.mill_config['transport'], self.mill_config['address']))
-                self.error_condition=True
+                self.error_condition = True
 
     def position_initialized(self):
         """
@@ -231,9 +236,10 @@ class ChessLink:
 
         :return: True on success, False on error
         """
-        self.mill_config['orientation'] = self.orientation
+        if 'transport' in self.mill_config:
+            self.mill_config['orientation'] = self.orientation
         if 'autodetect' not in self.mill_config:
-            self.mill_config['autodetect']=True
+            self.mill_config['autodetect'] = True
         try:
             with open("chess_link_config.json", "w") as f:
                 json.dump(self.mill_config, f, indent=4)
@@ -256,7 +262,7 @@ class ChessLink:
                 msg = self.trque.get()
                 if msg == 'error':
                     self.log.error("Commication error")
-                    self.error_condition=True
+                    self.error_condition = True
                     self.appque.put(
                         {'error': 'transport failure or not available.', 'actor': self.name})
                     continue
@@ -419,15 +425,19 @@ class ChessLink:
         :param color: color to move (ChessLink.WHITE or ChessLink.BLACK)
         :param eval_only: True: indicate ponder evals
         """
-        if eval_only is False:
-            self.legal_moves = legal_moves
-            self.turn = color
-            self.reference_position = self.fen_to_position(fen)
-            self.show_delta(self.reference_position, self.position)
+        if self.connected is True:
+            if eval_only is False:
+                self.legal_moves = legal_moves
+                self.turn = color
+                self.reference_position = self.fen_to_position(fen)
+                self.show_delta(self.reference_position, self.position)
+            else:
+                eval_position = self.fen_to_position(fen)
+                self.show_delta(self.position, eval_position,
+                                freq=0x15, ontime1=0x02, ontime2=0x01)
         else:
-            eval_position = self.fen_to_position(fen)
-            self.show_delta(self.position, eval_position,
-                            freq=0x15, ontime1=0x02, ontime2=0x01)
+            self.log.warning(
+                "Not connected to Chess Link.")
 
     def show_deltas(self, positions, freq):
         """
@@ -440,22 +450,26 @@ class ChessLink:
                           position)
         :param freq: Blink frequency
         """
-        if len(positions) > 5:
-            npos = 5
+        if self.connected is True:
+            if len(positions) > 5:
+                npos = 5
+            else:
+                npos = len(positions)
+            dpos = [[0 for x in range(8)] for y in range(8)]
+            for ply in range(npos-1):
+                frame = ply*2
+                for y in range(8):
+                    for x in range(8):
+                        if positions[ply+1][y][x] != positions[ply][y][x]:
+                            if positions[ply][y][x] != 0:
+                                dpos[y][x] |= 1 << (7 - frame)
+                            else:
+                                dpos[y][x] |= 1 << (7 - (frame + 1))
+            self._set_mv_led(dpos, freq)
+            time.sleep(0.05)
         else:
-            npos = len(positions)
-        dpos = [[0 for x in range(8)] for y in range(8)]
-        for ply in range(npos-1):
-            frame = ply*2
-            for y in range(8):
-                for x in range(8):
-                    if positions[ply+1][y][x] != positions[ply][y][x]:
-                        if positions[ply][y][x] != 0:
-                            dpos[y][x] |= 1 << (7 - frame)
-                        else:
-                            dpos[y][x] |= 1 << (7 - (frame + 1))
-        self._set_mv_led(dpos, freq)
-        time.sleep(0.05)
+            self.log.warning(
+                "Not connected to Chess Link.")
 
     def _set_mv_led(self, pos, freq):
         """
@@ -496,15 +510,19 @@ class ChessLink:
         :param ontime1: 8-bit value, bits indicate cycles led is on.
         :param ontime2: 8-bit value, bits indicate cycles led is off.
         """
-        dpos = [[0 for x in range(8)] for y in range(8)]
-        for y in range(8):
-            for x in range(8):
-                if pos2[y][x] != pos1[y][x]:
-                    if pos1[y][x] != 0:
-                        dpos[y][x] = 1
-                    else:
-                        dpos[y][x] = 2
-        self.set_led(dpos, freq, ontime1, ontime2)
+        if self.connected is True:
+            dpos = [[0 for x in range(8)] for y in range(8)]
+            for y in range(8):
+                for x in range(8):
+                    if pos2[y][x] != pos1[y][x]:
+                        if pos1[y][x] != 0:
+                            dpos[y][x] = 1
+                        else:
+                            dpos[y][x] = 2
+            self.set_led(dpos, freq, ontime1, ontime2)
+        else:
+            self.log.warning(
+                "Not connected to Chess Link.")
 
     def set_led(self, pos, freq, ontime1, ontime2):
         """
@@ -563,8 +581,8 @@ class ChessLink:
 
         See see `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
         """
-        cmd = "R"+clp.hex2(2)
         if self.connected is True:
+            cmd = "R"+clp.hex2(2)
             self.trans.write_mt(cmd)
         else:
             self.log.warning(
@@ -577,15 +595,20 @@ class ChessLink:
 
         :param count: 0-4, 0: no debounce, 1-4: 1-4 scan times debounce.
         """
-        cmd = "W02"
-        if count < 0 or count > 4:
-            self.log.error(
-                'Invalid debounce count {}, should be 0: no debounce, 1 .. 4: 1-4  scan times debounce'.format(count))
+        if self.connected is True:
+            cmd = "W02"
+            if count < 0 or count > 4:
+                self.log.error(
+                    'Invalid debounce count {}, should be 0: no debounce, 1 .. 4: 1-4  scan times debounce'.format(count))
+            else:
+                # 3: no debounce, 4: 2 scans debounce, -> 7: 4 scans
+                cmd += clp.hex2(count+3)
+                self.trans.write_mt(cmd)
+                self.log.debug(
+                    "Setting board scan debounce to {}".format(count))
         else:
-            # 3: no debounce, 4: 2 scans debounce, -> 7: 4 scans
-            cmd += clp.hex2(count+3)
-            self.trans.write_mt(cmd)
-            self.log.debug("Setting board scan debounce to {}".format(count))
+            self.log.warning(
+                "Not connected to Chess Link.")
 
     def get_led_brightness_percent(self):
         """
@@ -594,8 +617,8 @@ class ChessLink:
 
         See see `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
         """
-        cmd = "R"+clp.hex2(4)
         if self.connected is True:
+            cmd = "R"+clp.hex2(4)
             self.trans.write_mt(cmd)
         else:
             self.log.warning(
@@ -607,16 +630,20 @@ class ChessLink:
 
         :param level: 0.0 - 1.0: 0(darkest) up to 1.0(brightest).
         """
-        cmd = "W04"
-        if level < 0.0 or level > 1.0:
-            self.log.error(
-                'Invalid brightness level {}, shouldbe between 0(darkest)..1.0(brightest)'.format(level))
+        if self.connected is True:
+            cmd = "W04"
+            if level < 0.0 or level > 1.0:
+                self.log.error(
+                    'Invalid brightness level {}, shouldbe between 0(darkest)..1.0(brightest)'.format(level))
+            else:
+                ilevel = int(level*15)
+                cmd += clp.hex2(ilevel)
+                self.trans.write_mt(cmd)
+                self.log.debug(
+                    "Setting led brightness to {} (bri={})".format(ilevel, level))
         else:
-            ilevel = int(level*15)
-            cmd += clp.hex2(ilevel)
-            self.trans.write_mt(cmd)
-            self.log.debug(
-                "Setting led brightness to {} (bri={})".format(ilevel, level))
+            self.log.warning(
+                "Not connected to Chess Link.")
 
     def get_scan_time_ms(self):
         """
@@ -625,9 +652,13 @@ class ChessLink:
 
         See see `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
         """
-        cmd = "R"+clp.hex2(1)
         if self.connected is True:
-            self.trans.write_mt(cmd)
+            cmd = "R"+clp.hex2(1)
+            if self.connected is True:
+                self.trans.write_mt(cmd)
+            else:
+                self.log.warning(
+                    "Not connected to Chess Link.")
         else:
             self.log.warning(
                 "Not connected to Chess Link.")
@@ -641,20 +672,24 @@ class ChessLink:
         :param scan_ms: 30.72(fastest)-522.24(slowest), scan time in ms. A value around 100ms is 
                         recommended, board default is 41ms.
         """
-        cmd = "W01"
-        if scan_ms < 2.048 * 15.0 or scan_ms > 255.0 * 2.048:
-            self.log.error(
-                'Invalid scan_ms {}, shouldbe between 30.72(fastest, might not work)..522.24(slowest, about 2 scans per sec))'.format(scan_ms))
+        if self.connected is True:
+            cmd = "W01"
+            if scan_ms < 2.048 * 15.0 or scan_ms > 255.0 * 2.048:
+                self.log.error(
+                    'Invalid scan_ms {}, shouldbe between 30.72(fastest, might not work)..522.24(slowest, about 2 scans per sec))'.format(scan_ms))
+            else:
+                iscans = int(scan_ms/2.048)
+                if iscans < 15:
+                    iscans = 15
+                if iscans > 255:
+                    iscans = 255
+                cmd += clp.hex2(iscans)
+                self.trans.write_mt(cmd)
+                self.log.debug(
+                    "Setting scan_ms intervall to {} -> {}ms ({} scans per sec)".format(iscans, scan_ms, 1000.0/scan_ms))
         else:
-            iscans = int(scan_ms/2.048)
-            if iscans < 15:
-                iscans = 15
-            if iscans > 255:
-                iscans = 255
-            cmd += clp.hex2(iscans)
-            self.trans.write_mt(cmd)
-            self.log.debug(
-                "Setting scan_ms intervall to {} -> {}ms ({} scans per sec)".format(iscans, scan_ms, 1000.0/scan_ms))
+            self.log.warning(
+                "Not connected to Chess Link.")
 
     # TODO: move this?
     def short_fen(self, fen):

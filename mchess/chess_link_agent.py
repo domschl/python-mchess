@@ -12,22 +12,31 @@ class ChessLinkAgent:
         self.appque = appque
         self.log = logging.getLogger(self.name)
         self.cl_brd = cl.ChessLink(appque, self.name)
-
-        self.cl_brd.get_version()
-        self.cl_brd.set_debounce(4)
-        self.cl_brd.get_scan_time_ms()
-        self.cl_brd.set_scan_time_ms(100.0)
-        self.cl_brd.get_scan_time_ms()
         self.init_position = False
-        self.cl_brd.get_position()
+
+        if self.cl_brd.connected is True:
+            self.cl_brd.get_version()
+            self.cl_brd.set_debounce(4)
+            self.cl_brd.get_scan_time_ms()
+            self.cl_brd.set_scan_time_ms(100.0)
+            self.cl_brd.get_scan_time_ms()
+            self.cl_brd.get_position()
+        else:
+            self.log.warning("Connection to ChessLink failed.")
+            return
         self.max_plies = 3
 
         self.log.debug("waiting for board position")
         start = time.time()
+        warned = False
         while time.time()-start < timeout and self.init_position is False:
             if self.cl_brd.error_condition is True:
                 self.log.info("ChessLink board not available.")
                 return
+            if time.time()-start > 2 and warned is False:
+                warned = True
+                self.log.info(
+                    f"Searching for ChessLink board (max {timeout} secs)...")
             self.init_position = self.cl_brd.position_initialized()
             time.sleep(0.1)
 

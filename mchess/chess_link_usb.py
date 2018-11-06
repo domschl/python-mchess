@@ -49,7 +49,7 @@ class Transport():
 
         :returns: Name of the port with a ChessLink board, None on failure.
         """
-        self.log.debug("USB: searching for boards")
+        self.log.info("Searching for ChessLink boards...")
         port = None
         ports = self.usb_port_search()
         if len(ports) > 0:
