@@ -40,7 +40,7 @@ class TerminalAgent:
     def agent_ready(self):
         return self.active
 
-    def position_to_text(self, board, use_unicode_chess_figures=True):
+    def position_to_text(self, board, use_unicode_chess_figures=True, invert=False):
         tpos = []
         tpos.append(
             "  +------------------------+")
@@ -49,9 +49,9 @@ class TerminalAgent:
             for x in range(8):
                 f = board.piece_at(chess.square(x, y))
                 if (x+y) % 2 == 0 and use_unicode_chess_figures is True:
-                    invinv = False
+                    invinv = invert
                 else:
-                    invinv = True
+                    invinv = not invert
                 c = '?'
                 # for i in range(len(self.figrep['int'])):
                 if f == None:
@@ -78,7 +78,7 @@ class TerminalAgent:
         tpos.append("    A  B  C  D  E  F  G  H  ")
         return tpos
 
-    def moves_to_text(self, board, score=None, use_unicode_chess_figures=True, lines=11):
+    def moves_to_text(self, board, score=None, use_unicode_chess_figures=True, invert=False, lines=11):
         ams = ["" for _ in range(11)]
         mc = len(board.move_stack)
         if board.turn == chess.BLACK:
@@ -131,7 +131,7 @@ class TerminalAgent:
                 pro = ""
                 if use_unicode_chess_figures is True:
                     fig = board.piece_at(mv.from_square).unicode_symbol(
-                        invert_color=True)
+                        invert_color=not invert)
                 else:
                     fig = board.piece_at(mv.from_square).symbol()
             move = '{:10s}'.format(
@@ -150,11 +150,11 @@ class TerminalAgent:
 
         return ams
 
-    def display_board(self, board, attribs={'unicode': True, 'white_name': 'white', 'black_name': 'black'}):
+    def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
         txa = self.position_to_text(
-            board, use_unicode_chess_figures=attribs['unicode'])
+            board, use_unicode_chess_figures=attribs['unicode'], invert=attribs['invert'])
         ams = self.moves_to_text(board, lines=len(
-            txa), use_unicode_chess_figures=attribs['unicode'])
+            txa), use_unicode_chess_figures=attribs['unicode'], invert=attribs['invert'])
 
         print('                                {:>10.10s} - {:10.10s}'.format(
             attribs['white_name'], attribs['black_name']))

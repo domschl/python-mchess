@@ -37,6 +37,9 @@ class Mchess:
         if 'use_unicode_figures' not in prefs:
             prefs['use_unicode_figures'] = True
             changed_prefs = True
+        if 'invert_term_color' not in prefs:
+            prefs['invert_term_color'] = False
+            changed_prefs = True
         if 'max_plies_terminal' not in prefs:
             prefs['max_plies_terminal'] = 6
             changed_prefs = True
@@ -256,6 +259,7 @@ class Mchess:
             dispb = getattr(agent, "display_board", None)
             if callable(dispb):
                 attribs = {'unicode': self.prefs['use_unicode_figures'],
+                           'invert': self.prefs['invert_term_color'],
                            'white_name': self.player_w_name,
                            'black_name': self.player_b_name
                            }
