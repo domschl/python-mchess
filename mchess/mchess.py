@@ -148,6 +148,14 @@ class Mchess:
             agents = [self.uci_agent2]
         return agents
 
+    def uci_stop_engines(self):
+        if self.uci_agent is not None:
+            ft = self.uci_agent.engine.stop(async_callback=True)
+            ft.result()
+        if self.uci_agent2 is not None:
+            ft = self.uci_agent2.engine.stop(async_callback=True)
+            ft.result()
+
     def set_mode(self, mode):
         if mode == self.Mode.NONE:
             self.player_w = []
@@ -256,6 +264,12 @@ class Mchess:
         # self.update_display_board()
         self.state_machine_active = True
 
+    def stop(self):
+        self.uci_stop_engines()
+        self.log.info("Stop command.")
+        self.set_mode(self.Mode.PLAYER_PLAYER)
+        self.update_display_board()
+
     def update_display_board(self):
         for agent in self.player_b+self.player_w+self.player_watch:
             dispb = getattr(agent, "display_board", None)
@@ -324,12 +338,11 @@ class Mchess:
                 msg = self.appque.get()
                 self.appque.task_done()
                 self.log.debug("App received msg: {}".format(msg))
+                if 'error' in msg:
+                    self.log.error('Error condition: {}'.format(msg['error']))
+
                 if 'new game' in msg:
-                    if self.mode == self.Mode.ENGINE_ENGINE:
-                        # TODO: implement
-                        self.log.error(
-                            'Currently not handling engine-engine new game situation!')
-                        continue
+                    self.stop()
                     self.log.info(
                         "New game initiated by {}".format(msg['actor']))
                     self.board.reset()
@@ -337,6 +350,7 @@ class Mchess:
                     self.state = self.State.IDLE
 
                 if 'position_fetch' in msg:
+                    self.stop()
                     for agent in self.player_b+self.player_w:
                         if agent.name == msg['position_fetch']:
                             fen = agent.get_fen()
@@ -348,11 +362,19 @@ class Mchess:
                     self.state = self.State.IDLE
 
                 if 'fen_setup' in msg:
+                    self.stop()
                     self.board = chess.Board(msg['fen'])
                     self.update_display_board()
                     self.state = self.State.IDLE
 
                 if 'move' in msg:
+                    if self.mode == self.Mode.PLAYER_PLAYER:
+                        if self.uci_agent is not None:
+                            if msg['move']['actor'] == self.uci_agent.name:
+                                continue
+                        if self.uci_agent2 is not None:
+                            if msg['move']['actor'] == self.uci_agent2.name:
+                                continue
                     self.board.push(chess.Move.from_uci(msg['move']['uci']))
                     self.update_display_move(msg)
                     self.update_display_board()
@@ -361,17 +383,28 @@ class Mchess:
                     self.state = self.State.IDLE
 
                 if 'back' in msg:
+                    self.stop()
                     self.board.pop()
                     self.update_display_board()
-                    self.set_mode(self.Mode.PLAYER_PLAYER)
                     self.state = self.State.IDLE
 
                 if 'go' in msg:
-                    if self.board.turn == chess.WHITE:
-                        self.set_mode(self.Mode.ENGINE_PLAYER)
+                    if (self.board.turn==chess.WHITE and self.mode==self.Mode.ENGINE_PLAYER) or (self.board.turn==chess.BLACK and self.mode==self.Mode.PLAYER_ENGINE):
+                        old_mode=self.mode
+                        self.stop()
+                        self.set_mode(old_mode)
                     else:
-                        self.set_mode(self.Mode.PLAYER_ENGINE)
-                    self.state = self.State.IDLE
+                        self.stop()
+                        if self.board.turn == chess.WHITE:
+                            self.set_mode(self.Mode.ENGINE_PLAYER)
+                        else:
+                            self.set_mode(self.Mode.PLAYER_ENGINE)
+                        self.update_display_board()
+                        self.state = self.State.IDLE
+
+                if 'stop' in msg:
+                    self.stop()
+                    self.state=self.State.IDLE
 
                 if 'curmove' in msg:
                     if time.time()-self.last_info > 1.0:  # throttle
@@ -379,6 +412,7 @@ class Mchess:
                         self.update_display_info(msg)
 
                 if 'turn eboard orientation' in msg:
+                    self.stop()
                     if self.chess_link_agent.cl_brd.get_orientation() is False:
                         self.chess_link_agent.cl_brd.set_orientation(True)
                         self.log.info("eboard cable on right side.")
@@ -393,7 +427,7 @@ class Mchess:
 
 if __name__ == '__main__':
     logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
+        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
 
     mc = Mchess()
     # mc.set_mode(mc.Mode.ENGINE_ENGINE)

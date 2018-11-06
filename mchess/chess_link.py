@@ -403,6 +403,7 @@ class ChessLink:
         """
         fen = self.short_fen(self.position_to_fen(pos))
         if self.legal_moves is not None and fen in self.legal_moves:
+            # TODO: inconsistent message format
             self.appque.put(
                 {'move': {'uci': self.legal_moves[fen], 'fen': fen, 'actor': self.name}})
             self.legal_moves = None
