@@ -870,14 +870,19 @@ class ChessLink:
 
         :param orientation: True: cable right, False: cable left.
         """
-        self.orientation = orientation
+        if orientation != self.orientation:
+            self.orientation = orientation
+            self.log.info("Swapping board position")
+            with self.board_mutex:
+                pos = copy.deepcopy(self.position)
+                for y in range(8):
+                    for x in range(8):
+                        pos[y][x] = self.position[7-y][7-x]
+                self.position = pos
         self.write_configuration()
 
     def get_orientation(self):
         """
-        Asynchronuosly request the Chess Link board orientation. The answer will be
-        written to the queue `appqueue` given during initialization.
-
         ChessLink tries to autodetect the orientation of the board by looking for
         initial start positions.
 
