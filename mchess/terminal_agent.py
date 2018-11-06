@@ -17,6 +17,7 @@ class TerminalAgent:
         self.active = False
         self.max_plies = 6
         self.display_cache = ""
+        self.move_cache = ""
 
         self.kbd_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -171,13 +172,20 @@ class TerminalAgent:
 
     def display_move(self, move_msg):
         if 'score' in move_msg['move']:
-            print('\nMove {} (ev: {}) by {}'.format(
-                move_msg['move']['uci'], move_msg['move']['score'], move_msg['move']['actor']))
+            new_move = '\nMove {} (ev: {}) by {}'.format(
+                move_msg['move']['uci'], move_msg['move']['score'], move_msg['move']['actor'])
         else:
-            print('\nMove {} by {}'.format(
-                move_msg['move']['uci'], move_msg['move']['actor']))
+            new_move = '\nMove {} by {}'.format(
+                move_msg['move']['uci'], move_msg['move']['actor'])
         if 'ponder' in move_msg['move']:
-            print('Ponder: {}'.format(move_msg['move']['ponder']))
+            new_move += '\nPonder: {}'.format(move_msg['move']['ponder'])
+
+        if new_move != self.move_cache:
+            self.move_cache = new_move
+            print(new_move)
+        else:
+            self.log.debug(
+                "Unnecessary repetion of move-print suppressed by cache")
 
     def display_info(self, board, info):
         st = '['
