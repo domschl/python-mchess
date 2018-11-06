@@ -16,6 +16,7 @@ class TerminalAgent:
         self.orientation = True
         self.active = False
         self.max_plies = 6
+        self.display_cache = ""
 
         self.kbd_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -155,9 +156,16 @@ class TerminalAgent:
             board, use_unicode_chess_figures=attribs['unicode'], invert=attribs['invert'])
         ams = self.moves_to_text(board, lines=len(
             txa), use_unicode_chess_figures=attribs['unicode'], invert=attribs['invert'])
-
-        print('                                {:>10.10s} - {:10.10s}'.format(
-            attribs['white_name'], attribs['black_name']))
+        header = '                                {:>10.10s} - {:10.10s}'.format(
+            attribs['white_name'], attribs['black_name'])
+        new_cache = header
+        for i in range(len(txa)):
+            new_cache += '{} {}'.format(txa[i], ams[i])
+        if new_cache == self.display_cache:
+            self.log.debug("Unnecessary display_board call")
+            return
+        self.display_cache = new_cache
+        print(header)
         for i in range(len(txa)):
             print('{}  {}'.format(txa[i], ams[i]))
 
