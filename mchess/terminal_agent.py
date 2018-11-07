@@ -191,10 +191,16 @@ class TerminalAgent:
 
         if new_move != self.move_cache:
             self.move_cache = new_move
+            for _ in range(len(self.info_provider)):
+                print()
             print(new_move)
+            print()
         else:
             self.log.debug(
                 "Unnecessary repetion of move-print suppressed by cache")
+        self.info_cache = ""
+        for ac in self.info_provider:
+            self.info_provider[ac] = "{:80s}".format("")
 
     def display_info(self, board, info):
         st = '['

@@ -359,13 +359,13 @@ class Mchess:
                     self.log.error('Error condition: {}'.format(msg['error']))
 
                 if 'new game' in msg:
-                    self.analysis_active=False
                     self.stop()
                     self.log.info(
                         "New game initiated by {}".format(msg['actor']))
                     self.board.reset()
                     self.update_display_board()
                     self.state = self.State.IDLE
+                    self.analysis_active=False
 
                 if 'position_fetch' in msg:
                     self.stop()
@@ -393,17 +393,17 @@ class Mchess:
                         if self.uci_agent is not None:
                             if msg['move']['actor'] == self.uci_agent.name:
                                 skip=True
-                                ft = self.uci_agent.engine.stop(async_callback=True)
-                                ft.result()
-                                self.uci_agent.engine.position(self.board)
-                                self.uci_agent.engine.go(infinite=True, async_callback=True)
+                                # ft = self.uci_agent.engine.stop(async_callback=True)
+                                # ft.result()
+                                # self.uci_agent.engine.position(self.board)
+                                # self.uci_agent.engine.go(infinite=True, async_callback=True)
                         if self.uci_agent2 is not None:
                             if msg['move']['actor'] == self.uci_agent2.name:
                                 skip=True
-                                ft = self.uci_agent2.engine.stop(async_callback=True)
-                                ft.result()
-                                self.uci_agent2.engine.position(self.board)
-                                self.uci_agent2.engine.go(infinite=True, async_callback=True)
+                                # ft = self.uci_agent2.engine.stop(async_callback=True)
+                                # ft.result()
+                                # self.uci_agent2.engine.position(self.board)
+                                # self.uci_agent2.engine.go(infinite=True, async_callback=True)
                         if skip is True:
                             continue
                     self.uci_stop_engines()
