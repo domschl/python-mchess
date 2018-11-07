@@ -169,8 +169,14 @@ class Mchess:
             self.player_b_name = self.prefs['human_name']
             self.player_w = self.get_human_agents()
             self.player_b = self.player_w
-            self.player_watch = []
-            self.player_watch_name = "None"
+            self.player_watch = self.get_uci_agent()
+            self.player_watch += self.get_uci_agent2()
+            if self.player_watch!=[]:
+                self.player_watch_name = ""
+                for p in self.player_watch:
+                    if len(self.player_watch_name) > 0:
+                        self.player_watch_name +=", "
+                    self.player_watch_name += p.name
         elif mode == self.Mode.PLAYER_ENGINE:
             self.player_w_name = self.prefs['human_name']
             self.player_w = self.get_human_agents()
@@ -208,12 +214,12 @@ class Mchess:
             self.player_b_name = self.player_b[0].name
             self.player_watch = self.get_human_agents()
             self.player_watch_name = self.prefs['human_name']
-        elif mode == self.Mode.ANALYSIS:
-            self.log.error("ANALYSIS mode not yet implemented.")
-            return False
-        elif mode == self.Mode.SETUP:
-            self.log.error("SETUP mode not yet implemented.")
-            return False
+        # elif mode == self.Mode.ANALYSIS:
+        #     self.log.error("ANALYSIS mode not yet implemented.")
+        #     return False
+        # elif mode == self.Mode.SETUP:
+        #     self.log.error("SETUP mode not yet implemented.")
+        #     return False
         else:
             self.log.error("Undefined set_mode situation: {}".format(mode))
             return False
@@ -251,6 +257,7 @@ class Mchess:
         self.state = self.State.IDLE
         self.last_info = 0
         self.ponder_move = None
+        self.analysis_active = False
 
         self.board.reset()
 
@@ -264,11 +271,21 @@ class Mchess:
         # self.update_display_board()
         self.state_machine_active = True
 
-    def stop(self):
+    def stop(self, new_mode=Mode.PLAYER_PLAYER):
         self.uci_stop_engines()
         self.log.info("Stop command.")
-        self.set_mode(self.Mode.PLAYER_PLAYER)
+        if new_mode is not None:
+            self.set_mode(new_mode)
         self.update_display_board()
+
+    def is_player_move(self):
+        if self.mode == self.Mode.PLAYER_PLAYER:
+            return True
+        if self.mode==self.Mode.PLAYER_ENGINE and self.board.turn==chess.WHITE:
+            return True
+        if self.mode==self.Mode.ENGINE_PLAYER and self.board.turn==chess.BLACK:
+            return True
+        return False
 
     def update_display_board(self):
         for agent in self.player_b+self.player_w+self.player_watch:
@@ -342,6 +359,7 @@ class Mchess:
                     self.log.error('Error condition: {}'.format(msg['error']))
 
                 if 'new game' in msg:
+                    self.analysis_active=False
                     self.stop()
                     self.log.info(
                         "New game initiated by {}".format(msg['actor']))
@@ -369,19 +387,39 @@ class Mchess:
                     self.state = self.State.IDLE
 
                 if 'move' in msg:
-                    if self.mode == self.Mode.PLAYER_PLAYER:
+                    if self.analysis_active:
+                        # Ignore engine moves when it's player's turn: they are from analysis
+                        skip=False
                         if self.uci_agent is not None:
                             if msg['move']['actor'] == self.uci_agent.name:
-                                continue
+                                skip=True
+                                ft = self.uci_agent.engine.stop(async_callback=True)
+                                ft.result()
+                                self.uci_agent.engine.position(self.board)
+                                self.uci_agent.engine.go(infinite=True, async_callback=True)
                         if self.uci_agent2 is not None:
                             if msg['move']['actor'] == self.uci_agent2.name:
-                                continue
+                                skip=True
+                                ft = self.uci_agent2.engine.stop(async_callback=True)
+                                ft.result()
+                                self.uci_agent2.engine.position(self.board)
+                                self.uci_agent2.engine.go(infinite=True, async_callback=True)
+                        if skip is True:
+                            continue
+                    self.uci_stop_engines()
                     self.board.push(chess.Move.from_uci(msg['move']['uci']))
                     self.update_display_move(msg)
                     self.update_display_board()
                     if 'ponder' in msg['move']:
                         self.ponder_move = msg['move']['ponder']
                     self.state = self.State.IDLE
+                    if self.analysis_active:
+                        if self.uci_agent is not None:
+                            self.uci_agent.engine.position(self.board)
+                            self.uci_agent.engine.go(infinite=True, async_callback=True)
+                        if self.uci_agent2 is not None:
+                            self.uci_agent2.engine.position(self.board)
+                            self.uci_agent2.engine.go(infinite=True, async_callback=True)
 
                 if 'back' in msg:
                     self.stop()
@@ -403,7 +441,26 @@ class Mchess:
                         self.update_display_board()
                         self.state = self.State.IDLE
 
+                if 'analysis' in msg:
+                    self.stop()
+                    self.set_mode(self.Mode.PLAYER_PLAYER)
+                    self.analysis_active=True
+                    if self.uci_agent is not None:
+                        self.log.info("Starting analysis with {}".format(self.uci_agent.name))
+                        self.uci_agent.engine.position(self.board)
+                        self.uci_agent.engine.go(infinite=True, async_callback=True)
+                    if self.uci_agent2 is not None:
+                        self.log.info("Starting analysis with {}".format(self.uci_agent2.name))
+                        self.uci_agent2.engine.position(self.board)
+                        self.uci_agent2.engine.go(infinite=True, async_callback=True)
+
+                if 'quit' in msg:
+                    self.stop()
+                    # TODO: Stop threads
+                    exit(0)
+
                 if 'stop' in msg:
+                    # self.analysis_active=False
                     self.stop()
                     self.state=self.State.IDLE
 

@@ -1,4 +1,5 @@
 import logging
+import time
 import queue
 import json
 import os
@@ -117,7 +118,9 @@ class UciEngines:
                 optvs['max'] = entries.max
                 optvs['var'] = entries.var
                 optsh[opt] = optvs
-                opts[opt] = entries.default
+                # TODO: setting buttons to their default causes python_chess uci to crash (komodo 9)
+                if entries.type != 'button':
+                    opts[opt] = entries.default
             self.engines[name]['params']['uci-options'] = opts
             self.engines[name]['uci-options-help'] = optsh
             try:
@@ -142,6 +145,7 @@ class UciEngines:
             self.engines[name]['use_ponder'] = False
 
         self.engines[name]['engine'].setoption(opts)
+        time.sleep(0.1)
         self.engines[name]['engine'].isready()
 
     class UciHandler(chess.uci.InfoHandler):

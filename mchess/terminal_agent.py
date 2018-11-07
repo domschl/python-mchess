@@ -18,6 +18,7 @@ class TerminalAgent:
         self.max_plies = 6
         self.display_cache = ""
         self.move_cache = ""
+        self.info_cache = ""
 
         self.kbd_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -209,7 +210,15 @@ class TerminalAgent:
                 mvs = self.max_plies
             for i in range(mvs):
                 st += moves[i].uci()+' '
-        print(st, end='\r')
+        if 'actor' in info:
+            st += ' [{}]'.format(info['actor'])
+
+        if st != self.info_cache:
+            self.info_cache = st
+            # print(st, end='\r')
+            print(st)
+        else:
+            self.log.debug("Suppressed redundant display_info")
 
     def set_valid_moves(self, board, vals):
         self.kbd_moves = []
@@ -248,7 +257,7 @@ class TerminalAgent:
                         {'turn eboard orientation': '', 'actor': self.name})
                 elif cmd == 'a':
                     log.debug('analyze')
-                    appque.put({'analyze': '', 'actor': self.name})
+                    appque.put({'analysis': '', 'actor': self.name})
                 elif cmd == 'ab':
                     log.debug('analyze black')
                     appque.put({'analyze': 'black', 'actor': self.name})
@@ -280,7 +289,9 @@ class TerminalAgent:
                     log.debug('go, black')
                     appque.put({'go': 'black', 'actor': self.name})
                 elif cmd == 'w':
-                    appque.put({'write_prefs': ''})
+                    appque.put({'write_prefs': '', 'actor': self.name})
+                elif cmd == 'q':
+                    appque.put({'quit': '', 'actor': self.name})
                 elif cmd[:2] == 'h ':
                     log.debug('show analysis for n plies (max 4) on board.')
                     ply = int(cmd[2:])
@@ -311,6 +322,7 @@ class TerminalAgent:
                     log.info('n - new game')
                     log.info('p - import eboard position')
                     log.info('s - stop and discard calculation')
+                    log.info('q - quit')
                     log.info('w - write current prefences as default')
                     log.info('e2e4 - valid move')
                 else:
