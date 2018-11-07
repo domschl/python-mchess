@@ -227,7 +227,7 @@ class Mchess:
 
     def import_chesslink_position(self):
         self.appque.put(
-            {'position_fetch': 'ChessLinkAgent', 'agent': 'prefs'})
+            {'position_fetch': 'ChessLinkAgent', 'actor': self.chess_link_agent.name})
         self.state = self.State.BUSY
 
     def init_board_agents(self):
@@ -351,6 +351,7 @@ class Mchess:
 
                 if 'position_fetch' in msg:
                     self.stop()
+                    print("Importing position from {}".format(msg['actor']))
                     for agent in self.player_b+self.player_w:
                         if agent.name == msg['position_fetch']:
                             fen = agent.get_fen()

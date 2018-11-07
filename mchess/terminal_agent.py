@@ -243,7 +243,7 @@ class TerminalAgent:
                     log.debug('move back')
                     appque.put({'back': '', 'actor': self.name})
                 elif cmd == 'c':
-                    log.debug('change board orientation')
+                    log.debug('change ChessLink board orientation')
                     appque.put(
                         {'turn eboard orientation': '', 'actor': self.name})
                 elif cmd == 'a':
@@ -301,7 +301,8 @@ class TerminalAgent:
                     log.info(
                         'c - change cable orientation (eboard cable left/right')
                     log.info('b - take back move')
-                    log.info('g - go, current player (default white)')
+                    log.info(
+                        'g - go, current player (default white) or force current move')
                     log.info('gw - go, force white move')
                     log.info('gb - go, force black move')
                     log.info('h <ply> - show hints for <ply> levels on board')
@@ -309,7 +310,7 @@ class TerminalAgent:
                     log.info('m <n> - max plies shown during look-ahead')
                     log.info('n - new game')
                     log.info('p - import eboard position')
-                    log.info('s - stop')
+                    log.info('s - stop and discard calculation')
                     log.info('w - write current prefences as default')
                     log.info('e2e4 - valid move')
                 else:
