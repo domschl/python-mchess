@@ -19,6 +19,7 @@ class TerminalAgent:
         self.display_cache = ""
         self.move_cache = ""
         self.info_cache = ""
+        self.info_provider = {}
 
         self.kbd_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -153,6 +154,13 @@ class TerminalAgent:
 
         return ams
 
+    def cursor_up(self, n=1):
+        # Windows: cursor up by n:   ESC [ <n> A
+        # ANSI:    cursor up by n:   ESC [ <n> A
+        # ESC=\033, 27
+        esc = chr(27)
+        print("{}[{}A".format(esc, n), end="")
+
     def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
         txa = self.position_to_text(
             board, use_unicode_chess_figures=attribs['unicode'], invert=attribs['invert'])
@@ -212,11 +220,20 @@ class TerminalAgent:
                 st += moves[i].uci()+' '
         if 'actor' in info:
             st += ' [{}]'.format(info['actor'])
+        else:
+            self.log.error('We need info {} to contain actor!'.format(info))
+            info['actor'] = 'unknown'
+        self.info_provider[info['actor']] = st
 
-        if st != self.info_cache:
-            self.info_cache = st
-            # print(st, end='\r')
-            print(st)
+        cst = ""
+        for ac in self.info_provider:
+            cst += self.info_provider[ac]
+
+        if cst != self.info_cache:
+            self.info_cache = cst
+            for ac in self.info_provider:
+                print('{:80s}'.format(self.info_provider[ac][:80]))
+            self.cursor_up(len(self.info_provider))
         else:
             self.log.debug("Suppressed redundant display_info")
 
