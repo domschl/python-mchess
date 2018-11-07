@@ -289,7 +289,9 @@ class TerminalAgent:
                     log.debug('go, black')
                     appque.put({'go': 'black', 'actor': self.name})
                 elif cmd == 'w':
-                    appque.put({'write_prefs': ''})
+                    appque.put({'write_prefs': '', 'actor': self.name})
+                elif cmd == 'q':
+                    appque.put({'quit': '', 'actor': self.name})
                 elif cmd[:2] == 'h ':
                     log.debug('show analysis for n plies (max 4) on board.')
                     ply = int(cmd[2:])
@@ -318,6 +320,7 @@ class TerminalAgent:
                     log.info('m <n> - max plies shown during look-ahead')
                     log.info('n - new game')
                     log.info('p - import eboard position')
+                    log.info('q - quit')
                     log.info('s - stop')
                     log.info('w - write current prefences as default')
                     log.info('e2e4 - valid move')

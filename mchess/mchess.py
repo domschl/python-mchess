@@ -453,6 +453,11 @@ class Mchess:
                         self.uci_agent2.engine.position(self.board)
                         self.uci_agent2.engine.go(infinite=True, async_callback=True)
 
+                if 'quit' in msg:
+                    self.stop()
+                    # TODO: Stop threads
+                    exit(0)
+
                 if 'stop' in msg:
                     # self.analysis_active=False
                     self.stop()
