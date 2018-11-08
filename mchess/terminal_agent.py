@@ -47,6 +47,8 @@ class TerminalAgent:
         return self.active
 
     def quit(self):
+        for _ in range(self.last_cursor_up):
+            print()
         self.kdb_thread_active = False
 
     def position_to_text(self, board, use_unicode_chess_figures=True, invert=False):
@@ -197,6 +199,7 @@ class TerminalAgent:
         if new_move != self.move_cache:
             for _ in range(self.last_cursor_up):
                 print()
+            self.last_cursor_up = 0
             self.move_cache = new_move
             print(new_move)
             print()
