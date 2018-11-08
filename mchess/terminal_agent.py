@@ -46,6 +46,9 @@ class TerminalAgent:
     def agent_ready(self):
         return self.active
 
+    def quit(self):
+        self.kdb_thread_active = False
+
     def position_to_text(self, board, use_unicode_chess_figures=True, invert=False):
         tpos = []
         tpos.append(
@@ -182,9 +185,6 @@ class TerminalAgent:
             print('{}  {}'.format(txa[i], ams[i]))
 
     def display_move(self, move_msg):
-        for _ in range(self.last_cursor_up):
-            print()
-
         if 'score' in move_msg['move']:
             new_move = '\nMove {} (ev: {}) by {}'.format(
                 move_msg['move']['uci'], move_msg['move']['score'], move_msg['move']['actor'])
@@ -195,9 +195,9 @@ class TerminalAgent:
             new_move += '\nPonder: {}'.format(move_msg['move']['ponder'])
 
         if new_move != self.move_cache:
-            self.move_cache = new_move
-            for _ in range(len(self.info_provider)):
+            for _ in range(self.last_cursor_up):
                 print()
+            self.move_cache = new_move
             print(new_move)
             print()
         else:

@@ -45,6 +45,12 @@ class Transport():
         self.init = True
         self.log.debug("bluepy_ble init ok")
 
+    def quit(self):
+        """
+        Initiate worker-thread stop
+        """
+        self.worker_thread_active = False
+
     def search_board(self):
         """
         Search for ChessLink connections using Bluetooth LE.

@@ -1,4 +1,7 @@
 import logging
+import sys
+import signal
+import threading
 import json
 import queue
 import time
@@ -312,6 +315,19 @@ class Mchess:
                 agent.display_info(
                     self.board, info=msg['curmove'])
 
+    def quit(self):
+        print("Quitting...")
+        # TODO: Stop threads, leds off, use quit-function also with Ctrl-C-handler
+        for agent in self.player_w+self.player_b+self.player_watch:
+            fquit = getattr(agent, "quit", None)
+            if callable(fquit):
+                agent.quit()
+        self.state_machine_active=False
+        sys.exit(0)
+
+    def quit_signal(self, sig, frame):
+        self.quit()
+
     def game_state_machine(self):
         while self.state_machine_active:
             if self.state == self.State.IDLE:
@@ -457,8 +473,7 @@ class Mchess:
 
                 if 'quit' in msg:
                     self.stop()
-                    # TODO: Stop threads, leds off, use quit-function also with Ctrl-C-handler
-                    exit(0)
+                    self.quit()
 
                 if 'stop' in msg:
                     # self.analysis_active=False
@@ -491,7 +506,11 @@ if __name__ == '__main__':
 
     mc = Mchess()
     # mc.set_mode(mc.Mode.ENGINE_ENGINE)
-    mc.game_state_machine()
+    # signal.signal(signal.SIGINT, mc.quit_signal)
+    try:
+        mc.game_state_machine()
+    except KeyboardInterrupt:
+        mc.quit()
 
 """
 def old_stuff:

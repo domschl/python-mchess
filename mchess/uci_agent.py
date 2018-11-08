@@ -88,6 +88,7 @@ class UciEngines:
 
         self.engines[name]['info_handler'] = self.UciHandler()
         self.engines[name]['info_handler'].name = name
+        self.engines[name]['info_handler'].active = True
         self.engines[name]['info_handler'].que = self.appque
         self.engines[name]['engine'].info_handlers.append(
             self.engines[name]['info_handler'])
@@ -162,7 +163,10 @@ class UciEngines:
             self.mpv_num = 1
             self.que_cache = {}
             self.que_cache_time = 2.0
-            threading.Timer(1, self.que_timer).start()
+            self.que_timer_sec = 1.0
+            thr = threading.Timer(self.que_timer_sec, self.que_timer)
+            thr.daemon = True
+            thr.start()
             super().__init__()
 
         def que_timer(self):
@@ -172,7 +176,9 @@ class UciEngines:
                 if cur_time-self.que_cache[key]['timestamp'] > self.que_cache_time:
                     self.que.put(self.que_cache[key])
                     del self.que_cache[key]
-            threading.Timer(1, self.que_timer).start()
+            thr = threading.Timer(self.que_timer_sec, self.que_timer)
+            thr.daemon = True
+            thr.start()
 
         def empty_que_cache(self):
             for msg in self.que_cache:
@@ -295,6 +301,11 @@ class UciAgent:
         self.engine = engine_spec['engine']
         # self.ponder_board = None
         self.active = True
+
+    def quit(self):
+        ft = self.engine.terminate(async_callback=True)
+        ft.result()
+        self.active = False
 
     def agent_ready(self):
         return self.active

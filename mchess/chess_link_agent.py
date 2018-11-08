@@ -46,6 +46,9 @@ class ChessLinkAgent:
             self.log.error(
                 "no board position received within timeout {}".format(timeout))
 
+    def quit(self):
+        self.cl_brd.quit()
+
     def agent_ready(self):
         return self.init_position
 

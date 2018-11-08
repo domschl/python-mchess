@@ -43,6 +43,12 @@ class Transport():
         self.init = True
         self.log.debug("USB init ok")
 
+    def quit(self):
+        """
+        Initiate worker-thread stop
+        """
+        self.thread_active = False
+
     def search_board(self):
         """
         Search for ChessLink connections on all USB ports.

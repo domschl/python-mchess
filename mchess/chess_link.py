@@ -215,6 +215,16 @@ class ChessLink:
                     self.mill_config['transport'], self.mill_config['address']))
                 self.error_condition = True
 
+    def quit(self):
+        """
+        Quit ChessLink
+
+        Try to terminate transport threads gracefully.
+        """
+        if self.trans is not None:
+            self.trans.quit()
+        self.thread_active = False
+
     def position_initialized(self):
         """
         Check, if a board position has been received and chess link board is online.
