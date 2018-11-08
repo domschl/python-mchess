@@ -224,10 +224,10 @@ class UciEngines:
             super().on_bestmove(bestmove, ponder)
 
         def score(self, cp, mate, lowerbound, upperbound):
-            if self.last_board.turn == chess.BLACK:
-                cp = cp*-1
-                if mate is not None:
-                    mate = mate*-1
+            # if self.last_board.turn == chess.BLACK:
+            #     cp = cp*-1
+            #     if mate is not None:
+            #         mate = mate*-1
 
             self.que.put({'score': {'cp': cp, 'mate': mate}})
             if mate is not None:
