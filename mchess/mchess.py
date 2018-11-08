@@ -317,7 +317,9 @@ class Mchess:
 
     def quit(self):
         print("Quitting...")
-        # TODO: Stop threads, leds off, use quit-function also with Ctrl-C-handler
+        # leds off
+        self.chess_link_agent.cl_brd.set_led_off()
+        time.sleep(1)
         for agent in self.player_w+self.player_b+self.player_watch:
             fquit = getattr(agent, "quit", None)
             if callable(fquit):
