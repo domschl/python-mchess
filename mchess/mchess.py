@@ -498,6 +498,11 @@ class Mchess:
                         self.log.info("eboard cable on left side.")
                     self.import_chesslink_position()
 
+                if 'encoding' in msg:
+                    self.prefs['use_unicode_figures'] = not self.prefs['use_unicode_figures']
+                    self.write_preferences(self.prefs)
+                    self.update_display_board()
+
             else:
                 time.sleep(0.05)
 
