@@ -84,11 +84,14 @@ class Mchess:
         return vals
 
     def init_agents(self):
+        self.agents_all=[]
         self.chess_link_agent = ChessLinkAgent(self.appque)
         self.chess_link_agent.max_plies = self.prefs['max_plies_board']
+        self.agents_all+=[self.chess_link_agent]
 
         self.term_agent = TerminalAgent(self.appque)
         self.term_agent.max_plies = self.prefs['max_plies_terminal']
+        self.agents_all+=[self.term_agent]
 
         self.uci_engines = UciEngines(self.appque)
         self.uci_agent = None
@@ -107,9 +110,11 @@ class Mchess:
             else:
                 uci_names = list(self.uci_engines.engines.keys())
                 self.uci_agent = UciAgent(uci_names[0])
+            self.agents_all+=[self.uci_agent]
             if self.prefs['computer_player2_name'] in self.uci_engines.engines and self.prefs['computer_player2_name'] != '':
                 self.uci_agent2 = UciAgent(
                     self.uci_engines.engines[self.prefs['computer_player2_name']])
+                self.agents_all+=[self.uci_agent2]
             else:
                 self.uci_agent2 = None
         else:
@@ -291,7 +296,7 @@ class Mchess:
         return False
 
     def update_display_board(self):
-        for agent in self.player_b+self.player_w+self.player_watch:
+        for agent in self.agents_all:
             dispb = getattr(agent, "display_board", None)
             if callable(dispb):
                 attribs = {'unicode': self.prefs['use_unicode_figures'],
@@ -303,13 +308,13 @@ class Mchess:
                     self.board, attribs=attribs)
 
     def update_display_move(self, msg):
-        for agent in self.player_b+self.player_w+self.player_watch:
+        for agent in self.agents_all:
             dispm = getattr(agent, "display_move", None)
             if callable(dispm):
                 agent.display_move(msg)
 
     def update_display_info(self, msg):
-        for agent in self.player_b+self.player_w+self.player_watch:
+        for agent in self.agents_all:
             dinfo = getattr(agent, "display_info", None)
             if callable(dinfo):
                 agent.display_info(
@@ -320,7 +325,7 @@ class Mchess:
         # leds off
         self.chess_link_agent.cl_brd.set_led_off()
         time.sleep(1)
-        for agent in self.player_w+self.player_b+self.player_watch:
+        for agent in self.agents_all:
             fquit = getattr(agent, "quit", None)
             if callable(fquit):
                 agent.quit()
