@@ -466,10 +466,10 @@ class Mchess:
                     self.state=self.State.IDLE
 
                 if 'curmove' in msg:
-                    if time.time()-self.last_info > 0.04:  # throttle
-                        self.last_info = time.time()
-                        msg['curmove']['appque']=self.appque.qsize()
-                        self.update_display_info(msg)
+                    # if time.time()-self.last_info > 0.04:  # throttle moved to event source
+                    self.last_info = time.time()
+                    msg['curmove']['appque']=self.appque.qsize()
+                    self.update_display_info(msg)
 
                 if 'turn eboard orientation' in msg:
                     self.stop()

@@ -3,6 +3,7 @@ import time
 import queue
 import json
 import os
+import threading
 from distutils.spawn import find_executable
 import glob
 
@@ -159,7 +160,24 @@ class UciEngines:
             self.cscore = None
             self.cnps = None
             self.mpv_num = 1
+            self.que_cache = {}
+            self.que_cache_time = 2.0
+            threading.Timer(1, self.que_timer).start()
             super().__init__()
+
+        def que_timer(self):
+            cur_time = time.time()
+            keys = list(self.que_cache.keys())
+            for key in keys:
+                if cur_time-self.que_cache[key]['timestamp'] > self.que_cache_time:
+                    self.que.put(self.que_cache[key])
+                    del self.que_cache[key]
+            threading.Timer(1, self.que_timer).start()
+
+        def empty_que_cache(self):
+            for msg in self.que_cache:
+                self.que.put(self.que_cache[msg])
+            self.que_cache = {}
 
         def post_info(self):
             # Called whenever a complete info line has been processed.
@@ -168,6 +186,7 @@ class UciEngines:
 
         def on_bestmove(self, bestmove, ponder):
             self.log.debug("Best: {}, ponder: {}".format(bestmove, ponder))
+            self.empty_que_cache()
             rep = {'move': {
                 'uci': bestmove.uci(),
                 'actor': self.name
@@ -216,6 +235,8 @@ class UciEngines:
                 'variant': moves,
                 'actor': self.name
             }}
+            que_key = '{}-{}'.format(self.name, self.mpv_num)
+
             if self.cdepth is not None:
                 rep['curmove']['depth'] = self.cdepth
             if self.cseldepth is not None:
@@ -226,7 +247,12 @@ class UciEngines:
                 rep['curmove']['score'] = self.cscore
             if self.ctbhits is not None:
                 rep['curmove']['tbhits'] = self.ctbhits
-            self.que.put(rep)
+            if que_key not in self.que_cache:
+                rep['timestamp'] = time.time()
+            else:
+                rep['timestamp'] = self.que_cache[que_key]['timestamp']
+            self.que_cache[que_key] = rep
+            # self.que.put(rep)
             super().pv(moves)
 
         def depth(self, n):
@@ -266,7 +292,8 @@ class UciAgent:
         self.engine.position(board)
         self.last_board = board
         if mtime == 0:
-            self.engine.go(infinite=True, async_callback=True, ponder=ponder)
+            self.engine.go(infinite=True,
+                           async_callback=True, ponder=ponder)
 
         else:
             self.engine.go(movetime=mtime,
