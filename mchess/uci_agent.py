@@ -191,16 +191,22 @@ class UciEngines:
                 'uci': bestmove.uci(),
                 'actor': self.name
             }}
-            if self.cdepth is not None:
-                rep['move']['depth'] = self.cdepth
-            if self.cseldepth is not None:
-                rep['move']['seldepth'] = self.cseldepth
-            if self.cnps is not None:
-                rep['move']['nps'] = self.cnps
-            if self.cscore is not None:
-                rep['move']['score'] = self.cscore
-            if self.ctbhits is not None:
-                rep['move']['tbhits'] = self.ctbhits
+            # TODO: should be taken from:
+            # with info_handler:
+            #     if 1 in info_handler.info["score"]:
+            #         print("Score: ", info_handler.info["score"][1].cp)
+            #         print("Mate: ", info_handler.info["score"][1].mate)
+            #
+            # if self.cdepth is not None:
+            #     rep['move']['depth'] = self.cdepth
+            # if self.cseldepth is not None:
+            #     rep['move']['seldepth'] = self.cseldepth
+            # if self.cnps is not None:
+            #     rep['move']['nps'] = self.cnps
+            # if self.cscore is not None:
+            #     rep['move']['score'] = self.cscore
+            # if self.ctbhits is not None:
+            #     rep['move']['tbhits'] = self.ctbhits
             if ponder is not None:
                 rep['move']['ponder'] = ponder.uci()
                 self.ponder = ponder.uci()
@@ -218,6 +224,11 @@ class UciEngines:
             super().on_bestmove(bestmove, ponder)
 
         def score(self, cp, mate, lowerbound, upperbound):
+            if self.last_board.turn == chess.BLACK:
+                cp = cp*-1
+                if mate is not None:
+                    mate = mate*-1
+
             self.que.put({'score': {'cp': cp, 'mate': mate}})
             if mate is not None:
                 self.cscore = '#{}'.format(mate)
@@ -294,7 +305,6 @@ class UciAgent:
         if mtime == 0:
             self.engine.go(infinite=True,
                            async_callback=True, ponder=ponder)
-
         else:
             self.engine.go(movetime=mtime,
                            async_callback=True, ponder=ponder)
