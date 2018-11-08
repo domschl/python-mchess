@@ -352,6 +352,7 @@ class Mchess:
                 self.state = self.State.BUSY
 
             if self.appque.empty() is False:
+                # print(self.appque.qsize())
                 msg = self.appque.get()
                 self.appque.task_done()
                 self.log.debug("App received msg: {}".format(msg))
@@ -456,7 +457,7 @@ class Mchess:
 
                 if 'quit' in msg:
                     self.stop()
-                    # TODO: Stop threads
+                    # TODO: Stop threads, leds off, use quit-function also with Ctrl-C-handler
                     exit(0)
 
                 if 'stop' in msg:
@@ -465,8 +466,9 @@ class Mchess:
                     self.state=self.State.IDLE
 
                 if 'curmove' in msg:
-                    if time.time()-self.last_info > 1.0:  # throttle
+                    if time.time()-self.last_info > 0.04:  # throttle
                         self.last_info = time.time()
+                        msg['curmove']['appque']=self.appque.qsize()
                         self.update_display_info(msg)
 
                 if 'turn eboard orientation' in msg:

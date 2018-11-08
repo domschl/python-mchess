@@ -17,9 +17,11 @@ class TerminalAgent:
         self.active = False
         self.max_plies = 6
         self.display_cache = ""
+        self.last_cursor_up = 0
         self.move_cache = ""
         self.info_cache = ""
         self.info_provider = {}
+        self.max_mpv = 1
 
         self.kbd_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -180,6 +182,9 @@ class TerminalAgent:
             print('{}  {}'.format(txa[i], ams[i]))
 
     def display_move(self, move_msg):
+        for _ in range(self.last_cursor_up):
+            print()
+
         if 'score' in move_msg['move']:
             new_move = '\nMove {} (ev: {}) by {}'.format(
                 move_msg['move']['uci'], move_msg['move']['score'], move_msg['move']['actor'])
@@ -200,46 +205,66 @@ class TerminalAgent:
                 "Unnecessary repetion of move-print suppressed by cache")
         self.info_cache = ""
         for ac in self.info_provider:
-            self.info_provider[ac] = "{:80s}".format("")
+            self.info_provider[ac] = {}
 
     def display_info(self, board, info):
-        st = '['
-        if 'score' in info:
-            st += 'Eval: {} '.format(info['score'])
+        mpv_ind = info['multipv_ind']  # index to multipv-line number 1..
+        if mpv_ind > self.max_mpv:
+            self.max_mpv = mpv_ind
+
+        header = '['
+        if 'actor' in info:
+            header += info['actor']+' '
         if 'nps' in info:
-            st += 'Nps: {} '.format(info['nps'])
+            header += 'Nps: {} '.format(info['nps'])
         if 'depth' in info:
             d = 'Depth: {}'.format(info['depth'])
             if 'seldepth' in info:
                 d += '/{} '.format(info['seldepth'])
-            st += d
+            header += d
+        if 'appque' in info:
+            header += 'AQue: {} '.format(info['appque'])
         if 'tbhits' in info:
-            st += 'TB: {}] '.format(info['tbhits'])
+            header += 'TB: {}] '.format(info['tbhits'])
         else:
-            st += '] '
+            header += '] '
+
+        variant = '({}) '.format(mpv_ind)
+        if 'score' in info:
+            variant += '{}  '.format(info['score'])
         if 'variant' in info:
             moves = info['variant']
             mvs = len(moves)
             if mvs > self.max_plies:
                 mvs = self.max_plies
             for i in range(mvs):
-                st += moves[i].uci()+' '
-        if 'actor' in info:
-            st += ' [{}]'.format(info['actor'])
-        else:
-            self.log.error('We need info {} to contain actor!'.format(info))
-            info['actor'] = 'unknown'
-        self.info_provider[info['actor']] = st
+                if i > 0:
+                    variant += ' '
+                variant += moves[i].uci()
+
+        if info['actor'] not in self.info_provider:
+            self.info_provider[info['actor']] = {}
+        self.info_provider[info['actor']]['header'] = header
+        self.info_provider[info['actor']][mpv_ind] = variant
 
         cst = ""
         for ac in self.info_provider:
-            cst += self.info_provider[ac]
-
+            for k in self.info_provider[ac]:
+                cst += self.info_provider[ac][k]
         if cst != self.info_cache:
             self.info_cache = cst
+            n = 0
             for ac in self.info_provider:
-                print('{:80s}'.format(self.info_provider[ac][:80]))
-            self.cursor_up(len(self.info_provider))
+                if 'header' not in self.info_provider[ac]:
+                    continue
+                print('{:80s}'.format(self.info_provider[ac]['header'][:80]))
+                n += 1
+                for i in range(1, self.max_mpv+1):
+                    if i in self.info_provider[ac]:
+                        print('{:80s}'.format(self.info_provider[ac][i][:80]))
+                        n += 1
+            self.cursor_up(n)
+            self.last_cursor_up = n
         else:
             self.log.debug("Suppressed redundant display_info")
 

@@ -158,6 +158,7 @@ class UciEngines:
             self.cseldepth = None
             self.cscore = None
             self.cnps = None
+            self.mpv_num = 1
             super().__init__()
 
         def post_info(self):
@@ -193,6 +194,7 @@ class UciEngines:
             self.cscore = None
             self.cnps = None
             self.ctbhits = None
+            self.mpv_num = 1
 
             super().on_bestmove(bestmove, ponder)
 
@@ -204,8 +206,13 @@ class UciEngines:
                 self.cscore = '{:.2f}'.format(float(cp)/100.0)
             super().score(cp, mate, lowerbound, upperbound)
 
+        def multipv(self, num):
+            self.mpv_num = num
+            super().multipv(num)
+
         def pv(self, moves):
             rep = {'curmove': {
+                'multipv_ind': self.mpv_num,
                 'variant': moves,
                 'actor': self.name
             }}
