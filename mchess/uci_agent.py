@@ -192,7 +192,7 @@ class UciEngines:
 
         def on_bestmove(self, bestmove, ponder):
             self.log.debug("Best: {}, ponder: {}".format(bestmove, ponder))
-            self.empty_que_cache()
+            # self.empty_que_cache()   # bad idea, dislays stale info
             rep = {'move': {
                 'uci': bestmove.uci(),
                 'actor': self.name
@@ -226,6 +226,7 @@ class UciEngines:
             self.cnps = None
             self.ctbhits = None
             self.mpv_num = 1
+            self.que_cache = {}
 
             super().on_bestmove(bestmove, ponder)
 

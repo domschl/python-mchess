@@ -207,6 +207,8 @@ class TerminalAgent:
             self.log.debug(
                 "Unnecessary repetion of move-print suppressed by cache")
         self.info_cache = ""
+        self.info_provider = {}
+        self.max_mpv = 1
         for ac in self.info_provider:
             self.info_provider[ac] = {}
 
