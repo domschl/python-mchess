@@ -4,6 +4,7 @@ import sys
 import platform
 import threading
 import queue
+import copy
 
 import chess
 
@@ -51,7 +52,8 @@ class TerminalAgent:
             print()
         self.kdb_thread_active = False
 
-    def position_to_text(self, board, use_unicode_chess_figures=True, invert=False):
+    def position_to_text(self, brd, use_unicode_chess_figures=True, invert=False):
+        board = copy.deepcopy(brd)
         tpos = []
         tpos.append(
             "  +------------------------+")
@@ -89,7 +91,8 @@ class TerminalAgent:
         tpos.append("    A  B  C  D  E  F  G  H  ")
         return tpos
 
-    def moves_to_text(self, board, score=None, use_unicode_chess_figures=True, invert=False, lines=11):
+    def moves_to_text(self, brd, score=None, use_unicode_chess_figures=True, invert=False, lines=11):
+        board = copy.deepcopy(brd)
         ams = ["" for _ in range(11)]
         mc = len(board.move_stack)
         if board.turn == chess.BLACK:
@@ -177,14 +180,24 @@ class TerminalAgent:
             attribs['white_name'], attribs['black_name'])
         new_cache = header
         for i in range(len(txa)):
-            new_cache += '{} {}'.format(txa[i], ams[i])
+            col = '  '
+            if (board.turn == chess.WHITE) and (i == 8):
+                col = '<-'
+            if (board.turn == chess.BLACK) and (i == 1):
+                col = '<-'
+            new_cache += '{}{}{}'.format(txa[i], col, ams[i])
         if new_cache == self.display_cache:
             self.log.debug("Unnecessary display_board call")
             return
         self.display_cache = new_cache
         print(header)
         for i in range(len(txa)):
-            print('{}  {}'.format(txa[i], ams[i]))
+            col = '  '
+            if (board.turn == chess.WHITE) and (i == 8):
+                col = '<-'
+            if (board.turn == chess.BLACK) and (i == 1):
+                col = '<-'
+            print('{}{}{}'.format(txa[i], col, ams[i]))
 
     def display_move(self, move_msg):
         if 'score' in move_msg['move']:
@@ -298,9 +311,9 @@ class TerminalAgent:
                     self.kbd_moves = []
                     appque.put(
                         {'move': {'uci': cmd, 'actor': self.name}})
-                elif cmd == 'n':
-                    log.debug('requesting new game')
-                    appque.put({'new game': '', 'actor': self.name})
+                elif cmd == 'a':
+                    log.debug('analyze')
+                    appque.put({'analysis': '', 'actor': self.name})
                 elif cmd == 'b':
                     log.debug('move back')
                     appque.put({'back': '', 'actor': self.name})
@@ -308,76 +321,78 @@ class TerminalAgent:
                     log.debug('change ChessLink board orientation')
                     appque.put(
                         {'turn eboard orientation': '', 'actor': self.name})
-                elif cmd == 'a':
-                    log.debug('analyze')
-                    appque.put({'analysis': '', 'actor': self.name})
-                elif cmd == 'ab':
-                    log.debug('analyze black')
-                    appque.put({'analyze': 'black', 'actor': self.name})
-                elif cmd == 'aw':
-                    log.debug('analyze white')
-                    appque.put({'analyze': 'white', 'actor': self.name})
                 elif cmd == 'e':
                     log.debug('board encoding switch')
                     appque.put({'encoding': '', 'actor': self.name})
-                elif cmd[:2] == 'l ':
-                    log.debug('level')
-                    movetime = float(cmd[2:])
-                    appque.put({'level': '', 'movetime': movetime})
-                elif cmd[:2] == 'm ':
-                    log.debug('max ply look-ahead display')
-                    n = int(cmd[2:])
-                    appque.put({'max_ply': n})
-                elif cmd == 'p':
-                    log.debug('position_fetch')
-                    appque.put(
-                        {'position_fetch': 'ChessLinkAgent', 'actor': self.name})
+                elif cmd[:4] == 'fen ':
+                    appque.put({'fen_setup': cmd[4:], 'actor': self.name})
                 elif cmd == 'g':
                     log.debug('go')
                     appque.put({'go': 'current', 'actor': self.name})
-                elif cmd == 'gw':
-                    log.debug('go')
-                    appque.put({'go': 'white', 'actor': self.name})
-                elif cmd == 'gb':
-                    log.debug('go, black')
-                    appque.put({'go': 'black', 'actor': self.name})
-                elif cmd == 'w':
-                    appque.put({'write_prefs': '', 'actor': self.name})
-                elif cmd == 'q':
-                    appque.put({'quit': '', 'actor': self.name})
                 elif cmd[:2] == 'h ':
-                    log.debug('show analysis for n plies (max 4) on board.')
+                    log.debug(
+                        'show analysis for n plies (max 4) on ChessLink board.')
                     ply = int(cmd[2:])
                     if ply < 0:
                         ply = 0
                     if ply > 4:
                         ply = 4
-                    appque.put({'hint': '', 'ply': ply})
-
+                    appque.put({'led_hint': ply})
+                elif cmd[:1] == 'm':
+                    if len(cmd) == 4:
+                        if cmd[2:] == "PP":
+                            log.debug("mode: player-player")
+                            appque.put({'game_mode': 'PLAYER_PLAYER'})
+                        elif cmd[2:] == "PE":
+                            log.debug("mode: player-engine")
+                            appque.put({'game_mode': 'PLAYER_ENGINE'})
+                        elif cmd[2:] == "EP":
+                            log.debug("mode: engine-player")
+                            appque.put({'game_mode': 'ENGINE_PLAYER'})
+                        elif cmd[2:] == "EE":
+                            log.debug("mode: engine-engine")
+                            appque.put({'game_mode': 'ENGINE_ENGINE'})
+                    else:
+                        log.warning(
+                            'Illegal m parameter, use: PP, PE, EP, EE (see help-command)')
+                elif cmd == 'n':
+                    log.debug('requesting new game')
+                    appque.put({'new game': '', 'actor': self.name})
+                elif cmd == 'p':
+                    log.debug('position_fetch')
+                    appque.put(
+                        {'position_fetch': 'ChessLinkAgent', 'actor': self.name})
+                elif cmd == 'q':
+                    appque.put({'quit': '', 'actor': self.name})
                 elif cmd == 's':
                     log.debug('stop')
                     appque.put({'stop': '', 'actor': self.name})
-                elif cmd[:4] == 'fen ':
-                    appque.put({'fen_setup': cmd[4:], 'actor': self.name})
+                elif cmd == 'tw':
+                    log.debug('turn white')
+                    appque.put({'turn': 'white', 'actor': self.name})
+                elif cmd == 'tb':
+                    log.debug('turn black')
+                    appque.put({'turn': 'black', 'actor': self.name})
+
                 elif cmd == 'help':
-                    log.info(
-                        'a - analyze current position, ab: analyze black, aw: analyses white')
-                    log.info(
-                        'c - change cable orientation (eboard cable left/right')
+                    log.info('Terminal commands:')
+                    log.info('e2e4 - enter a valid move (in UCI format)')
+                    log.info('a - analyze current position')
                     log.info('b - take back move')
                     log.info(
+                        'c - change cable orientation (eboard cable left/right')
+                    log.info("fen <fen> - set board to <fen> position")
+                    log.info(
                         'g - go, current player (default white) or force current move')
-                    log.info('gw - go, force white move')
-                    log.info('gb - go, force black move')
                     log.info('h <ply> - show hints for <ply> levels on board')
-                    log.info('l <n> - level: engine think-time in sec (float)')
-                    log.info('m <n> - max plies shown during look-ahead')
+                    log.info(
+                        'm <mode> - modes: PP: Player-Player, PE: Engine-Player, EP, EE.')
                     log.info('n - new game')
-                    log.info('p - import eboard position')
-                    log.info('s - stop and discard calculation')
+                    log.info('p - import ChessLink board position')
                     log.info('q - quit')
-                    log.info('w - write current prefences as default')
-                    log.info('e2e4 - valid move')
+                    log.info('s - stop and discard calculation')
+                    log.info('tw - next move: white')
+                    log.info('tb - next move: black')
                 else:
                     log.info(
                         'Unknown keyboard cmd <{}>, enter "help" for a list of valid commands.'.format(cmd))

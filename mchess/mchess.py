@@ -6,6 +6,7 @@ import json
 import queue
 import time
 from enum import Enum
+import copy
 
 import chess
 import chess.uci
@@ -176,7 +177,7 @@ class Mchess:
             self.player_w_name = self.prefs['human_name']
             self.player_b_name = self.prefs['human_name']
             self.player_w = self.get_human_agents()
-            self.player_b = self.player_w
+            self.player_b = self.get_human_agents()
             self.player_watch = self.get_uci_agent()
             self.player_watch += self.get_uci_agent2()
             if self.player_watch!=[]:
@@ -285,6 +286,7 @@ class Mchess:
         if new_mode is not None:
             self.set_mode(new_mode)
         self.update_display_board()
+        self.state=self.State.IDLE
 
     def is_player_move(self):
         if self.mode == self.Mode.PLAYER_PLAYER:
@@ -346,16 +348,27 @@ class Mchess:
     def game_state_machine_NEH(self):
         while self.state_machine_active:
             if self.state == self.State.IDLE:
+                if self.board.turn==chess.WHITE:
+                    print("WW:")
+                else:
+                    print("BB:")
+                # TODO: Investigate actual cause of corruption.
+                # FIXME: There's a corruption of self.board occuring during game-over check.
+                # This is either a bug in chess.Board.is_game_over() or some nasty async thing.
+                board_bug_workaround_cache=copy.deepcopy(self.board)
                 if self.board.is_game_over() is True:
                     self.log.info('Result: {}'.format(self.board.result()))
                     self.set_mode(self.Mode.NONE)
                     active_player = []
                     passive_player = []
+                self.board=board_bug_workaround_cache
 
                 if self.board.turn == chess.WHITE:
+                    print("W:")
                     active_player = self.player_w
                     passive_player = self.player_b
                 else:
+                    print("B:")
                     active_player = self.player_b
                     passive_player = self.player_w
 
@@ -485,6 +498,52 @@ class Mchess:
                         self.log.info("Starting analysis with {}".format(self.uci_agent2.name))
                         self.uci_agent2.engine.position(self.board)
                         self.uci_agent2.engine.go(infinite=True, async_callback=True)
+
+                if 'turn' in msg:
+                    if msg['turn']=='white':
+                        if self.board.turn != chess.WHITE:
+                            self.stop()
+                            self.update_display_board()
+                            self.board.turn=chess.WHITE
+                            time.sleep(0.1)
+                            self.state=self.State.IDLE
+                            self.update_display_board()
+                            time.sleep(0.1)
+                            if self.board.turn==chess.WHITE:
+                                self.log.info("It's now white's turn.")
+                            else:
+                                self.log.error("TURN information corrupted! (Should be white's turn.)")
+                            
+                    elif msg['turn']=='black':
+                        if self.board.turn != chess.BLACK:
+                            self.stop()
+                            self.update_display_board()
+                            self.board.turn=chess.BLACK
+                            time.sleep(0.1)
+                            self.state=self.State.IDLE
+                            self.update_display_board()
+                            if self.board.turn==chess.BLACK:
+                                self.log.info("It's now black's turn.")
+                            else:
+                                self.log.error("TURN information corrupted! (Should be black's turn.)")
+                    else:
+                        self.log.warning("turn message should send white or black")
+
+                if 'game_mode' in msg:
+                    if msg['game_mode']=='PLAYER_PLAYER':
+                        self.stop(new_mode=self.Mode.PLAYER_PLAYER)
+                    elif msg['game_mode']=='PLAYER_ENGINE':
+                        self.stop(new_mode=self.Mode.PLAYER_ENGINE)
+                    elif msg['game_mode']=='ENGINE_PLAYER':
+                        self.stop(new_mode=self.Mode.ENGINE_PLAYER)
+                    elif msg['game_mode']=='ENGINE_ENGINE':
+                        self.stop(new_mode=self.Mode.ENGINE_ENGINE)
+
+                if 'led_hint' in msg:
+                    ply=int(msg['led_hint'])
+                    if ply>=0 and ply<4:
+                        self.prefs['max_plies_board']=ply
+                        self.write_preferences(self.prefs)
 
                 if 'quit' in msg:
                     self.stop()

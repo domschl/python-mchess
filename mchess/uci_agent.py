@@ -197,12 +197,15 @@ class UciEngines:
                 'uci': bestmove.uci(),
                 'actor': self.name
             }}
-            # TODO: should be taken from:
-            # with info_handler:
-            #     if 1 in info_handler.info["score"]:
-            #         print("Score: ", info_handler.info["score"][1].cp)
-            #         print("Mate: ", info_handler.info["score"][1].mate)
-            #
+            with self:
+                if 1 in self.info["score"]:
+                    score = self.info["score"][1].cp
+                    mate = self.info["score"][1].mate
+                    if mate is not None:
+                        rep['move']['score'] = '#{}'.format(mate)
+                    else:
+                        rep['move']['score'] = '{:.2f}'.format(
+                            float(score)/100.0)
             # if self.cdepth is not None:
             #     rep['move']['depth'] = self.cdepth
             # if self.cseldepth is not None:
