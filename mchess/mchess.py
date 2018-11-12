@@ -158,12 +158,14 @@ class Mchess:
         return agents
 
     def uci_stop_engines(self):
-        if self.uci_agent is not None:
+        if self.uci_agent is not None and self.uci_agent.busy is True:
             ft = self.uci_agent.engine.stop(async_callback=True)
             ft.result()
-        if self.uci_agent2 is not None:
+            self.uci_agent.busy=False
+        if self.uci_agent2 is not None and self.uci_agent2.busy is True:
             ft = self.uci_agent2.engine.stop(async_callback=True)
             ft.result()
+            self.uci_agent2.busy=False
 
     def set_mode(self, mode):
         if mode == self.Mode.NONE:
@@ -282,7 +284,7 @@ class Mchess:
 
     def stop(self, new_mode=Mode.PLAYER_PLAYER):
         self.uci_stop_engines()
-        self.log.info("Stop command.")
+        self.log.debug("Stop command.")
         if new_mode is not None:
             self.set_mode(new_mode)
         self.update_display_board()
@@ -427,23 +429,19 @@ class Mchess:
                     self.state = self.State.IDLE
 
                 if 'move' in msg:
+                    if msg['move']['actor']==self.uci_agent.name:
+                        self.uci_agent.busy=False
+                    if msg['move']['actor']==self.uci_agent2.name:
+                        self.uci_agent2.busy=False
                     if self.analysis_active:
                         # Ignore engine moves when it's player's turn: they are from analysis
                         skip=False
                         if self.uci_agent is not None:
                             if msg['move']['actor'] == self.uci_agent.name:
                                 skip=True
-                                # ft = self.uci_agent.engine.stop(async_callback=True)
-                                # ft.result()
-                                # self.uci_agent.engine.position(self.board)
-                                # self.uci_agent.engine.go(infinite=True, async_callback=True)
                         if self.uci_agent2 is not None:
                             if msg['move']['actor'] == self.uci_agent2.name:
                                 skip=True
-                                # ft = self.uci_agent2.engine.stop(async_callback=True)
-                                # ft.result()
-                                # self.uci_agent2.engine.position(self.board)
-                                # self.uci_agent2.engine.go(infinite=True, async_callback=True)
                         if skip is True:
                             continue
                     self.uci_stop_engines()
@@ -456,9 +454,11 @@ class Mchess:
                     if self.analysis_active:
                         if self.uci_agent is not None:
                             self.uci_agent.engine.position(self.board)
+                            self.uci_agent.engine.busy=True
                             self.uci_agent.engine.go(infinite=True, async_callback=True)
                         if self.uci_agent2 is not None:
                             self.uci_agent2.engine.position(self.board)
+                            self.uci_agent2.engine.busy=True
                             self.uci_agent2.engine.go(infinite=True, async_callback=True)
 
                 if 'back' in msg:
@@ -488,22 +488,22 @@ class Mchess:
                     if self.uci_agent is not None:
                         self.log.info("Starting analysis with {}".format(self.uci_agent.name))
                         self.uci_agent.engine.position(self.board)
+                        self.uci_agent.engine.busy=True
                         self.uci_agent.engine.go(infinite=True, async_callback=True)
                     if self.uci_agent2 is not None:
                         self.log.info("Starting analysis with {}".format(self.uci_agent2.name))
                         self.uci_agent2.engine.position(self.board)
+                        self.uci_agent2.engine.busy=True
                         self.uci_agent2.engine.go(infinite=True, async_callback=True)
 
                 if 'turn' in msg:
                     if msg['turn']=='white':
                         if self.board.turn != chess.WHITE:
                             self.stop()
-                            self.update_display_board()
-                            self.board.turn=chess.WHITE
-                            time.sleep(0.1)
+                            # self.board.turn=chess.WHITE
+                            self.board.push(chess.Move.from_uci('0000'))
                             self.state=self.State.IDLE
                             self.update_display_board()
-                            time.sleep(0.1)
                             if self.board.turn==chess.WHITE:
                                 self.log.info("It's now white's turn.")
                             else:
@@ -512,9 +512,8 @@ class Mchess:
                     elif msg['turn']=='black':
                         if self.board.turn != chess.BLACK:
                             self.stop()
-                            self.update_display_board()
-                            self.board.turn=chess.BLACK
-                            time.sleep(0.1)
+                            # self.board.turn=chess.BLACK
+                            self.board.push(chess.Move.from_uci('0000'))
                             self.state=self.State.IDLE
                             self.update_display_board()
                             if self.board.turn==chess.BLACK:

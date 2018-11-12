@@ -192,7 +192,6 @@ class UciEngines:
 
         def on_bestmove(self, bestmove, ponder):
             self.log.debug("Best: {}, ponder: {}".format(bestmove, ponder))
-            # self.empty_que_cache()   # bad idea, dislays stale info
             rep = {'move': {
                 'uci': bestmove.uci(),
                 'actor': self.name
@@ -305,6 +304,7 @@ class UciAgent:
         self.engine = engine_spec['engine']
         # self.ponder_board = None
         self.active = True
+        self.busy = False
 
     def quit(self):
         ft = self.engine.terminate(async_callback=True)
