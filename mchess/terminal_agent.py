@@ -121,35 +121,39 @@ class TerminalAgent:
                 chk = ""
             l1 = len(board.piece_map())
             mv = board.pop()
-            l2 = len(board.piece_map())
-            move_store.append(mv)
-            if l1 != l2:  # capture move, piece count changed :-/
-                if use_unicode_chess_figures is True:
-                    sep = self.chesssym['unic'][1]
-                else:
-                    sep = self.chesssym['ascii'][1]
+            if mv == chess.Move.null():
+                move = '{:10s}'.format('--')
             else:
-                if use_unicode_chess_figures is True:
-                    sep = self.chesssym['unic'][0]
+                l2 = len(board.piece_map())
+                move_store.append(mv)
+                if l1 != l2:  # capture move, piece count changed :-/
+                    if use_unicode_chess_figures is True:
+                        sep = self.chesssym['unic'][1]
+                    else:
+                        sep = self.chesssym['ascii'][1]
                 else:
-                    sep = self.chesssym['ascii'][0]
-            if mv.promotion is not None:
-                fig = chess.Piece(chess.PAWN, board.piece_at(
-                    mv.from_square).color).unicode_symbol(invert_color=True)
-                if use_unicode_chess_figures is True:
-                    pro = chess.Piece(mv.promotion, board.piece_at(
+                    if use_unicode_chess_figures is True:
+                        sep = self.chesssym['unic'][0]
+                    else:
+                        sep = self.chesssym['ascii'][0]
+                if mv.promotion is not None:
+                    fig = chess.Piece(chess.PAWN, board.piece_at(
                         mv.from_square).color).unicode_symbol(invert_color=True)
+                    if use_unicode_chess_figures is True:
+                        pro = chess.Piece(mv.promotion, board.piece_at(
+                            mv.from_square).color).unicode_symbol(invert_color=True)
+                    else:
+                        pro = mv.promotion.symbol()
                 else:
-                    pro = mv.promotion.symbol()
-            else:
-                pro = ""
-                if use_unicode_chess_figures is True:
-                    fig = board.piece_at(mv.from_square).unicode_symbol(
-                        invert_color=not invert)
-                else:
-                    fig = board.piece_at(mv.from_square).symbol()
-            move = '{:10s}'.format(
-                fig+" "+chess.SQUARE_NAMES[mv.from_square]+sep+chess.SQUARE_NAMES[mv.to_square]+pro+chk)
+                    pro = ""
+                    if use_unicode_chess_figures is True:
+                        fig = board.piece_at(mv.from_square).unicode_symbol(
+                            invert_color=not invert)
+                    else:
+                        fig = board.piece_at(mv.from_square).symbol()
+                move = '{:10s}'.format(
+                    fig+" "+chess.SQUARE_NAMES[mv.from_square]+sep+chess.SQUARE_NAMES[mv.to_square]+pro+chk)
+
             if amsi == lines-1 and score != None:
                 move = '{} ({})'.format(move, score)
                 score = ''
@@ -311,6 +315,10 @@ class TerminalAgent:
                     self.kbd_moves = []
                     appque.put(
                         {'move': {'uci': cmd, 'actor': self.name}})
+                elif cmd == '--':
+                    self.kbd_moves = []
+                    appque.put(
+                        {'move': {'uci': '0000', 'actor': self.name}})
                 elif cmd == 'a':
                     log.debug('analyze')
                     appque.put({'analysis': '', 'actor': self.name})
@@ -377,6 +385,7 @@ class TerminalAgent:
                 elif cmd == 'help':
                     log.info('Terminal commands:')
                     log.info('e2e4 - enter a valid move (in UCI format)')
+                    log.info('--  null move')
                     log.info('a - analyze current position')
                     log.info('b - take back move')
                     log.info(
