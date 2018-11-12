@@ -348,13 +348,10 @@ class Mchess:
     def game_state_machine_NEH(self):
         while self.state_machine_active:
             if self.state == self.State.IDLE:
-                if self.board.turn==chess.WHITE:
-                    print("WW:")
-                else:
-                    print("BB:")
                 # TODO: Investigate actual cause of corruption.
                 # FIXME: There's a corruption of self.board occuring during game-over check.
-                # This is either a bug in chess.Board.is_game_over() or some nasty async thing.
+                # This is either a bug in chess.Board.is_game_over() or [more likely]
+                # some nasty async thing.
                 board_bug_workaround_cache=copy.deepcopy(self.board)
                 if self.board.is_game_over() is True:
                     self.log.info('Result: {}'.format(self.board.result()))
@@ -364,11 +361,9 @@ class Mchess:
                 self.board=board_bug_workaround_cache
 
                 if self.board.turn == chess.WHITE:
-                    print("W:")
                     active_player = self.player_w
                     passive_player = self.player_b
                 else:
-                    print("B:")
                     active_player = self.player_b
                     passive_player = self.player_w
 
