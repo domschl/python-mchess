@@ -388,7 +388,14 @@ class Mchess:
                     if callable(gom):
                         self.log.debug(
                             'Initiating GO for agent {}'.format(agent.name))
-                        agent.go(self.board, self.prefs['think_ms'])
+                        brd_copy=copy.deepcopy(self.board)
+                        if chess.Move.from_uci('0000') in brd_copy.move_stack:
+                            # if history contains NULL moves (UCI: '0000'), do not use 
+                            # history, or UCI engine will explode.
+                            brd_copy.clear_stack()
+                        # print("This is sent to UCI:")
+                        # self.term_agent.display_board(brd_copy)
+                        agent.go(brd_copy, self.prefs['think_ms'])
                         break
                 self.state = self.State.BUSY
 
