@@ -469,10 +469,13 @@ class Mchess:
                             self.uci_agent2.engine.go(infinite=True, async_callback=True)
 
                 if 'back' in msg:
-                    self.stop()
-                    self.board.pop()
-                    self.update_display_board()
-                    self.state = self.State.IDLE
+                    if len(self.board.move_stack)>0:
+                        self.stop()
+                        self.board.pop()
+                        self.update_display_board()
+                        self.state = self.State.IDLE
+                    else:
+                        self.log.debug('Cannot take back move, if none has occured.')
 
                 if 'go' in msg:
                     if (self.board.turn==chess.WHITE and self.mode==self.Mode.ENGINE_PLAYER) or (self.board.turn==chess.BLACK and self.mode==self.Mode.PLAYER_ENGINE):
