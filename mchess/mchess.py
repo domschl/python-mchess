@@ -14,6 +14,7 @@ import chess.uci
 from chess_link_agent import ChessLinkAgent
 from terminal_agent import TerminalAgent
 from uci_agent import UciAgent, UciEngines
+from web_agent import WebAgent
 
 
 class Mchess:
@@ -93,6 +94,9 @@ class Mchess:
         self.term_agent = TerminalAgent(self.appque)
         self.term_agent.max_plies = self.prefs['max_plies_terminal']
         self.agents_all+=[self.term_agent]
+
+        self.web_agent = WebAgent(self.appque)
+        self.agents_all+=[self.web_agent]
 
         self.uci_engines = UciEngines(self.appque)
         self.uci_agent = None
@@ -252,10 +256,9 @@ class Mchess:
             self.import_chesslink_position()
 
         ags = ""
-        for p in self.player_w + self.player_b:
+        for p in self.agents_all:
             if p.agent_ready() is False:
                 self.log.error('Failed to initialize agent {}.'.format(p.name))
-                exit(-1)
             if len(ags) > 0:
                 ags += ", "
             ags += '"'+p.name+'"'

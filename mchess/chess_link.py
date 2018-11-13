@@ -702,7 +702,6 @@ class ChessLink:
             self.log.warning(
                 "Not connected to Chess Link.")
 
-    # TODO: move this?
     def short_fen(self, fen):
         """
         Utility-function to cut off all information after the actual position, since the board
