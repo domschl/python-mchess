@@ -2,6 +2,7 @@ import logging
 import time
 import threading
 import queue
+import json
 
 import chess
 from flask import Flask, send_from_directory
@@ -26,6 +27,7 @@ class WebAgent:
         self.info_cache = ""
         self.info_provider = {}
         self.max_mpv = 1
+        self.last_board = None
 
         self.socket_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -58,6 +60,8 @@ class WebAgent:
         self.active = True
 
         self.sockets.add_url_rule('/ws', 'ws', self.ws_sockets)
+        self.ws_clients = {}
+        self.ws_handle = 0
 
         self.socket_handler()  # Start threads for web and ws:sockets
 
@@ -71,10 +75,20 @@ class WebAgent:
     def web_favicon(self):
         return self.app.send_static_file('favicon.ico')
 
+    def ws_dispatch(self, ws, message):
+        print("Client: ws:{} msg:{}".format(ws, message))
+
     def ws_sockets(self, ws):
+        self.ws_handle += 1
+        handle = self.ws_handle
+        if self.last_board is not None:
+            msg = {'fen': self.last_board.fen()}
+            ws.send(json.dumps(msg))
         while not ws.closed:
+            self.ws_clients[handle] = ws
             message = ws.receive()
-            ws.send(message)
+            self.ws_dispatch(handle, message)
+        del self.ws_clients[handle]
 
     def mchess_script(self):
         return self.app.send_static_file('scripts/mchess.js')
@@ -95,7 +109,11 @@ class WebAgent:
         self.socket_thread_active = False
 
     def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
-        pass
+        self.last_board = board
+        msg = {'fen': board.fen()}
+        for w in self.ws_clients:
+            print("SENDING! {}".format(w))
+            self.ws_clients[w].send(json.dumps(msg))
 
     def display_move(self, move_msg):
         pass
