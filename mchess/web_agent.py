@@ -75,9 +75,7 @@ class WebAgent:
                 self.socket_moves.append(vals[v])
 
     def socket_event_worker_thread(self, appque, log, app):
-        app.run()
-        while self.socket_thread_active:
-            time.sleep(0.1)
+        app.run(host='0.0.0.0', port=8001)
 
     def socket_handler(self):
         self.socket_thread_active = True
