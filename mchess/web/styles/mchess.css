@@ -1,1 +1,83 @@
 /* Mchess.css */
+
+c1 {
+    color: #D8DBE2; /* Gainsboro */
+}
+
+c2 {
+    color: #A9BCD0; /* Pastel Blue */
+}
+
+c3 {
+    color: #58A4B0; /* Cadet Blue */
+}
+
+c41 {
+    color: #46494C; /* Outer Space */
+}
+
+c42 {
+    color: #373F51; /* Charcoil */
+}
+
+c51 {
+    color: #363635; /* -- Jet * */
+}
+
+c52 {
+    color: #2D2A32; /* Charleston Green */
+}
+
+c53 {
+    color: #1B1B1E; /* Eerie Black */
+}
+
+div.board {
+    float: left;
+    width: 155px;
+    height: 155px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.applet-container {
+    display: grid;
+    grid-gap: 4px;
+}
+
+.applet {
+    /* padding: 10px; */
+    float: left;
+    width:33%;
+    padding-left: 0.7em;
+    padding-top: 0.7em;
+    background-color: #2D2A32;
+}
+
+.variant {
+    font-size: 6pt;
+}
+.movenr {
+    font-size: 6pt;
+    color: #58A4B0;
+}
+header {
+    color: #D8DBE2;
+    background-color: #2D2A32;
+    padding: 10px;
+}
+
+body {color: #D8DBE2;
+    background-color: #1B1B1E;}
+
+.cm-chessboard.has-border .board .border-inner {
+        fill: #373F51; }
+      
+.cm-chessboard.has-border .board .border {
+        fill: #D8DBE2; }
+
+.cm-chessboard .board .square.white {
+    fill: #A9BCD0; }
+  
+.cm-chessboard .board .square.black {
+    fill: #58A4B0; }

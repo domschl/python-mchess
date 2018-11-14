@@ -3,6 +3,7 @@ import time
 import threading
 import queue
 import json
+import copy
 
 import chess
 from flask import Flask, send_from_directory
@@ -118,7 +119,24 @@ class WebAgent:
         pass
 
     def display_info(self, board, info):
-        pass
+        ninfo = copy.deepcopy(info)
+        nboard = copy.deepcopy(board)
+        if 'variant' in ninfo:
+            ml = '<div class="variant">'
+            for move in ninfo['variant']:
+                if len(ml) > 0:
+                    ml += ' '
+                if nboard.turn is True:
+                    ml += '<span class="movenr">{}.</span> '.format(
+                        nboard.fullmove_number)
+                ml += nboard.san(move)
+                nboard.push(move)
+            ml += '</div>'
+            ninfo['variant'] = ml
+
+        msg = {'fenref': nboard.fen(), 'info': ninfo}
+        for w in self.ws_clients:
+            self.ws_clients[w].send(json.dumps(msg))
 
     def set_valid_moves(self, board, vals):
         self.socket_moves = []
