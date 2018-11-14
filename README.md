@@ -101,15 +101,15 @@ feature).
 ```
                                 +--------------------+
                                 |   chess_mboard.py  |   Start and connect agents
-                                +--------------------+
-                                   |     |     |
-                        +----------+     |     +---------+
-                        |                |               |
-         +---------------------+  +--------------+  +-------------------+
-         | chess_link_agent.py |  | uci_agent.py |  | terminal_agent.py |   agents represent
-         +---------------------+  +--------------+  +-------------------+   player activities 
-                        |            uci-engines         I/O hardware
-                        |            Stockfish,
+                                +--------------------+   agents represent player activities
+                                         |     
+                        +----------------+---------------+----------------------+  
+                        |                |               |                      |
+         +---------------------+  +--------------+  +-------------------+ +--------------+
+         | chess_link_agent.py |  | uci_agent.py |  | terminal_agent.py | | web_agent.py |
+         +---------------------+  +--------------+  +-------------------+ +--------------+
+                        |            uci-engines         I/O hardware      multiple web
+                        |            Stockfish,                            clients
                         |            Lc0 etc.                
  -  -  -  -  -  -  -  - | -  -  -  -  -  -  -  -  -  -  -  -
                +---------------+
@@ -123,7 +123,7 @@ feature).
          via Chess Link
 ```
 
-It whould be straight forward to include other agents (e.g. pyqt5 GUI or web GUIs) at a later point.
+It whould be straight forward to include other agents at a later point.
 
 ## Documentation
 
