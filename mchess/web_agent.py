@@ -121,13 +121,19 @@ class WebAgent:
     def display_info(self, board, info):
         ninfo = copy.deepcopy(info)
         nboard = copy.deepcopy(board)
+        is_first = True
         if 'variant' in ninfo:
             ml = '<div class="variant">'
             for move in ninfo['variant']:
-                if len(ml) > 0:
-                    ml += ' '
+                if is_first is False:
+                    if nboard.turn is True:
+                        ml += '&nbsp '
+                    else:
+                        ml += '&nbsp'
+                else:
+                    is_first = False
                 if nboard.turn is True:
-                    ml += '<span class="movenr">{}.</span> '.format(
+                    ml += '<span class="movenr">{}.</span>&nbsp'.format(
                         nboard.fullmove_number)
                 ml += nboard.san(move)
                 nboard.push(move)

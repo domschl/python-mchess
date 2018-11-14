@@ -34,21 +34,16 @@ c53 {
 
 div.board {
     float: left;
-    width: 155px;
-    height: 155px;
     margin-right: 10px;
     margin-bottom: 10px;
 }
 
 .applet-container {
-    display: grid;
     grid-gap: 4px;
 }
 
 .applet {
     /* padding: 10px; */
-    float: left;
-    width:33%;
     padding-left: 0.7em;
     padding-top: 0.7em;
     background-color: #2D2A32;
@@ -56,6 +51,9 @@ div.board {
 
 .variant {
     font-size: 6pt;
+}
+.turq {
+    color: #58A4B0;
 }
 .movenr {
     font-size: 6pt;

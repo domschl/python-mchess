@@ -24,19 +24,35 @@
 
 <body>
     <header>
-        <div id="title">
-            Welcome to MChess
+        <div id="title" style="padding-bottom: 0.7em">
+            <span class="turq">Turqoise</span> chess
         </div>
     </header>
 
     <main>
-    <p />
-    <div class="applet-container">
-        <div class="applet">
+    <table style="100%%">
+    <tr>
+    <td>
+        <div class="applet" style="height:50; width:50">
             <div class="board" id="board1"></div>
         </div>
         <div class="applet" id="info">
         </div>
+    </td>
+    <td>
+        <div class="applet">
+            <div class="board" id="miniboard1"></div>
+        </div>
+        <div class="applet" id="miniinfo1">
+        </div>
+        <div class="applet">
+            <div class="board" id="miniboard2"></div>
+        </div>
+        <div class="applet" id="miniinfo2">
+        </div>
+    </td>
+    </tr>
+    </table>
     </main>
 </body>
 
