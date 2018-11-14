@@ -4,7 +4,7 @@ import threading
 import queue
 
 import chess
-from flask import Flask
+from flask import Flask, request, send_from_directory
 
 
 class WebAgent:
@@ -33,22 +33,25 @@ class WebAgent:
                          "ascii": ["-", "x", "+", "#", "1/2"]}
 
         log = logging.getLogger('werkzeug')
-        log.setLevel(logging.ERROR)
-        self.app = Flask(__name__)
+        # log.setLevel(logging.ERROR)
+        self.app = Flask(__name__, static_folder='web')
         self.app.config['ENV'] = "MChess_Agent"
         self.app.debug = False
         self.app.use_reloader = False
-        self.app.add_url_rule('/', 'root', self.hello_world)
-        self.app.add_url_rule('/borg', 'borg', self.hello_borg)
+        self.app.add_url_rule('/node_modules/<path:path>',
+                              'node_modules', self.node_modules)
+        self.app.add_url_rule('/', 'root', self.web_root)
+        self.app.add_url_rule('/index.html', 'index', self.web_root)
         self.active = True
 
         self.socket_handler()
 
-    def hello_world(self):
-        return 'Hello, World!'
+    def node_modules(self, path):
+        print("NODESTUFF")
+        return send_from_directory('web/node_modules', path)
 
-    def hello_borg(self):
-        return 'The BORG!'
+    def web_root(self):
+        return self.app.send_static_file('index.html')
 
     def agent_ready(self):
         return self.active
