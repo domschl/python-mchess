@@ -112,7 +112,6 @@ class WebAgent:
         self.last_board = board
         msg = {'fen': board.fen()}
         for w in self.ws_clients:
-            print("SENDING! {}".format(w))
             self.ws_clients[w].send(json.dumps(msg))
 
     def display_move(self, move_msg):
