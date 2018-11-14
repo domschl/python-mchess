@@ -57,19 +57,17 @@ A sample content for stockfish in Linux would be:
 ```
 Note: Windows users need to use paths with `\\` for proper json encoding.
 
-#### Optional web client
+#### Web client
 
-The web agent uses `Flask`, `Flask-Sockets` and `gevent`.
+The web agent requires python modules `Flask`, `Flask-Sockets` and `gevent`.
 
-`npm` is needed to install the javascript dependencies:
+Node JS packet manager `npm` is needed to install the javascript dependencies:
 
 ```bash
 cd mchess/web
 npm install
 ```
 This installs the dependencies `Normalize.css` and `cm-chessboard`.
-
-The web client can be reached at `http://localhost:8001`
 
 ### Start
 
@@ -79,6 +77,8 @@ python3 mchess.py
 ```
 
 This will start chess agents for the chess board, automatically detecting board hardware via USB or BLuetooth LE (Linux, Raspberry PI only), and load the [first active] UCI engine (testet with Leela Chess Zero (Lc0) and Stockfish 9).
+
+The web client can be reached at `http://localhost:8001`. From remote use `http://computer-name:8001`.
 
 Note: Bluetooth LE hardware detection requires admin privileges for the one-time intial bluetooth scan. For first time start with Bluetooth LE support, use:
 ```bash
