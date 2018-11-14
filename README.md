@@ -26,8 +26,9 @@ This project is under heavy development, and basically everything described belo
 
 `python-mchess` board driver for Chess Link depends on `PySerial` and (Linux/Raspberry Pi only) `BluePy`
 
-In order to use UCI engines with mchess, additionally `python-chess` is used.
+#### Optional UCI engine support
 
+In order to use UCI engines with mchess, additionally `python-chess` is used.
 
 ```bash
 pip3 install pyserial [bluepy] [python-chess]
@@ -55,6 +56,22 @@ A sample content for stockfish in Linux would be:
 }
 ```
 Note: Windows users need to use paths with `\\` for proper json encoding.
+
+#### Optional web client
+
+The web agent uses `Flask`, `Flask-Sockets` and `gevent`.
+
+`npm` is needed to install the javascript dependencies:
+
+```bash
+cd mchess/web
+npm install
+```
+This installs the dependencies `Normalize.css` and `cm-chessboard`.
+
+The web client can be reached at `http://localhost:8001`
+
+### Start
 
 Then in directory `mchess`, simply start from console:
 ```bash
