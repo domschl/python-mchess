@@ -32,15 +32,6 @@ c53 {
     color: #1B1B1E; /* Eerie Black */
 }
 
-.header_col {
-    color: #D8DBE2;
-    background-color: #2D2A32;
-}
-.body_col {
-    color: #D8DBE2;
-    background-color: #1B1B1E;
-}
-
 .container {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -78,10 +69,17 @@ div.board {
     font-size: 6pt;
     color: #58A4B0;
 }
+
+.logo {
+    margin-top: auto;
+    margin-bottom: auto;
+    vertical-align: middle;
+}
+
 header {
+    padding: 5px;
     color: #D8DBE2;
     background-color: #2D2A32;
-    padding: 10px;
 }
 
 body {
