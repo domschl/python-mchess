@@ -11,15 +11,13 @@
         <!--
         <link rel="apple-touch-icon" href="/icon.png" />
         -->
+        <link rel="stylesheet" type="text/css" href="./node_modules/cm-chessboard/styles/page.css" />
+        <link rel="stylesheet" type="text/css" href="./node_modules/cm-chessboard/styles/cm-chessboard.css" />
 
+        <link rel="stylesheet" type="text/css" href="./node_modules/normalize.css/normalize.css">
 
-        <link rel="stylesheet" href="node_modules/cm-chessboard/styles/page.css" />
-        <link rel="stylesheet" href="node_modules/cm-chessboard/styles/cm-chessboard.css" />
-
-        <link rel="stylesheet" href="node_modules/normalize.css/normalize.css">
-
-        <link rel="stylesheet" href="styles/mchess.css">
-        <script type="module" src="scripts/mchess.js"></script>
+        <link rel="stylesheet" type="text/css" href="./styles/mchess.css">
+        <script type="module" src="./scripts/mchess.js"></script>
 </head>
 
 <body>
@@ -30,19 +28,25 @@
     </header>
 
     <main>
-        <table style:"100%">
-            <tr>
-                <td>
-                    <div class="border">
-                        <div class="board" id="board1"></div>
-                    </div>
-                </td>
-                <td>
-                    <div class="board miniborder" id="miniboard1"></div>
-                    <div class="miniborder board" id="miniboard2"></div>
-                </td>
-            </tr>
-        </table>
+        <div class="container">
+            <div class="mainboard">
+                <div class="board" id="board1"></div>
+            </div>
+            <div class="miniboard1">
+                <div class="board miniborder" id="miniboard1"></div>
+                <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Facere amet dolorem possimus, totam
+                    facilis minima consequatur adipisci sunt neque exercitationem?</div>
+            </div>
+            <div class="miniboard2">
+                <div class="miniborder board" id="miniboard2"></div>
+            </div>
+        </div>
+        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nulla distinctio quia deserunt veritatis facilis
+        expedita ducimus, necessitatibus blanditiis quo! Nisi incidunt quas impedit nostrum quidem corporis earum eum
+        quam eaque sunt quibusdam, optio sequi dolorum repellat fugit aperiam perferendis quis ex culpa harum,
+        excepturi doloremque odit consequatur? Officiis, nemo! Maxime cupiditate ullam exercitationem totam harum,
+        fugiat, beatae quasi incidunt quibusdam obcaecati veritatis neque, animi rem magnam. Impedit doloribus odio
+        exercitationem accusantium, dolore sequi. Soluta repudiandae esse velit tenetur non dolores.
     </main>
 </body>
 

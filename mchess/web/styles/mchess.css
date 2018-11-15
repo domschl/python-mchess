@@ -40,17 +40,28 @@ c53 {
     color: #D8DBE2;
     background-color: #1B1B1E;
 }
-div.border c52 {
-    border-width:6px;
-    border-style:solid;
-    border-color:inherit;
-    height: 250px;
-    width: 250px;
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-auto-columns: minmax(auto, 200px);
+}
+.mainboard {
+    grid-column: 1/3;
+    grid-row: 1/3;
+    background: #999;
 }
 
-div.miniborder {
-    border-width:3px;
-    border-style:solid;
+.miniboard1 {
+    grid-column: 3/6;
+    grid-row: 1/2;
+    background: #888;
+}
+.miniboard2 {
+    grid-column: 3/5;
+    grid-row: 2/3;
+    background: #777;
 }
 
 div.board {
@@ -60,19 +71,22 @@ div.board {
 .variant {
     font-size: 6pt;
 }
-.turq c3 {
-    color:inherit;
+.turq {
+    color:#58A4B0;
 }
 .movenr c3 {
     font-size: 6pt;
-    color: inherit;
+    color: #58A4B0;
 }
-header, .header_col {
+header {
+    color: #D8DBE2;
+    background-color: #2D2A32;
     padding: 10px;
 }
 
-body, .body_col {
-    /* nothing else */
+body {
+    color: #D8DBE2;
+    background-color: #1B1B1E;
 }
 
 .cm-chessboard.has-border .board .border-inner {
