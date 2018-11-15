@@ -11,10 +11,10 @@
         <!--
         <link rel="apple-touch-icon" href="/icon.png" />
         -->
-        
-        
-        <link rel="stylesheet" href="node_modules/cm-chessboard/styles/page.css"/>
-        <link rel="stylesheet" href="node_modules/cm-chessboard/styles/cm-chessboard.css"/>
+
+
+        <link rel="stylesheet" href="node_modules/cm-chessboard/styles/page.css" />
+        <link rel="stylesheet" href="node_modules/cm-chessboard/styles/cm-chessboard.css" />
 
         <link rel="stylesheet" href="node_modules/normalize.css/normalize.css">
 
@@ -30,29 +30,19 @@
     </header>
 
     <main>
-    <table style="100%%">
-    <tr>
-    <td>
-        <div class="applet" style="height:50; width:50">
-            <div class="board" id="board1"></div>
-        </div>
-        <div class="applet" id="info">
-        </div>
-    </td>
-    <td>
-        <div class="applet">
-            <div class="board" id="miniboard1"></div>
-        </div>
-        <div class="applet" id="miniinfo1">
-        </div>
-        <div class="applet">
-            <div class="board" id="miniboard2"></div>
-        </div>
-        <div class="applet" id="miniinfo2">
-        </div>
-    </td>
-    </tr>
-    </table>
+        <table style:"100%">
+            <tr>
+                <td>
+                    <div class="border">
+                        <div class="board" id="board1"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="board miniborder" id="miniboard1"></div>
+                    <div class="miniborder board" id="miniboard2"></div>
+                </td>
+            </tr>
+        </table>
     </main>
 </body>
 

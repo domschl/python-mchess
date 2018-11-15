@@ -23,7 +23,7 @@ mchessSocket.onmessage = function (event) {
                         showCoordinates: true,
                         showBorder: true,
                     },
-                    responsive: true,
+                    responsive: false,
                     sprite: { url: "node_modules/cm-chessboard/assets/images/chessboard-sprite.svg" }
                 });
             document.getElementById("board1").style.height = "250px";
@@ -40,7 +40,7 @@ mchessSocket.onmessage = function (event) {
                         showCoordinates: true,
                         showBorder: true,
                     },
-                    responsive: true,
+                    responsive: false,
                     sprite: { url: "node_modules/cm-chessboard/assets/images/chessboard-sprite.svg" }
                 });
             document.getElementById("miniboard1").style.height = "120px";
@@ -57,7 +57,7 @@ mchessSocket.onmessage = function (event) {
                         showCoordinates: true,
                         showBorder: true,
                     },
-                    responsive: true,
+                    responsive: false,
                     sprite: { url: "node_modules/cm-chessboard/assets/images/chessboard-sprite.svg" }
                 });
             document.getElementById("miniboard2").style.height = "120px";

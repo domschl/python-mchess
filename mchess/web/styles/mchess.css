@@ -32,41 +32,48 @@ c53 {
     color: #1B1B1E; /* Eerie Black */
 }
 
+.header_col {
+    color: #D8DBE2;
+    background-color: #2D2A32;
+}
+.body_col {
+    color: #D8DBE2;
+    background-color: #1B1B1E;
+}
+div.border c52 {
+    border-width:6px;
+    border-style:solid;
+    border-color:inherit;
+    height: 250px;
+    width: 250px;
+}
+
+div.miniborder {
+    border-width:3px;
+    border-style:solid;
+}
+
 div.board {
     float: left;
-    margin-right: 10px;
-    margin-bottom: 10px;
-}
-
-.applet-container {
-    grid-gap: 4px;
-}
-
-.applet {
-    /* padding: 10px; */
-    padding-left: 0.7em;
-    padding-top: 0.7em;
-    background-color: #2D2A32;
 }
 
 .variant {
     font-size: 6pt;
 }
-.turq {
-    color: #58A4B0;
+.turq c3 {
+    color:inherit;
 }
-.movenr {
+.movenr c3 {
     font-size: 6pt;
-    color: #58A4B0;
+    color: inherit;
 }
-header {
-    color: #D8DBE2;
-    background-color: #2D2A32;
+header, .header_col {
     padding: 10px;
 }
 
-body {color: #D8DBE2;
-    background-color: #1B1B1E;}
+body, .body_col {
+    /* nothing else */
+}
 
 .cm-chessboard.has-border .board .border-inner {
         fill: #373F51; }
