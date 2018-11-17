@@ -4,6 +4,7 @@ import threading
 import queue
 import json
 import copy
+import socket
 
 import chess
 from flask import Flask, send_from_directory
@@ -29,6 +30,8 @@ class WebAgent:
         self.info_provider = {}
         self.max_mpv = 1
         self.last_board = None
+
+        self.port = 8001
 
         self.socket_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -157,7 +160,8 @@ class WebAgent:
 
     def socket_event_worker_thread(self, appque, log, app, WebSocketHandler):
         server = pywsgi.WSGIServer(
-            ('0.0.0.0', 8001), app, handler_class=WebSocketHandler)
+            ('0.0.0.0', self.port), app, handler_class=WebSocketHandler)
+        print("Web browser: http://{}:{}".format(socket.gethostname(), self.port))
         server.serve_forever()
 
     def socket_handler(self):
