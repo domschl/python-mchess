@@ -165,10 +165,12 @@ class Mchess:
         if self.uci_agent is not None and self.uci_agent.busy is True:
             ft = self.uci_agent.engine.stop(async_callback=True)
             ft.result()
+            self.uci_agent.engine.isready()
             self.uci_agent.busy=False
         if self.uci_agent2 is not None and self.uci_agent2.busy is True:
             ft = self.uci_agent2.engine.stop(async_callback=True)
             ft.result()
+            self.uci_agent2.engine.isready()
             self.uci_agent2.busy=False
 
     def set_mode(self, mode):
@@ -464,11 +466,11 @@ class Mchess:
                     if self.analysis_active:
                         if self.uci_agent is not None:
                             self.uci_agent.engine.position(self.board)
-                            self.uci_agent.engine.busy=True
+                            self.uci_agent.busy=True
                             self.uci_agent.engine.go(infinite=True, async_callback=True)
                         if self.uci_agent2 is not None:
                             self.uci_agent2.engine.position(self.board)
-                            self.uci_agent2.engine.busy=True
+                            self.uci_agent2.busy=True
                             self.uci_agent2.engine.go(infinite=True, async_callback=True)
 
                 if 'back' in msg:
@@ -501,12 +503,12 @@ class Mchess:
                     if self.uci_agent is not None:
                         self.log.info("Starting analysis with {}".format(self.uci_agent.name))
                         self.uci_agent.engine.position(self.board)
-                        self.uci_agent.engine.busy=True
+                        self.uci_agent.busy=True
                         self.uci_agent.engine.go(infinite=True, async_callback=True)
                     if self.uci_agent2 is not None:
                         self.log.info("Starting analysis with {}".format(self.uci_agent2.name))
                         self.uci_agent2.engine.position(self.board)
-                        self.uci_agent2.engine.busy=True
+                        self.uci_agent2.busy=True
                         self.uci_agent2.engine.go(infinite=True, async_callback=True)
 
                 if 'turn' in msg:
