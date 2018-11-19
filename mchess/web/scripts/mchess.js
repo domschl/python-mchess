@@ -11,7 +11,7 @@ var miniBoard1 = null;
 var miniBoard2 = null;
 var secBoard = null;
 
-mchessSocket.onopen = function (event) {}
+mchessSocket.onopen = function (event) { }
 
 mchessSocket.onmessage = function (event) {
     var msg;
@@ -39,9 +39,11 @@ mchessSocket.onmessage = function (event) {
                     url: "node_modules/cm-chessboard/assets/images/chessboard-sprite.svg"
                 }
             });
-            document.getElementById("board1").style.height = "250px";
-            document.getElementById("board1").style.width = "250px";
-            document.getElementById("playerh1").style.width = "250px";
+            var brd = document.getElementsByClassName("board");
+            document.getElementById("board1").style.height = "260px";
+            document.getElementById("board1").style.width = "260px";
+            console.log(brd[0].style.width);
+            document.getElementById("ph1").style.width = brd[0].style.width;
         } else {
             mainBoard.setPosition(msg.fen);
         }
