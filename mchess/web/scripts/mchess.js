@@ -11,7 +11,7 @@ var miniBoard1 = null;
 var miniBoard2 = null;
 var secBoard = null;
 
-mchessSocket.onopen = function (event) { }
+mchessSocket.onopen = function (event) {}
 
 mchessSocket.onmessage = function (event) {
     var msg;
@@ -21,12 +21,15 @@ mchessSocket.onmessage = function (event) {
         console.log('JSON error: ' + err.message);
         return;
     }
-    if (msg.hasOwnProperty("fen")) {
-
-        console.log(msg["fen"])
+    console.log("got message: ")
+    console.log(msg)
+    if (msg.hasOwnProperty("fen") && msg.hasOwnProperty("attribs")) {
+        console.log("got board position.");
+        var title = msg.attribs.white_name + " - " + msg.attribs.black_name;
+        console.log(msg.fen)
         if (mainBoard == null) {
             mainBoard = new Chessboard(document.getElementById("board1"), {
-                position: msg["fen"],
+                position: msg.fen,
                 style: {
                     showCoordinates: true,
                     showBorder: true,
@@ -38,9 +41,11 @@ mchessSocket.onmessage = function (event) {
             });
             document.getElementById("board1").style.height = "250px";
             document.getElementById("board1").style.width = "250px";
+            document.getElementById("playerh1").style.width = "250px";
         } else {
-            mainBoard.setPosition(msg["fen"]);
+            mainBoard.setPosition(msg.fen);
         }
+        document.getElementById("playerh1").innerText = title;
 
         if (miniBoard1 == null) {
             miniBoard1 = new Chessboard(document.getElementById("miniboard1"), {

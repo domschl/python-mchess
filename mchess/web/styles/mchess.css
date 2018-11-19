@@ -1,43 +1,95 @@
 /* Mchess.css */
 
-c1 {
-    color: #D8DBE2; /* Gainsboro */
+:root {
+    --color-light: #D8DBE2;
+    /*Gainsboro */
+    --color-dlight: #A9BCD0;
+    /* Pastel Blue */
+    --color-turquoise: #58A4B0;
+    /* Cadet Blue */
+    --color-ldark: #373F51;
+    /* Charcoil */
+    --color-dark: #2E3532;
+    /* Jet * */
+    --color-ddark: #2D2A32;
+    /* Charleston Green */
+    --color-dddark: #1B1B1E;
+    /* Eerie Black */
 }
 
-c2 {
-    color: #A9BCD0; /* Pastel Blue */
+body {
+    background: var(--color-dddark, #fff);
+    color: var(--color-light)
 }
 
-c3 {
-    color: #58A4B0; /* Cadet Blue */
+.header {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    grid-template-rows: 1fr;
+    vertical-align: center;
+    text-justify: center;
+    text-align: left;
+    font-family: "sans-serif";
+    font-size: 10pt;
+    background: #222;
 }
 
-c41 {
-    color: #46494C; /* Outer Space */
+.logo {
+    grid-column: 1/1;
+    margin-top: auto;
+    margin-bottom: auto;
+    vertical-align: middle;
+    padding: 5px;
 }
 
-c42 {
-    color: #373F51; /* Charcoil */
+.title {
+    grid-column: 2/7;
+    text-align: right;
+    line-height: 10pt;
+    padding: 5px;
 }
 
-c51 {
-    color: #363635; /* -- Jet * */
+.turq {
+    vertical-align: center;
+    color: var(--color-turquoise);
 }
 
-c52 {
-    color: #2D2A32; /* Charleston Green */
+.version {
+    font-size: 6pt;
+    line-height: 1;
+    text-align: right;
+    color: var(--color-dlight);
 }
 
-c53 {
-    color: #1B1B1E; /* Eerie Black */
+.panels {
+    width: 100px;
+    display: grid;
 }
+
+.panel-header {
+    height: 14pt;
+    background: var(--color-ddark);
+    color: var(--color-dlight);
+    font-size: 8pt;
+    /* text-align: center; */
+}
+
+.panel {
+    background: var(--color-dark);
+    color: var(--color-light);
+    text-align: left;
+    font-size: 7pt;
+    padding: 5pt;
+}
+
 
 .container {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    grid-auto-columns: minmax(auto, 200px);
+    grid-auto-columns: minmax(auto, 3em);
 }
+
 .mainboard {
     grid-column: 1/3;
     grid-row: 1/3;
@@ -49,6 +101,7 @@ c53 {
     grid-row: 1/2;
     background: #888;
 }
+
 .miniboard2 {
     grid-column: 3/5;
     grid-row: 2/3;
@@ -62,39 +115,24 @@ div.board {
 .variant {
     font-size: 6pt;
 }
-.turq {
-    color:#58A4B0;
-}
+
 .movenr c3 {
     font-size: 6pt;
-    color: #58A4B0;
-}
-
-.logo {
-    margin-top: auto;
-    margin-bottom: auto;
-    vertical-align: middle;
-}
-
-header {
-    padding: 5px;
-    color: #D8DBE2;
-    background-color: #2D2A32;
-}
-
-body {
-    color: #D8DBE2;
-    background-color: #1B1B1E;
+    color: var(--color-turquoise);
 }
 
 .cm-chessboard.has-border .board .border-inner {
-        fill: #373F51; }
-      
+    fill: var(--color-ldark);
+}
+
 .cm-chessboard.has-border .board .border {
-        fill: #D8DBE2; }
+    fill: var(--color-light);
+}
 
 .cm-chessboard .board .square.white {
-    fill: #A9BCD0; }
-  
+    fill: var(--color-dlight);
+}
+
 .cm-chessboard .board .square.black {
-    fill: #58A4B0; }
+    fill: var(--color-turquoise);
+}

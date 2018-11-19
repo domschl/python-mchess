@@ -30,6 +30,7 @@ class WebAgent:
         self.info_provider = {}
         self.max_mpv = 1
         self.last_board = None
+        self.last_attribs = None
 
         self.port = 8001
 
@@ -87,8 +88,8 @@ class WebAgent:
     def ws_sockets(self, ws):
         self.ws_handle += 1
         handle = self.ws_handle
-        if self.last_board is not None:
-            msg = {'fen': self.last_board.fen()}
+        if self.last_board is not None and self.last_attribs is not None:
+            msg = {'fen': self.last_board.fen(), 'attribs': self.last_attribs}
             ws.send(json.dumps(msg))
         while not ws.closed:
             self.ws_clients[handle] = ws
@@ -119,7 +120,8 @@ class WebAgent:
 
     def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
         self.last_board = board
-        msg = {'fen': board.fen()}
+        self.last_attribs = attribs
+        msg = {'fen': board.fen(), 'attribs': attribs}
         for w in self.ws_clients:
             self.ws_clients[w].send(json.dumps(msg))
 
