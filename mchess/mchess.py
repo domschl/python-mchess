@@ -166,11 +166,13 @@ class Mchess:
             ft = self.uci_agent.engine.stop(async_callback=True)
             ft.result()
             self.uci_agent.engine.isready()
+            print("{} stopped".format(self.uci_agent.name))
             self.uci_agent.busy=False
         if self.uci_agent2 is not None and self.uci_agent2.busy is True:
-            ft = self.uci_agent2.engine.stop(async_callback=True)
-            ft.result()
+            ft2 = self.uci_agent2.engine.stop(async_callback=True)
+            ft2.result()
             self.uci_agent2.engine.isready()
+            print("{} stopped".format(self.uci_agent2.name))
             self.uci_agent2.busy=False
 
     def set_mode(self, mode):
@@ -441,10 +443,6 @@ class Mchess:
                     self.state = self.State.IDLE
 
                 if 'move' in msg:
-                    if msg['move']['actor']==self.uci_agent.name:
-                        self.uci_agent.busy=False
-                    if msg['move']['actor']==self.uci_agent2.name:
-                        self.uci_agent2.busy=False
                     if self.analysis_active:
                         # Ignore engine moves when it's player's turn: they are from analysis
                         skip=False
@@ -456,6 +454,12 @@ class Mchess:
                                 skip=True
                         if skip is True:
                             continue
+                    if msg['move']['actor']==self.uci_agent.name:
+                        self.uci_agent.engine.isready()
+                        self.uci_agent.busy=False
+                    if msg['move']['actor']==self.uci_agent2.name:
+                        self.uci_agent2.engine.isready()
+                        self.uci_agent2.busy=False
                     self.uci_stop_engines()
                     self.board.push(chess.Move.from_uci(msg['move']['uci']))
                     self.update_display_move(msg)
@@ -465,10 +469,14 @@ class Mchess:
                     self.state = self.State.IDLE
                     if self.analysis_active:
                         if self.uci_agent is not None:
+                            self.uci_agent.engine.isready()
+                            print("A1 {} start".format(self.uci_agent.name))
                             self.uci_agent.engine.position(self.board)
                             self.uci_agent.busy=True
                             self.uci_agent.engine.go(infinite=True, async_callback=True)
                         if self.uci_agent2 is not None:
+                            self.uci_agent2.engine.isready()
+                            print("A2 {} start".format(self.uci_agent2.name))
                             self.uci_agent2.engine.position(self.board)
                             self.uci_agent2.busy=True
                             self.uci_agent2.engine.go(infinite=True, async_callback=True)
