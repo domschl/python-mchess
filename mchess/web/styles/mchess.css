@@ -7,7 +7,7 @@
     /* Pastel Blue */
     --color-turquoise: #58A4B0;
     /* Cadet Blue */
-    --color-ldark: #373F51;
+    --color-ldark: #373F41;
     /* Charcoil */
     --color-dark: #2E3532;
     /* Jet * */
@@ -84,6 +84,7 @@ body {
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
     background: var(--color-dark);
+    padding: 1em;
 }
 
 .mainboard {
@@ -94,7 +95,8 @@ body {
 
 .maintext {
     font-size: 8pt;
-    padding: 1em;
+    padding-left: 1em;
+    padding-right: 1em;
 }
 
 .submain {
@@ -126,11 +128,17 @@ div.board {
 }
 
 .variant {
-    font-size: 8pt;
+    font-size: 6pt;
+    padding-bottom: 0.25em;
+}
+.variant:nth-child(odd) {
+    font-size: 6pt;
+    padding-bottom: 0.25em;
+    background: var(--color-ldark);
 }
 
 .movenr {
-    font-size: 8pt;
+    font-size: 6pt;
     color: var(--color-turquoise);
 }
 

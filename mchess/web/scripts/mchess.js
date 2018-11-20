@@ -4,12 +4,12 @@ import {
     Chessboard
 } from "../node_modules/cm-chessboard/src/cm-chessboard/Chessboard.js"
 
-// TODO: Remove hard coded port number (for live serve)
-var mchessSocket = new WebSocket("ws://" + window.location.hostname + ":8001/ws");
+var mchessSocket = new WebSocket("ws://" + window.location.host + "/ws");
 var mainBoard = null;
 var miniBoard1 = null;
 var miniBoard2 = null;
-var secBoard = null;
+var VariantInfo = null;
+var FenRef = {};
 
 mchessSocket.onopen = function (event) { }
 
@@ -21,11 +21,19 @@ mchessSocket.onmessage = function (event) {
         console.log('JSON error: ' + err.message);
         return;
     }
-    console.log("got message: ")
-    console.log(msg)
+    // console.log("got message: ")
+    // console.log(msg)
     if (msg.hasOwnProperty("fen") && msg.hasOwnProperty("attribs") && msg.hasOwnProperty("pgn")) {
         console.log("got board position.");
         console.log(msg.pgn)
+        if (VariantInfo != null) {
+            for (var a in VariantInfo) {
+                VariantInfo[a] = {}
+                FenRef[a] = msg.fen;
+            }
+        }
+        document.getElementById("miniinfo1").innerHTML = "";
+        document.getElementById("miniinfo2").innerHTML = "";
         var title = msg.attribs.white_name + " - " + msg.attribs.black_name;
         console.log(msg.fen)
         if (mainBoard == null) {
@@ -85,13 +93,21 @@ mchessSocket.onmessage = function (event) {
             miniBoard2.setPosition(msg.fen);
         }
     } else if (msg.hasOwnProperty("info")) {
-        console.log("INFO")
+        if (VariantInfo == null) {
+            VariantInfo = {};
+        }
         if (msg.info.hasOwnProperty("variant")) {
-            console.log(msg.info.variant);
-            var htmlpgn = "<span class=\"variant\">";
+            console.log("V");
+            var actor = msg.info.actor;
+            var id = msg.info.multipv_ind;
+            if (!(actor in VariantInfo)) {
+                VariantInfo[actor] = {}
+            }
+            if (id == 1) FenRef[actor] = msg["fenref"];
+            var htmlpgn = "<div class=\"variant\">[" + msg.info.score + "] &nbsp;";
             for (var mvi in msg.info.variant) {
+                if (mvi == "fen") continue;
                 var mv = msg.info.variant[mvi];
-                console.log(mv);
                 if (mvi != 0) htmlpgn += "&nbsp;";
                 var mv1 = mv[1].replace('-', '‑'); // make dash non-breaking
                 var mv2 = "";
@@ -100,9 +116,28 @@ mchessSocket.onmessage = function (event) {
                 }
                 htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;" + mv2 + " ";
             }
-            htmlpgn += "</span>";
+            htmlpgn += "</div>";
+            VariantInfo[actor][id] = htmlpgn
 
-            document.getElementById("miniinfo1").innerHTML = htmlpgn;
+            var n = 0;
+            for (var i in VariantInfo) {
+                var ai = VariantInfo[i];
+                var htmlpi = "";
+                for (var j in ai) {
+                    htmlpi += ai[j];
+                }
+                if (n == 0) {
+                    document.getElementById("miniinfo1").innerHTML = htmlpi;
+                    document.getElementById("ph2").innerText = i;
+                    miniBoard1.setPosition(FenRef[i], false);
+                }
+                if (n == 1) {
+                    document.getElementById("miniinfo2").innerHTML = htmlpi;
+                    document.getElementById("ph3").innerText = i;
+                    miniBoard2.setPosition(FenRef[i], false);
+                }
+                n += 1;
+            }
         }
     }
 
