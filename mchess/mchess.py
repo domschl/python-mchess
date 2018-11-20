@@ -10,6 +10,7 @@ import copy
 
 import chess
 import chess.uci
+import chess.pgn
 
 from chess_link_agent import ChessLinkAgent
 from terminal_agent import TerminalAgent

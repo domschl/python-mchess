@@ -7,6 +7,8 @@ import copy
 import socket
 
 import chess
+import chess.pgn
+
 from flask import Flask, send_from_directory
 from flask_sockets import Sockets
 
@@ -31,6 +33,7 @@ class WebAgent:
         self.max_mpv = 1
         self.last_board = None
         self.last_attribs = None
+        self.last_pgn = None
 
         self.port = 8001
 
@@ -89,7 +92,8 @@ class WebAgent:
         self.ws_handle += 1
         handle = self.ws_handle
         if self.last_board is not None and self.last_attribs is not None:
-            msg = {'fen': self.last_board.fen(), 'attribs': self.last_attribs}
+            msg = {'fen': self.last_board.fen(), 'pgn': self.last_pgn,
+                   'attribs': self.last_attribs}
             ws.send(json.dumps(msg))
         while not ws.closed:
             self.ws_clients[handle] = ws
@@ -121,7 +125,13 @@ class WebAgent:
     def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
         self.last_board = board
         self.last_attribs = attribs
-        msg = {'fen': board.fen(), 'attribs': attribs}
+        game = chess.pgn.Game().from_board(board)
+        game.headers["White"] = attribs["white_name"]
+        game.headers["Black"] = attribs["black_name"]
+        pgntxt = str(game)
+        self.last_pgn = pgntxt
+        # print("pgn: {}".format(pgntxt))
+        msg = {'fen': board.fen(), 'pgn': pgntxt, 'attribs': attribs}
         for w in self.ws_clients:
             self.ws_clients[w].send(json.dumps(msg))
 
@@ -131,23 +141,22 @@ class WebAgent:
     def display_info(self, board, info):
         ninfo = copy.deepcopy(info)
         nboard = copy.deepcopy(board)
-        is_first = True
         if 'variant' in ninfo:
-            ml = '<div class="variant">'
+            ml = []
+            if nboard.turn is False:
+                mv = (nboard.fullmove_number,)
+                mv += ("..",)
             for move in ninfo['variant']:
-                if is_first is False:
-                    if nboard.turn is True:
-                        ml += '&nbsp '
-                    else:
-                        ml += '&nbsp'
-                else:
-                    is_first = False
                 if nboard.turn is True:
-                    ml += '<span class="movenr">{}.</span>&nbsp'.format(
-                        nboard.fullmove_number)
-                ml += nboard.san(move)
+                    mv = (nboard.fullmove_number,)
+                mv += (nboard.san(move),)
+                if nboard.turn is False:
+                    ml.append(mv)
+                    mv = ""
                 nboard.push(move)
-            ml += '</div>'
+            if mv != "":
+                ml.append(mv)
+                mv = ""
             ninfo['variant'] = ml
 
         msg = {'fenref': nboard.fen(), 'info': ninfo}
