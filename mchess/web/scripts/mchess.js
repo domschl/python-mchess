@@ -23,8 +23,9 @@ mchessSocket.onmessage = function (event) {
     }
     console.log("got message: ")
     console.log(msg)
-    if (msg.hasOwnProperty("fen") && msg.hasOwnProperty("attribs")) {
+    if (msg.hasOwnProperty("fen") && msg.hasOwnProperty("attribs") && msg.hasOwnProperty("pgn")) {
         console.log("got board position.");
+        console.log(msg.pgn)
         var title = msg.attribs.white_name + " - " + msg.attribs.black_name;
         console.log(msg.fen)
         if (mainBoard == null) {
@@ -51,7 +52,7 @@ mchessSocket.onmessage = function (event) {
 
         if (miniBoard1 == null) {
             miniBoard1 = new Chessboard(document.getElementById("miniboard1"), {
-                position: msg["fen"],
+                position: msg.fen,
                 style: {
                     showCoordinates: true,
                     showBorder: true,
@@ -64,11 +65,11 @@ mchessSocket.onmessage = function (event) {
             document.getElementById("miniboard1").style.height = "120px";
             document.getElementById("miniboard1").style.width = "120px";
         } else {
-            miniBoard1.setPosition(msg["fen"]);
+            miniBoard1.setPosition(msg.fen);
         }
         if (miniBoard2 == null) {
             miniBoard2 = new Chessboard(document.getElementById("miniboard2"), {
-                position: msg["fen"],
+                position: msg.fen,
                 style: {
                     showCoordinates: true,
                     showBorder: true,
@@ -81,13 +82,21 @@ mchessSocket.onmessage = function (event) {
             document.getElementById("miniboard2").style.height = "120px";
             document.getElementById("miniboard2").style.width = "120px";
         } else {
-            miniBoard2.setPosition(msg["fen"]);
+            miniBoard2.setPosition(msg.fen);
         }
     } else if (msg.hasOwnProperty("info")) {
         console.log("INFO")
         if (msg.info.hasOwnProperty("variant")) {
-            console.log(msg.info["variant"]);
-            document.getElementById("miniinfo1").innerHTML = msg.info.variant;
+            console.log(msg.info.variant);
+            var htmlpgn = "";
+            for (var mvi in msg.info.variant) {
+                var mv = msg.info.variant[mvi];
+                console.log(mv);
+                if (mvi != 0) htmlpgn += "&nbsp;";
+                htmlpgn += "<span class=\"turq\">" + mv[0] + ".</span>&nbsp;" + mv[1] + "&nbsp;" + mv[2] + " ";
+            }
+
+            document.getElementById("miniinfo1").innerHTML = htmlpgn;
         }
     }
 
