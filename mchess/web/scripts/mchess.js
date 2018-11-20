@@ -44,11 +44,11 @@ mchessSocket.onmessage = function (event) {
             document.getElementById("board1").style.height = "260px";
             document.getElementById("board1").style.width = "260px";
             console.log(brd[0].style.width);
-            document.getElementById("ph1").style.width = brd[0].style.width;
+            //document.getElementById("ph1").style.width = brd[0].style.width;
         } else {
             mainBoard.setPosition(msg.fen);
         }
-        document.getElementById("playerh1").innerText = title;
+        document.getElementById("ph1").innerText = title;
 
         if (miniBoard1 == null) {
             miniBoard1 = new Chessboard(document.getElementById("miniboard1"), {
@@ -88,13 +88,19 @@ mchessSocket.onmessage = function (event) {
         console.log("INFO")
         if (msg.info.hasOwnProperty("variant")) {
             console.log(msg.info.variant);
-            var htmlpgn = "";
+            var htmlpgn = "<span class=\"variant\">";
             for (var mvi in msg.info.variant) {
                 var mv = msg.info.variant[mvi];
                 console.log(mv);
                 if (mvi != 0) htmlpgn += "&nbsp;";
-                htmlpgn += "<span class=\"turq\">" + mv[0] + ".</span>&nbsp;" + mv[1] + "&nbsp;" + mv[2] + " ";
+                var mv1 = mv[1].replace('-', '‑'); // make dash non-breaking
+                var mv2 = "";
+                if (mv.length > 2) {
+                    var mv2 = mv[2].replace('-', '‑');
+                }
+                htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;" + mv2 + " ";
             }
+            htmlpgn += "</span>";
 
             document.getElementById("miniinfo1").innerHTML = htmlpgn;
         }
