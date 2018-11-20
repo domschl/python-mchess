@@ -10,6 +10,7 @@ var miniBoard1 = null;
 var miniBoard2 = null;
 var VariantInfo = null;
 var FenRef = {};
+var StatHeader = {};
 
 mchessSocket.onopen = function (event) { }
 
@@ -32,8 +33,11 @@ mchessSocket.onmessage = function (event) {
                 FenRef[a] = msg.fen;
             }
         }
+        StatHeader = {};
         document.getElementById("miniinfo1").innerHTML = "";
         document.getElementById("miniinfo2").innerHTML = "";
+        document.getElementById("ph21").innerHTML = "";
+        document.getElementById("ph31").innerHTML = "";
         var title = msg.attribs.white_name + " - " + msg.attribs.black_name;
         console.log(msg.fen)
         if (mainBoard == null) {
@@ -57,6 +61,16 @@ mchessSocket.onmessage = function (event) {
             mainBoard.setPosition(msg.fen);
         }
         document.getElementById("ph1").innerText = title;
+        var pi = msg.pgn.search("\n\n");
+        var pgn = msg.pgn;
+        if (pi != -1) {
+            pgn = msg.pgn.substring(pi);
+        }
+        pgn = pgn.replace(" *", "");
+        pgn = pgn.replace(" ", "&nbsp;")
+        var regex = /([0-9]+\.)/g;
+        pgn = pgn.replace(regex, "<span class=\"movenrb\"> &nbsp;$1</span>")
+        document.getElementById("mainmoves").innerHTML = pgn;
 
         if (miniBoard1 == null) {
             miniBoard1 = new Chessboard(document.getElementById("miniboard1"), {
@@ -104,6 +118,24 @@ mchessSocket.onmessage = function (event) {
                 VariantInfo[actor] = {}
             }
             if (id == 1) FenRef[actor] = msg["fenref"];
+            var hd = ""
+            if ("nps" in msg.info) {
+                hd += " | Nps: " + msg.info.nps;
+            }
+            if (id == 1 && "score" in msg.info) {
+                hd += " | Score: " + msg.info.score;
+            }
+            if ("depth" in msg.info) {
+                hd += " | Depth: " + msg.info.depth;
+                if ("seldepth" in msg.info) {
+                    hd += "/" + msg.info.seldepth;
+                }
+            }
+            if ("tbhits" in msg.info) {
+                hd += " | TbHits: " + msg.info["tbhits"];
+            }
+            hd += " |";
+            StatHeader[actor] = hd;
             var htmlpgn = "<div class=\"variant\">[" + msg.info.score + "] &nbsp;";
             for (var mvi in msg.info.variant) {
                 if (mvi == "fen") continue;
@@ -130,11 +162,13 @@ mchessSocket.onmessage = function (event) {
                     document.getElementById("miniinfo1").innerHTML = htmlpi;
                     document.getElementById("ph2").innerText = i;
                     miniBoard1.setPosition(FenRef[i], false);
+                    document.getElementById("ph21").innerText = StatHeader[i];
                 }
                 if (n == 1) {
                     document.getElementById("miniinfo2").innerHTML = htmlpi;
                     document.getElementById("ph3").innerText = i;
                     miniBoard2.setPosition(FenRef[i], false);
+                    document.getElementById("ph31").innerText = StatHeader[i];
                 }
                 n += 1;
             }

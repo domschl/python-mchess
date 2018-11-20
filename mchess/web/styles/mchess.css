@@ -15,6 +15,8 @@
     /* Charleston Green */
     --color-dddark: #1B1B1E;
     /* Eerie Black */
+    --color-xdddark: #101012;
+    /* X Black */
 }
 
 body {
@@ -64,9 +66,9 @@ body {
 .panel-header {
     background: var(--color-ddark);
     color: var(--color-dlight);
-    font-size: 8pt;
+    font-size: 7pt;
     text-align: center;
-    padding: 2px;
+    padding: 1px;
     /* text-align: center; */
 }
 
@@ -82,9 +84,9 @@ body {
 .container {
     display: grid;
     /* grid-template-columns: repeat(2, 1fr); */
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(350px, 500px));
     /* grid-template-rows: repeat(2, 1fr); */
-    grid-auto-rows: minmax(50,auto);
+    /* grid-auto-rows: minmax(0,auto); */
     /* background: var(--color-dark); */
     grid-gap: 0.4em;
 }
@@ -104,17 +106,19 @@ body {
 }
 
 .submain {
+    border: var(--color-xdddark) 1px solid;
     display: grid;
     grid-template-columns: 260px 1fr;
-    grid-template-rows: 20px 1fr;
+    grid-template-rows: 10pt 1fr;
 }
 .submain2 {
     display: grid;
     grid-template-columns: 260px 1fr;
-    grid-template-rows: 20px 1fr;
+    grid-template-rows: 10pt 1fr;
 }
 
 .miniboard1 {
+    border: var(--color-xdddark) 1px solid;
     /*
     grid-column: 2/3;
     grid-row: 1/2;
@@ -125,10 +129,11 @@ body {
 .submini {
     display: grid;
     grid-template-columns: 120px 1fr;
-    grid-template-rows: 20px 1fr;
+    grid-template-rows: 10pt 1fr;
 }
 
 .miniboard2 {
+    border: var(--color-xdddark) 1px solid;
     /*
     grid-column: 2/3;
     grid-row: 2/3;
@@ -152,6 +157,11 @@ div.board {
 
 .movenr {
     font-size: 6pt;
+    color: var(--color-turquoise);
+}
+
+.movenrb {
+    font-size: 8pt;
     color: var(--color-turquoise);
 }
 
