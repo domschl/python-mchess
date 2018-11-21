@@ -3,7 +3,7 @@
 :root {
     --color-light: #D8DBE2;
     /*Gainsboro */
-    --color-dlight: #A9BCD0;
+    --color-dlight: #A9BCc0;
     /* Pastel Blue */
     --color-turquoise: #58A4B0;
     /* Cadet Blue */
@@ -15,7 +15,7 @@
     /* Charleston Green */
     --color-dddark: #1B1B1E;
     /* Eerie Black */
-    --color-xdddark: #101012;
+    --color-xdddark: #202022;
     /* X Black */
 }
 
@@ -25,8 +25,9 @@ body {
 }
 
 .header {
+
     display: grid;
-    grid-template-columns: 60px 1fr;
+    grid-template-columns: 60px 400px;
     /* grid-template-rows: repeat(8, 1fr); */
     grid-auto-rows: minmax(0px,auto);
     background: #222;
@@ -138,6 +139,11 @@ body {
     grid-template-rows: 10pt 1fr;
 }
 
+.controls {
+    background: var(--color-ddark);
+    border: var(--color-xdddark) 1px solid;
+}
+
 .miniboard1 {
     border: var(--color-xdddark) 1px solid;
     /*
@@ -200,4 +206,31 @@ div.board {
 
 .cm-chessboard .board .square.black {
     fill: var(--color-turquoise);
+}
+
+.button {
+    background: var(--color-dark);
+    color: var(--color-dlight);
+    border: none;
+    padding: 2px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 10px;
+    margin: 4px 2px;
+    border-radius: 2px;
+}
+
+.input {
+    background: var(--color-dlight);
+    color: var(--color-xdddark);
+    border: none;
+    padding: 2.5px;
+    text-align: left;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 10px;
+    margin: 4px 2px;
+    border-radius: 2px;
+    vertical-align: bottom;
 }
