@@ -332,6 +332,9 @@ class TerminalAgent:
                 elif cmd == 'e':
                     log.debug('board encoding switch')
                     appque.put({'encoding': '', 'actor': self.name})
+                elif cmd == 'f':
+                    log.debug('move forward')
+                    appque.put({'forward': '', 'actor': self.name})
                 elif cmd[:4] == 'fen ':
                     appque.put({'fen_setup': cmd[4:], 'actor': self.name})
                 elif cmd == 'g':

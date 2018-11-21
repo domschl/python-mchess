@@ -279,6 +279,7 @@ class Mchess:
         self.analysis_active = False
 
         self.board.reset()
+        self.undo_stack = []
 
         self.prefs = self.read_preferences()
         self.appque = queue.Queue()
@@ -411,6 +412,9 @@ class Mchess:
                 # print(self.appque.qsize())
                 msg = self.appque.get()
                 self.appque.task_done()
+                if msg==None:
+                    self.log.warning("None message received.")
+                    continue
                 self.log.debug("App received msg: {}".format(msg))
                 if 'error' in msg:
                     self.log.error('Error condition: {}'.format(msg['error']))
@@ -420,15 +424,16 @@ class Mchess:
                     self.log.info(
                         "New game initiated by {}".format(msg['actor']))
                     self.board.reset()
+                    self.undo_stack = []
                     self.update_display_board()
                     self.state = self.State.IDLE
                     self.analysis_active=False
 
                 if 'position_fetch' in msg:
                     self.stop()
-                    print("Importing position from {}".format(msg['actor']))
                     for agent in self.player_b+self.player_w:
                         if agent.name == msg['position_fetch']:
+                            print("Importing position from {}, initiated by {}".format(agent.name, msg['actor']))
                             fen = agent.get_fen()
                             # Only treat as setup, if it's not the start position
                             if self.short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
@@ -485,11 +490,23 @@ class Mchess:
                 if 'back' in msg:
                     if len(self.board.move_stack)>0:
                         self.stop()
-                        self.board.pop()
+                        move=self.board.pop()
+                        self.undo_stack.append(move)
                         self.update_display_board()
                         self.state = self.State.IDLE
                     else:
                         self.log.debug('Cannot take back move, if none has occured.')
+
+                if 'forward' in msg:
+                    if len(self.undo_stack)>0:
+                        self.stop()
+                        move=self.undo_stack.pop()
+                        self.board.push(move)
+                        self.update_display_board()
+                        self.state = self.State.IDLE
+                    else:
+                        self.log.debug('Cannot move forward, nothing taken back.')
+                        msg['go']=''  # Stack empty, translate to 'go' command.
 
                 if 'go' in msg:
                     if (self.board.turn==chess.WHITE and self.mode==self.Mode.ENGINE_PLAYER) or (self.board.turn==chess.BLACK and self.mode==self.Mode.PLAYER_ENGINE):

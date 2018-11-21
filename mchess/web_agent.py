@@ -87,6 +87,10 @@ class WebAgent:
 
     def ws_dispatch(self, ws, message):
         print("Client: ws:{} msg:{}".format(ws, message))
+        try:
+            self.appque.put(json.loads(message))
+        except Exception as e:
+            self.log.error("WebClient sent invalid JSON: {}".format(e))
 
     def ws_sockets(self, ws):
         self.ws_handle += 1

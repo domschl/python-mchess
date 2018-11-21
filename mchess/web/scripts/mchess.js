@@ -19,6 +19,14 @@ function wsConnect(address) {
     mchessSocket.onopen = function (event) {
         document.getElementById("connect-state").style.color = "#58A4B0";
         document.getElementById("connect-text").innerText = "connected";
+        document.getElementById("")
+
+        document.getElementById("m-new").addEventListener("click", function (event) {
+            mchessSocket.send(JSON.stringify({ 'new game': '', actor: 'WebAgent' }));
+        }, false);
+        document.getElementById("m-import").addEventListener("click", function (event) {
+            mchessSocket.send(JSON.stringify({ 'position_fetch': 'ChessLinkAgent', actor: 'WebAgent' }));
+        }, false);
     }
     mchessSocket.onclose = function () {
         // Try to reconnect in 1 seconds
@@ -40,6 +48,7 @@ function wsConnect(address) {
         if (msg.hasOwnProperty("fen") && msg.hasOwnProperty("attribs") && msg.hasOwnProperty("pgn")) {
             console.log("got board position.");
             console.log(msg.pgn)
+            /*
             if (VariantInfo != null) {
                 for (var a in VariantInfo) {
                     VariantInfo[a] = {}
@@ -51,6 +60,7 @@ function wsConnect(address) {
             document.getElementById("miniinfo2").innerHTML = "";
             document.getElementById("ph21").innerHTML = "";
             document.getElementById("ph31").innerHTML = "";
+            */
             var title = msg.attribs.white_name + " - " + msg.attribs.black_name;
             console.log(msg.fen)
             if (mainBoard == null) {
