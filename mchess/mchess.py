@@ -467,6 +467,7 @@ class Mchess:
                         self.uci_agent2.engine.isready()
                         self.uci_agent2.busy=False
                     self.uci_stop_engines()
+                    self.undo_stack=[]
                     self.board.push(chess.Move.from_uci(msg['move']['uci']))
                     self.update_display_move(msg)
                     self.update_display_board()
@@ -497,6 +498,14 @@ class Mchess:
                     else:
                         self.log.debug('Cannot take back move, if none has occured.')
 
+                if 'fast-back' in msg:
+                    self.stop()
+                    while len(self.board.move_stack)>0:
+                        move=self.board.pop()
+                        self.undo_stack.append(move)
+                    self.update_display_board()
+                    self.state = self.State.IDLE
+
                 if 'forward' in msg:
                     if len(self.undo_stack)>0:
                         self.stop()
@@ -507,6 +516,14 @@ class Mchess:
                     else:
                         self.log.debug('Cannot move forward, nothing taken back.')
                         msg['go']=''  # Stack empty, translate to 'go' command.
+
+                if 'fast-forward' in msg:
+                    self.stop()
+                    while len(self.undo_stack)>0:
+                        move=self.undo_stack.pop()
+                        self.board.push(move)
+                    self.update_display_board()
+                    self.state = self.State.IDLE
 
                 if 'go' in msg:
                     if (self.board.turn==chess.WHITE and self.mode==self.Mode.ENGINE_PLAYER) or (self.board.turn==chess.BLACK and self.mode==self.Mode.PLAYER_ENGINE):

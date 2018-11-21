@@ -24,6 +24,21 @@ function wsConnect(address) {
         document.getElementById("m-new").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({ 'new game': '', actor: 'WebAgent' }));
         }, false);
+        document.getElementById("m-bb").addEventListener("click", function (event) {
+            mchessSocket.send(JSON.stringify({ 'fast-back': '', actor: 'WebAgent' }));
+        }, false);
+        document.getElementById("m-bw").addEventListener("click", function (event) {
+            mchessSocket.send(JSON.stringify({ 'back': '', actor: 'WebAgent' }));
+        }, false);
+        document.getElementById("m-st").addEventListener("click", function (event) {
+            mchessSocket.send(JSON.stringify({ 'stop': '', actor: 'WebAgent' }));
+        }, false);
+        document.getElementById("m-fw").addEventListener("click", function (event) {
+            mchessSocket.send(JSON.stringify({ 'forward': '', actor: 'WebAgent' }));
+        }, false);
+        document.getElementById("m-ff").addEventListener("click", function (event) {
+            mchessSocket.send(JSON.stringify({ 'fast-forward': '', actor: 'WebAgent' }));
+        }, false);
         document.getElementById("m-import").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({ 'position_fetch': 'ChessLinkAgent', actor: 'WebAgent' }));
         }, false);
