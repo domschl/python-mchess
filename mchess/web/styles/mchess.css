@@ -26,41 +26,62 @@ body {
 
 .header {
     display: grid;
-    grid-template-columns: repeat(24, 1fr);
-    grid-template-rows: 1fr;
-    vertical-align: center;
-    text-justify: center;
-    text-align: left;
-    font-family: "sans-serif";
-    font-size: 10pt;
+    grid-template-columns: 60px 1fr;
+    /* grid-template-rows: repeat(8, 1fr); */
+    grid-auto-rows: minmax(0px,auto);
     background: #222;
 }
 
 .logo {
-    grid-column: 1/1;
+    grid-column: 1/2;
+    grid-row:1/3;
     margin-top: auto;
     margin-bottom: auto;
     vertical-align: middle;
     padding: 5px;
+    padding-left: 10px;
 }
 
 .title {
-    grid-column: 2/7;
-    text-align: right;
-    line-height: 10pt;
-    padding: 5px;
+    /* background: #999; */
+    grid-column: 2/3;
+    grid-row: 1/2;
+    font-size: 12pt;
+    line-height:0.4;
+    text-align: left;
+    padding-top: 6px;
+}
+
+.subtitle {
+    /* background: #888; */
+    font-size: 7pt;
+    color: var(--color-dlight);
+    grid-column: 2/3;
+    grid-row: 2/3;
+    text-align: left;
+    vertical-align: top;
+}
+
+.state-light {
+    vertical-align: 1pt;
+    font-size: 7pt;
+}
+
+.white {
+    font-size:12pt;
+    vertical-align: -12pt;
+    color: var(--color-light);
 }
 
 .turq {
-    vertical-align: center;
+    font-size:12pt;
+    vertical-align: -12pt;
     color: var(--color-turquoise);
 }
 
 .version {
-    font-size: 6pt;
-    line-height: 1;
-    text-align: right;
-    color: var(--color-dlight);
+    font-size: 7pt;
+    color: var(--color-turquoise);
 }
 
 .panel-header {
@@ -84,7 +105,7 @@ body {
 .container {
     display: grid;
     /* grid-template-columns: repeat(2, 1fr); */
-    grid-template-columns: repeat(auto-fit, minmax(350px, 500px));
+    grid-template-columns: repeat(auto-fit, minmax(350px, 450px));
     /* grid-template-rows: repeat(2, 1fr); */
     /* grid-auto-rows: minmax(0,auto); */
     /* background: var(--color-dark); */
