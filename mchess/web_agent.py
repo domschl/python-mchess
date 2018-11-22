@@ -86,7 +86,7 @@ class WebAgent:
         return self.app.send_static_file('favicon.ico')
 
     def ws_dispatch(self, ws, message):
-        print("Client: ws:{} msg:{}".format(ws, message))
+        self.log.debug("Client ws_dispatch: ws:{} msg:{}".format(ws, message))
         try:
             self.appque.put(json.loads(message))
         except Exception as e:
@@ -98,9 +98,14 @@ class WebAgent:
         if self.last_board is not None and self.last_attribs is not None:
             msg = {'fen': self.last_board.fen(), 'pgn': self.last_pgn,
                    'attribs': self.last_attribs}
-            ws.send(json.dumps(msg))
+            try:
+                ws.send(json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending to WebSocket client {} failed with {}".format(w, e))
+                return
+        self.ws_clients[handle] = ws
         while not ws.closed:
-            self.ws_clients[handle] = ws
             message = ws.receive()
             self.ws_dispatch(handle, message)
         del self.ws_clients[handle]
@@ -114,11 +119,11 @@ class WebAgent:
     def mchess_logo(self):
         return self.app.send_static_file('images/turquoise.png')
 
-    def sock_connect(self):
-        print("CONNECT")
+#    def sock_connect(self):
+#        print("CONNECT")
 
-    def sock_message(self, message):
-        print("RECEIVED: {}".format(message))
+#    def sock_message(self, message):
+#        print("RECEIVED: {}".format(message))
 
     def agent_ready(self):
         return self.active
@@ -137,7 +142,11 @@ class WebAgent:
         # print("pgn: {}".format(pgntxt))
         msg = {'fen': board.fen(), 'pgn': pgntxt, 'attribs': attribs}
         for w in self.ws_clients:
-            self.ws_clients[w].send(json.dumps(msg))
+            try:
+                self.ws_clients[w].send(json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending to WebSocket client {} failed with {}".format(w, e))
 
     def display_move(self, move_msg):
         pass
@@ -165,7 +174,11 @@ class WebAgent:
 
         msg = {'fenref': nboard.fen(), 'info': ninfo}
         for w in self.ws_clients:
-            self.ws_clients[w].send(json.dumps(msg))
+            try:
+                self.ws_clients[w].send(json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending to WebSocket client {} failed with {}".format(w, e))
 
     def set_valid_moves(self, board, vals):
         self.socket_moves = []

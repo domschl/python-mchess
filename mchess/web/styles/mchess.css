@@ -212,7 +212,7 @@ div.board {
     background: var(--color-dark);
     color: var(--color-dlight);
     border: none;
-    padding: 2px;
+    padding: 4px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
@@ -235,6 +235,12 @@ div.board {
     border-radius: 2px;
 }
 
+.label {
+    font-size: 10px;
+    color: var(--color-turquoise);
+    margin: 4px 2px 2px 4px;
+}
+
 .input {
     background: var(--color-dlight);
     color: var(--color-xdddark);
@@ -246,5 +252,5 @@ div.board {
     font-size: 10px;
     margin: 4px 2px;
     border-radius: 2px;
-    vertical-align: bottom;
+    vertical-align: -7pt;
 }
