@@ -80,12 +80,14 @@ This will start chess agents for the chess board, automatically detecting board 
 
 The web client can be reached at `http://localhost:8001`. From remote use `http://computer-name:8001`.
 
-![Early alpha web preview]((https://raw.github.com/domschl/python-mchess/master/images/WebClientAlpha.png))
+![Early alpha web preview](https://raw.github.com/domschl/python-mchess/master/images/WebClientAlpha.png)
 
 Note: Bluetooth LE hardware detection requires admin privileges for the one-time intial bluetooth scan. For first time start with Bluetooth LE support, use:
+
 ```bash
-sudo python3 chess_mboard.py
+sudo python3 mchess.py
 ```
+
 Once the board is found, stop the program and restart without `sudo`. You might want to set ownership for `chess_link_config.json` to your user-account, since the file will be rewritten, if the detected board orientation is changed.
 
 All engine descriptions in directory 'engines' will now contain the default-UCI options for each engine. Those can be edited e.g. to enable tablebases or other UCI options.
@@ -102,7 +104,7 @@ feature).
 ## Architecture
 ```
                                 +--------------------+
-                                |   chess_mboard.py  |   Start and connect agents
+                                |      mchess.py     |   Start and connect agents
                                 +--------------------+   agents represent player activities
                                          |     
                         +----------------+---------------+----------------------+  
