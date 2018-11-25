@@ -147,10 +147,20 @@ class TerminalAgent:
                 else:
                     pro = ""
                     if use_unicode_chess_figures is True:
-                        fig = board.piece_at(mv.from_square).unicode_symbol(
-                            invert_color=not invert)
+                        try:
+                            fig = board.piece_at(mv.from_square).unicode_symbol(
+                                invert_color=not invert)
+                        except Exception as e:
+                            self.log.error(
+                                "Move contains empty origin: {}".format(e))
+                            fig = "?"
                     else:
-                        fig = board.piece_at(mv.from_square).symbol()
+                        try:
+                            fig = board.piece_at(mv.from_square).symbol()
+                        except Exception as e:
+                            self.log.error(
+                                "Move contains empty origin: {}".format(e))
+                            fig = "?"
                 move = '{:10s}'.format(
                     fig+" "+chess.SQUARE_NAMES[mv.from_square]+sep+chess.SQUARE_NAMES[mv.to_square]+pro+chk)
 
