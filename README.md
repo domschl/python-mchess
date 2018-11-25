@@ -81,6 +81,7 @@ This will start chess agents for the chess board, automatically detecting board 
 The web client can be reached at `http://localhost:8001`. From remote use `http://computer-name:8001`.
 
 ![Early alpha web preview]((https://raw.github.com/domschl/python-mchess/master/images/WebClientAlpha.png))
+Early alpha of web client
 
 Note: Bluetooth LE hardware detection requires admin privileges for the one-time intial bluetooth scan. For first time start with Bluetooth LE support, use:
 ```bash
