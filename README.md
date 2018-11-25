@@ -81,6 +81,7 @@ This will start chess agents for the chess board, automatically detecting board 
 The web client can be reached at `http://localhost:8001`. From remote use `http://computer-name:8001`.
 
 ![Early alpha web preview](https://raw.github.com/domschl/python-mchess/master/images/WebClientAlpha.png)
+_Early alpha preview of web client "Turquoise"_
 
 Note: Bluetooth LE hardware detection requires admin privileges for the one-time intial bluetooth scan. For first time start with Bluetooth LE support, use:
 
@@ -93,6 +94,7 @@ Once the board is found, stop the program and restart without `sudo`. You might 
 All engine descriptions in directory 'engines' will now contain the default-UCI options for each engine. Those can be edited e.g. to enable tablebases or other UCI options.
 
 ![Console mchess](https://raw.github.com/domschl/python-mchess/master/images/MchessAlpha.png)
+_Console output of python module, allows terminal interactions: enter 'help' for overview_
 
 ## Usage
 
