@@ -162,7 +162,9 @@ class WebAgent:
             for move in ninfo['variant']:
                 if nboard.turn is True:
                     mv = (nboard.fullmove_number,)
-                mv += (nboard.san(move),)
+                san = nboard.san(move)
+                if san is not None:
+                    mv += (san,)
                 if nboard.turn is False:
                     ml.append(mv)
                     mv = ""
