@@ -134,10 +134,14 @@ class WebAgent:
     def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
         self.last_board = board
         self.last_attribs = attribs
-        game = chess.pgn.Game().from_board(board)
-        game.headers["White"] = attribs["white_name"]
-        game.headers["Black"] = attribs["black_name"]
-        pgntxt = str(game)
+        try:
+            game = chess.pgn.Game().from_board(board)
+            game.headers["White"] = attribs["white_name"]
+            game.headers["Black"] = attribs["black_name"]
+            pgntxt = str(game)
+        except Exception as e:
+            self.log.error("Invalid PGN position, {}".format(e))
+            return
         self.last_pgn = pgntxt
         # print("pgn: {}".format(pgntxt))
         msg = {'fen': board.fen(), 'pgn': pgntxt, 'attribs': attribs}
