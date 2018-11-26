@@ -444,7 +444,7 @@ class Mchess:
 
                 if 'fen_setup' in msg:
                     self.stop()
-                    self.board = chess.Board(msg['fen'])
+                    self.board = chess.Board(msg['fen_setup'])
                     self.update_display_board()
                     self.state = self.State.IDLE
 

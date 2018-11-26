@@ -107,9 +107,16 @@ class UciEngines:
         else:
             for opt in self.engines[name]['engine'].options:
                 if opt not in self.engines[name]['params']['uci-options']:
-                    rewrite_json = True
+                    entries = self.engines[name]['engine'].options[opt]
+                    # Ignore buttons
+                    if entries.type != 'button':
+                        self.log.warning(
+                            'New UCI option {} for {}, resetting to defaults'.format(opt, name))
+                        rewrite_json = True
 
         if rewrite_json is True:
+            self.log.info("Writing defaults for {} to {}".format(
+                name, engine_json_path))
             for opt in self.engines[name]['engine'].options:
                 entries = self.engines[name]['engine'].options[opt]
                 optvs = {}
@@ -120,7 +127,7 @@ class UciEngines:
                 optvs['max'] = entries.max
                 optvs['var'] = entries.var
                 optsh[opt] = optvs
-                # TODO: setting buttons to their default causes python_chess uci to crash (komodo 9)
+                # TODO: setting buttons to their default causes python_chess uci to crash (komodo 9), see above
                 if entries.type != 'button':
                     opts[opt] = entries.default
             self.engines[name]['params']['uci-options'] = opts
