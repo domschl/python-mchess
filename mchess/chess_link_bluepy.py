@@ -147,13 +147,7 @@ class Transport():
         """
         return self.init
 
-    def worker_thread(self, log, address, wrque, que):
-        """
-        Background thread that handles bluetooth sending and forwards data received via 
-        bluetooth to the queue `que`.
-        """
-        mil = None
-        message_delta_time = 0.1  # least 0.1 sec between outgoing btle messages
+    def mil_open(self, address, mil, que, log):
 
         class PeriDelegate(DefaultDelegate):
             def __init__(self, log, que):
@@ -187,21 +181,6 @@ class Transport():
 
         rx = None
         tx = None
-        log.debug("bluepy_ble open_mt {}".format(address))
-        # time.sleep(0.1)
-        try:
-            log.debug("per1")
-            mil = Peripheral(address)
-            log.debug("per2")
-        except Exception as e:
-            log.debug("per3")
-            log.error(
-                'Failed to create ble peripheral at {}, {}'.format(address, e))
-            que.put('error')
-            return
-#            while True:
-#                time.sleep(1)
-        # time.sleep(0.1)
         log.debug('Peripheral generated {}'.format(address))
         try:
             services = mil.getServices()
@@ -239,10 +218,53 @@ class Transport():
         except Exception as e:
             log.error(
                 'Failed to install peripheral delegate! {}'.format(e))
+        return (rx, tx)
+
+    def worker_thread(self, log, address, wrque, que):
+        """
+        Background thread that handles bluetooth sending and forwards data received via 
+        bluetooth to the queue `que`.
+        """
+        mil = None
+        message_delta_time = 0.1  # least 0.1 sec between outgoing btle messages
+
+        rx = None
+        tx = None
+        log.debug("bluepy_ble open_mt {}".format(address))
+        # time.sleep(0.1)
+        try:
+            log.debug("per1")
+            mil = Peripheral(address)
+            log.debug("per2")
+        except Exception as e:
+            log.debug("per3")
+            log.error(
+                'Failed to create ble peripheral at {}, {}'.format(address, e))
+            que.put('error')
+            return
+#            while True:
+#                time.sleep(1)
+        # time.sleep(0.1)
+        rx, tx = self.mil_open(address, mil, que, log)
 
         time_last_out = time.time()+0.2
 
+        bt_error = False
         while self.worker_thread_active is True:
+            if bt_error is True:
+                time.sleep(1)
+                bt_error = False
+                try:
+                    mil.connect(address)
+                except Exception as e:
+                    self.log.warning("Reconnect failed: {}".format(e))
+                    bt_error = True
+                if bt_error is False:
+                    self.log.info(
+                        "Bluetooth reconnected to {}".format(address))
+                    rx, tx = self.mil_open(address, mil, que, log)
+                    time_last_out = time.time()+0.2
+
             if wrque.empty() is False and time.time()-time_last_out > message_delta_time:
                 msg = wrque.get()
                 gpar = 0
@@ -262,10 +284,16 @@ class Transport():
                 except Exception as e:
                     log.error(
                         "bluepy_ble: failed to write {}: {}".format(msg, e))
+                    bt_error = True
                 wrque.task_done()
 
-            rx.read()
-            mil.waitForNotifications(0.05)
-            # time.sleep(0.1)
+            try:
+                rx.read()
+                mil.waitForNotifications(0.05)
+                # time.sleep(0.1)
+            except Exception as e:
+                self.log.warning("Bluetooth error {}".format(e))
+                bt_error = True
+                continue
 
         log.debug('wt-end')
