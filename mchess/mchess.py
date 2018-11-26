@@ -444,9 +444,14 @@ class Mchess:
 
                 if 'fen_setup' in msg:
                     self.stop()
-                    self.board = chess.Board(msg['fen_setup'])
-                    self.update_display_board()
-                    self.state = self.State.IDLE
+                    try:
+                        self.board = chess.Board(msg['fen_setup'])
+                        self.update_display_board()
+                        self.state = self.State.IDLE
+                    except Exception as e:
+                        if 'fen_setup' not in msg:
+                            msg['fen_setup']='None'
+                        self.log.warning("Invalid FEN {} not imported: {}".format(msg['fen_setup'],e))
 
                 if 'move' in msg:
                     if self.analysis_active:
