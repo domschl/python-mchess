@@ -240,6 +240,7 @@ class Transport():
             log.debug("per3")
             log.error(
                 'Failed to create ble peripheral at {}, {}'.format(address, e))
+            # TODO: error message to agent-state, reflect connect/disconnect.
             que.put('error')
             return
 #            while True:
@@ -251,9 +252,10 @@ class Transport():
 
         bt_error = False
         while self.worker_thread_active is True:
-            if bt_error is True:
+            while bt_error is True:
                 time.sleep(1)
                 bt_error = False
+                self.init = False
                 try:
                     mil.connect(address)
                 except Exception as e:
@@ -264,6 +266,7 @@ class Transport():
                         "Bluetooth reconnected to {}".format(address))
                     rx, tx = self.mil_open(address, mil, que, log)
                     time_last_out = time.time()+0.2
+                    self.init = True
 
             if wrque.empty() is False and time.time()-time_last_out > message_delta_time:
                 msg = wrque.get()
