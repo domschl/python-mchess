@@ -1,7 +1,6 @@
 # ChessLink fixes and enhancements
 - [ ] Handle USB-reconnect
-- [ ] Handle Bluetooth-reconnect
-- [ ] Display bluetooth reception strenght (dB)
+- [x] Handle Bluetooth-reconnect
 - [ ] Sync agent states (CL and others) to GUI-clients
 - [ ] Select look-ahead engine for LED display
 - [ ] Fix errors with board-fast-forwards (missing moves)
@@ -12,13 +11,18 @@
 - [ ] Analyse python-chess corruptions (thread race-conditions?)
 - [ ] Handle inline TODOs.
 - [ ] Raspi event queue performance tests
+- [ ] General latency tests
+
+# Agents and main
+- [ ] PGN-Libraries and ECO handling
+- [ ] Data import module
 
 # Web
 - [ ] Move input via chess.js integration
 - [ ] Game state console (save/load PGN, modes)
 - [ ] Log monitor
 - [ ] Debug console
-- [ ] Stats
+- [ ] Stats (Charts.js)
 - [ ] Manual analysis board
 - [ ] Moves clickable (variants, analysis-board)
 - [ ] select depth for analysis-boards (move-sequences?)
@@ -31,6 +35,7 @@
 - [ ] Save PGN on exist and reload (fitting) history on restart
 - [ ] Dropboxes for oponents
 - [ ] Analysis buttons
+- [ ] State machine review
 
 # Features and longer-term stuff (post first beta)
 - [ ] Local tournaments

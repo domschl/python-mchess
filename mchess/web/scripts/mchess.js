@@ -224,6 +224,13 @@ function wsConnect(address) {
             }
         } else if (msg.hasOwnProperty("agent-state")) {
             console.log('agent-state msg: ' + msg['actor'] + ' ' + msg['agent-state'] + ' ' + msg['message'])
+            if (msg['actor'] == 'ChessLinkAgent') {
+                if (msg['agent-state'] == 'online') {
+                    document.getElementById("chesslink-state").style.color = "#58A4B0";
+                } else {
+                    document.getElementById("chesslink-state").style.color = "red";
+                }
+            }
         }
     }
 }

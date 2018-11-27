@@ -28,13 +28,14 @@ class Transport():
     `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
     """
 
-    def __init__(self, que):
+    def __init__(self, que, protocol_dbg=False):
         """
         Initialize with python queue for event handling.
         Events are strings conforming to the ChessLink protocol as documented in 
         `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
 
         :param que: Python queue that will eceive events from chess board.
+        :param protocol_dbg: True: byte-level ChessLink protocol debug messages
         """
         if bluepy_ble_support == False:
             self.init = False
@@ -44,6 +45,7 @@ class Transport():
         self.que = que  # asyncio.Queue()
         self.init = True
         self.log.debug("bluepy_ble init ok")
+        self.protocol_debug = protocol_dbg
 
     def quit(self):
         """
@@ -120,7 +122,13 @@ class Transport():
             target=self.worker_thread, args=(self.log, address, self.wrque, self.que))
         self.worker_threader.setDaemon(True)
         self.worker_threader.start()
-        return True
+        timer = time.time()
+        self.conn_state = None
+        while self.conn_state is None and time.time()-timer < 5.0:
+            time.sleep(0.1)
+        if self.conn_state is None:
+            return False
+        return self.conn_state
 
     def write_mt(self, msg):
         """
@@ -128,7 +136,8 @@ class Transport():
 
         :param msg: Message string. Parity will be added, and block CRC appended.
         """
-        self.log.debug('write-que-entry {}'.format(msg))
+        if self.protocol_debug is True:
+            self.log.debug('write-que-entry {}'.format(msg))
         self.wrque.put(msg)
 
     def get_name(self):
@@ -251,6 +260,7 @@ class Transport():
                 address, e)
             log.error(emsg)
             self.agent_state(que, 'offline', '{}'.format(e))
+            self.conn_state = False
             return
 
         rx, tx = self.mil_open(address, mil, que, log)
@@ -259,8 +269,10 @@ class Transport():
 
         if rx is None or tx is None:
             bt_error = True
+            self.conn_state = False
         else:
             bt_error = False
+            self.conn_state = True
         while self.worker_thread_active is True:
             rep_err = False
             while bt_error is True:
@@ -288,13 +300,15 @@ class Transport():
                 for b in msg:
                     gpar = gpar ^ ord(b)
                 msg = msg+clp.hex2(gpar)
-                log.debug("blue_ble write: <{}>".format(msg))
+                if self.protocol_debug is True:
+                    log.debug("blue_ble write: <{}>".format(msg))
                 bts = ""
                 for c in msg:
                     bo = chr(clp.add_odd_par(c))
                     bts += bo
                     btsx = bts.encode('latin1')
-                log.debug("Sending: <{}>".format(btsx))
+                if self.protocol_debug is True:
+                    log.debug("Sending: <{}>".format(btsx))
                 try:
                     tx.write(btsx, withResponse=True)
                     time_last_out = time.time()

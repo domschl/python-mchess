@@ -176,7 +176,7 @@ class Mchess:
             # print("{} stopped".format(self.uci_agent2.name))
             self.uci_agent2.busy=False
 
-    def set_mode(self, mode):
+    def set_mode(self, mode, silent=False):
         if mode == self.Mode.NONE:
             self.player_w = []
             self.player_b = []
@@ -244,7 +244,8 @@ class Mchess:
             self.log.error("Undefined set_mode situation: {}".format(mode))
             return False
         self.mode = mode
-        self.update_display_board()
+        if silent is False:
+            self.update_display_board()
         return True
 
     class State(Enum):
@@ -254,7 +255,7 @@ class Mchess:
     def import_chesslink_position(self):
         self.appque.put(
             {'position_fetch': 'ChessLinkAgent', 'actor': self.chess_link_agent.name})
-        self.state = self.State.BUSY
+        # self.state = self.State.BUSY  # Check?
 
     def init_board_agents(self):
         if self.chess_link_agent.agent_ready() and self.prefs['import_chesslink_position'] is True:
@@ -293,12 +294,13 @@ class Mchess:
         # self.update_display_board()
         self.state_machine_active = True
 
-    def stop(self, new_mode=Mode.PLAYER_PLAYER):
+    def stop(self, new_mode=Mode.PLAYER_PLAYER, silent=False):
         self.uci_stop_engines()
         self.log.debug("Stop command.")
         if new_mode is not None:
-            self.set_mode(new_mode)
-        self.update_display_board()
+            self.set_mode(new_mode, silent=silent)
+        if silent is False:
+            self.update_display_board()
         self.state=self.State.IDLE
 
     def is_player_move(self):
@@ -433,7 +435,11 @@ class Mchess:
                                     agent.agent_states(msg)
 
                 if 'new game' in msg:
-                    self.stop()
+                    # if self.board.fen() == chess.STARTING_FEN:
+                    #     self.log.debug("New game request initiated by {} ignored, already at starting position.".format(msg['actor']))
+                    #     self.state = self.State.IDLE
+                    # else:
+                    self.stop(new_mode=None, silent=True)
                     self.log.info(
                         "New game initiated by {}".format(msg['actor']))
                     self.board.reset()
@@ -445,20 +451,20 @@ class Mchess:
                         self.analysis_active=False
 
                 if 'position_fetch' in msg:
-                    self.stop()
-                    if self.analysis_active is True:
-                        self.analysis_debris=time.time()
-                        self.analysis_active=False
                     for agent in self.player_b+self.player_w:
                         if agent.name == msg['position_fetch']:
-                            print("Importing position from {}, initiated by {}".format(agent.name, msg['actor']))
                             fen = agent.get_fen()
                             # Only treat as setup, if it's not the start position
                             if self.short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
+                                self.log.debug("Importing position from {}, initiated by {}, FEN: {}".format(agent.name, msg['actor'], fen))
+                                self.stop(silent=True)
+                                if self.analysis_active is True:
+                                    self.analysis_debris=time.time()
+                                    self.analysis_active=False
                                 self.board = chess.Board(fen)
                                 self.update_display_board()
+                                self.state = self.State.IDLE
                                 break
-                    self.state = self.State.IDLE
 
                 if 'fen_setup' in msg:
                     self.stop()
@@ -662,7 +668,7 @@ class Mchess:
 
 if __name__ == '__main__':
     logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
+        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
 
     mc = Mchess()
     mc.game_state_machine()

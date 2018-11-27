@@ -137,11 +137,13 @@ class ChessLink:
                 self.mill_config = json.load(f)
                 if 'orientation' not in self.mill_config:
                     self.mill_config['orientation'] = True
+                if 'protocol_debug' not in self.mill_config:
+                    self.mill_config['protocol_debug'] = False
                 if 'transport' in self.mill_config and 'address' in self.mill_config:
                     self.log.debug('Checking default configuration for board via {} at {}'.format(
                         self.mill_config['transport'], self.mill_config['address']))
                     self.orientation = self.mill_config['orientation']
-                    trans = self._open_transport(self.mill_config['transport'])
+                    trans = self._open_transport(self.mill_config['transport'], self.mill_config['protocol_debug'])
                     if trans is not None:
                         if trans.test_board(self.mill_config['address']) is not None:
                             self.log.debug('Default board config used.')
@@ -160,60 +162,71 @@ class ChessLink:
         except Exception as e:
             self.log.debug(
                 'No valid default configuration, starting board-scan: {}'.format(e))
+        reps = 0  # These repetitions are caused by monolitic arch of bluepy single-threads.
+                  # Should be replaced by async refactor at some point.
+        while reps < 2:
+            if reps > 0:
+                self.log.warning('Retrying scan and connect after error.')
+            if found_board is False:
+                address = None
+                if self.mill_config is None or 'autodetect' not in self.mill_config or self.mill_config['autodetect'] is True:
+                    for transport in self.transports[platform.system()]:
+                        try:
+                            tri = importlib.import_module(transport)
+                            self.log.debug("imported {}".format(transport))
+                            tr = tri.Transport(self.trque)
+                            self.log.debug("created obj")
+                            if tr.is_init() is True:
+                                self.log.debug(
+                                    "Transport {} loaded.".format(tr.get_name()))
+                                address = tr.search_board()
+                                if address is not None:
+                                    self.log.debug("Found board on transport {} at address {}".format(
+                                        tr.get_name(), address))
+                                    self.mill_config = {
+                                        'transport': tr.get_name(), 'address': address}
+                                    self.trans = tr
+                                    self.write_configuration()
+                                    break
+                            else:
+                                self.log.warning("Transport {} failed to initialize".format(
+                                    tr.get_name()))
+                        except Exception as e:
+                            self.log.warning("Internal error, import of {} failed: {}".format(
+                                transport, e))
 
-        if found_board is False:
-            address = None
-            if self.mill_config is None or 'autodetect' not in self.mill_config or self.mill_config['autodetect'] is True:
-                for transport in self.transports[platform.system()]:
-                    try:
-                        tri = importlib.import_module(transport)
-                        self.log.debug("imported {}".format(transport))
-                        tr = tri.Transport(self.trque)
-                        self.log.debug("created obj")
-                        if tr.is_init() is True:
-                            self.log.debug(
-                                "Transport {} loaded.".format(tr.get_name()))
-                            address = tr.search_board()
-                            if address is not None:
-                                self.log.debug("Found board on transport {} at address {}".format(
-                                    tr.get_name(), address))
-                                self.mill_config = {
-                                    'transport': tr.get_name(), 'address': address}
-                                self.trans = tr
-                                self.write_configuration()
-                                break
-                        else:
-                            self.log.warning("Transport {} failed to initialize".format(
-                                tr.get_name()))
-                    except Exception as e:
-                        self.log.warning("Internal error, import of {} failed: {}".format(
-                            transport, e))
-
-        if self.mill_config is None or self.trans is None:
-            self.log.error(
-                "No transport available, cannot connect.")
-            if self.mill_config is None:
-                self.mill_config = {}
-                self.write_configuration()
-            self.error_condition = True
-            return
-        else:
-            self.log.debug('Valid board available on {} at {}'.format(
-                self.mill_config['transport'], self.mill_config['address']))
-            if platform.system() != 'Windows':
-                if os.geteuid() == 0:
-                    self.log.warning(
-                        'Do not run as root, once intial BLE scan is done.')
-            self.log.debug('Connecting to Chess Link via {} at {}'.format(
-                self.mill_config['transport'], self.mill_config['address']))
-            self.connected = self.trans.open_mt(self.mill_config['address'])
-            if self.connected is True:
-                self.log.info('Connected to Chess Link via {} at {}'.format(
-                    self.mill_config['transport'], self.mill_config['address']))
-            else:
-                self.log.error('Connection to Chess Link via {} at {} FAILED.'.format(
-                    self.mill_config['transport'], self.mill_config['address']))
+            if self.mill_config is None or self.trans is None:
+                self.log.error(
+                    "No transport available, cannot connect.")
+                if self.mill_config is None:
+                    self.mill_config = {}
+                    self.write_configuration()
                 self.error_condition = True
+                return
+            else:
+                self.log.debug('Valid board available on {} at {}'.format(
+                    self.mill_config['transport'], self.mill_config['address']))
+                if platform.system() != 'Windows':
+                    if os.geteuid() == 0:
+                        self.log.warning(
+                            'Do not run as root, once intial BLE scan is done.')
+                self.log.debug('Connecting to Chess Link via {} at {}'.format(
+                    self.mill_config['transport'], self.mill_config['address']))
+                self.connected = self.trans.open_mt(
+                    self.mill_config['address'])
+                if self.connected is True:
+                    self.log.info('Connected to Chess Link via {} at {}'.format(
+                        self.mill_config['transport'], self.mill_config['address']))
+                else:
+                    self.log.error('Connection to Chess Link via {} at {} FAILED.'.format(
+                        self.mill_config['transport'], self.mill_config['address']))
+                    self.error_condition = True
+
+            if self.error_condition is False:
+                break
+            reps += 1
+            self.error_condition = False
+            found_board = False
 
     def quit(self):
         """
@@ -823,14 +836,14 @@ class ChessLink:
             fi += 1
         return position
 
-    def _open_transport(self, transport):
+    def _open_transport(self, transport, protocol_debug):
         """
         Internal function to load transport modules (USB or bluetooth)
         """
         try:
             tri = importlib.import_module(transport)
             self.log.debug("imported {}".format(transport))
-            tr = tri.Transport(self.trque)
+            tr = tri.Transport(self.trque, protocol_debug)
             self.log.debug("created obj")
             if tr.is_init() is True:
                 self.log.debug("Transport {} loaded.".format(tr.get_name()))

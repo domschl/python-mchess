@@ -46,8 +46,12 @@ class WebAgent:
         self.chesssym = {"unic": ["-", "×", "†", "‡", "½"],
                          "ascii": ["-", "x", "+", "#", "1/2"]}
 
-        # wlog = logging.getLogger('werkzeug')
-        # wlog.setLevel(logging.ERROR)
+        disable_web_logs = True
+        if disable_web_logs is True:
+            wlog = logging.getLogger('werkzeug')
+            wlog.setLevel(logging.ERROR)
+            slog = logging.getLogger('geventwebsocket.handler')
+            slog.setLevel(logging.ERROR)
         self.app = Flask(__name__, static_folder='web')
         # self.app.config['ENV'] = "MChess_Agent"
         self.app.config['SECRET_KEY'] = 'somesecret'  # TODO: Investigate
@@ -90,7 +94,7 @@ class WebAgent:
         try:
             self.appque.put(json.loads(message))
         except Exception as e:
-            self.log.error("WebClient sent invalid JSON: {}".format(e))
+            self.log.debug("WebClient sent invalid JSON: {}".format(e))
 
     def ws_sockets(self, ws):
         self.ws_handle += 1
