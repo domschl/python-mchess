@@ -164,19 +164,21 @@ class WebAgent:
                 mv = (nboard.fullmove_number,)
                 mv += ("..",)
             for move in ninfo['variant']:
+                if move is None:
+                    self.log.error("None-move in variant: {}".format(ninfo))
                 if nboard.turn is True:
                     mv = (nboard.fullmove_number,)
                 try:
                     san = nboard.san(move)
                 except Exception as e:
                     self.log.warning(
-                        "Internal error {} at san conversion.".format(e))
+                        "Internal error '{}' at san conversion.".format(e))
                     san = None
                 if san is not None:
                     mv += (san,)
                 else:
                     self.log.info(
-                        "Variant cut off due to san-conversion-error: {}".format(mv))
+                        "Variant cut off due to san-conversion-error: '{}'".format(mv))
                     break
                 if nboard.turn is False:
                     ml.append(mv)

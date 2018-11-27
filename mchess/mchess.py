@@ -277,6 +277,8 @@ class Mchess:
         self.last_info = 0
         self.ponder_move = None
         self.analysis_active = False
+        self.analysis_debris = 0
+        self.analysis_buffer_timeout = 3.0
 
         self.board.reset()
         self.undo_stack = []
@@ -438,10 +440,15 @@ class Mchess:
                     self.undo_stack = []
                     self.update_display_board()
                     self.state = self.State.IDLE
-                    self.analysis_active=False
+                    if self.analysis_active is True:
+                        self.analysis_debris=time.time()
+                        self.analysis_active=False
 
                 if 'position_fetch' in msg:
                     self.stop()
+                    if self.analysis_active is True:
+                        self.analysis_debris=time.time()
+                        self.analysis_active=False
                     for agent in self.player_b+self.player_w:
                         if agent.name == msg['position_fetch']:
                             print("Importing position from {}, initiated by {}".format(agent.name, msg['actor']))
@@ -455,6 +462,9 @@ class Mchess:
 
                 if 'fen_setup' in msg:
                     self.stop()
+                    if self.analysis_active is True:
+                        self.analysis_debris=time.time()
+                        self.analysis_active=False
                     try:
                         self.board = chess.Board(msg['fen_setup'])
                         self.update_display_board()
@@ -465,7 +475,7 @@ class Mchess:
                         self.log.warning("Invalid FEN {} not imported: {}".format(msg['fen_setup'],e))
 
                 if 'move' in msg:
-                    if self.analysis_active:
+                    if self.analysis_active or time.time()-self.analysis_debris < self.analysis_buffer_timeout:
                         # Ignore engine moves when it's player's turn: they are from analysis
                         skip=False
                         if self.uci_agent is not None:
@@ -475,6 +485,8 @@ class Mchess:
                             if msg['move']['actor'] == self.uci_agent2.name:
                                 skip=True
                         if skip is True:
+                            if self.analysis_active is False:
+                                self.log.debug("buffer_timeout skipper active!")
                             continue
                     if msg['move']['actor']==self.uci_agent.name:
                         self.uci_agent.engine.isready()
@@ -559,6 +571,7 @@ class Mchess:
                     self.stop()
                     self.set_mode(self.Mode.PLAYER_PLAYER)
                     self.analysis_active=True
+                    self.analysis_debris=0
                     if self.uci_agent is not None:
                         self.log.info("Starting analysis with {}".format(self.uci_agent.name))
                         self.uci_agent.engine.position(self.board)
