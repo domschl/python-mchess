@@ -668,7 +668,7 @@ class Mchess:
 
 if __name__ == '__main__':
     logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
+        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
 
     mc = Mchess()
     mc.game_state_machine()
