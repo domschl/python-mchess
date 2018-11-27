@@ -262,6 +262,7 @@ class Transport():
         else:
             bt_error = False
         while self.worker_thread_active is True:
+            rep_err = False
             while bt_error is True:
                 time.sleep(1)
                 bt_error = False
@@ -269,7 +270,10 @@ class Transport():
                 try:
                     mil.connect(address)
                 except Exception as e:
-                    self.log.warning("Reconnect failed: {}".format(e))
+                    if rep_err is False:
+                        self.log.warning(
+                            "Reconnect failed: {} [Local bluetooth problem?]".format(e))
+                        rep_err = True
                     bt_error = True
                 if bt_error is False:
                     self.log.info(
