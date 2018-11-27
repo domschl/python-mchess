@@ -494,10 +494,10 @@ class Mchess:
                             if self.analysis_active is False:
                                 self.log.debug("buffer_timeout skipper active!")
                             continue
-                    if msg['move']['actor']==self.uci_agent.name:
+                    if self.uci_agent is not None and msg['move']['actor']==self.uci_agent.name:
                         self.uci_agent.engine.isready()
                         self.uci_agent.busy=False
-                    if msg['move']['actor']==self.uci_agent2.name:
+                    if self.uci_agent2 is not None and msg['move']['actor']==self.uci_agent2.name:
                         self.uci_agent2.engine.isready()
                         self.uci_agent2.busy=False
                     self.uci_stop_engines()
