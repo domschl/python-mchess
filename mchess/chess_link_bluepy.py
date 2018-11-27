@@ -250,7 +250,7 @@ class Transport():
             emsg = 'Failed to create BLE peripheral at {}, {}'.format(
                 address, e)
             log.error(emsg)
-            self.agent_state(que, 'offline', e)
+            self.agent_state(que, 'offline', '{}'.format(e))
             return
 
         rx, tx = self.mil_open(address, mil, que, log)

@@ -271,8 +271,8 @@ class ChessLink:
             if self.trque.empty() is False:
                 msg = self.trque.get()
                 token = 'agent-state: '
-                if msg(len(token)) == token:
-                    toks = msg[token:]
+                if msg[:len(token)] == token:
+                    toks = msg[len(token):]
                     i = toks.find(' ')
                     if i != -1:
                         state = toks[:i]
