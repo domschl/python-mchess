@@ -1,8 +1,9 @@
+/*jshint esversion: 6 */
 // Mchess.js
 import {
     COLOR,
     Chessboard
-} from "../node_modules/cm-chessboard/src/cm-chessboard/Chessboard.js"
+} from "../node_modules/cm-chessboard/src/cm-chessboard/Chessboard.js";
 
 
 var mainBoard = null;
@@ -22,35 +23,59 @@ function wsConnect(address) {
         document.getElementById("")
 
         document.getElementById("m-new").addEventListener("click", function (event) {
-            mchessSocket.send(JSON.stringify({ 'new game': '', actor: 'WebAgent' }));
+            mchessSocket.send(JSON.stringify({
+                'new game': '',
+                actor: 'WebAgent'
+            }));
             document.getElementById("m-new").blur();
         }, false);
         document.getElementById("m-bb").addEventListener("click", function (event) {
-            mchessSocket.send(JSON.stringify({ 'fast-back': '', actor: 'WebAgent' }));
+            mchessSocket.send(JSON.stringify({
+                'fast-back': '',
+                actor: 'WebAgent'
+            }));
             document.getElementById("m-bb").blur();
         }, false);
         document.getElementById("m-bw").addEventListener("click", function (event) {
-            mchessSocket.send(JSON.stringify({ 'back': '', actor: 'WebAgent' }));
+            mchessSocket.send(JSON.stringify({
+                'back': '',
+                actor: 'WebAgent'
+            }));
             document.getElementById("m-ba").blur();
         }, false);
         document.getElementById("m-st").addEventListener("click", function (event) {
-            mchessSocket.send(JSON.stringify({ 'stop': '', actor: 'WebAgent' }));
+            mchessSocket.send(JSON.stringify({
+                'stop': '',
+                actor: 'WebAgent'
+            }));
             document.getElementById("m-st").blur();
         }, false);
         document.getElementById("m-fw").addEventListener("click", function (event) {
-            mchessSocket.send(JSON.stringify({ 'forward': '', actor: 'WebAgent' }));
+            mchessSocket.send(JSON.stringify({
+                'forward': '',
+                actor: 'WebAgent'
+            }));
             document.getElementById("m-fw").blur();
         }, false);
         document.getElementById("m-ff").addEventListener("click", function (event) {
-            mchessSocket.send(JSON.stringify({ 'fast-forward': '', actor: 'WebAgent' }));
+            mchessSocket.send(JSON.stringify({
+                'fast-forward': '',
+                actor: 'WebAgent'
+            }));
             document.getElementById("m-ff").blur();
         }, false);
         document.getElementById("m-import").addEventListener("click", function (event) {
-            mchessSocket.send(JSON.stringify({ 'position_fetch': 'ChessLinkAgent', actor: 'WebAgent' }));
+            mchessSocket.send(JSON.stringify({
+                'position_fetch': 'ChessLinkAgent',
+                actor: 'WebAgent'
+            }));
             document.getElementById("m-import").blur();
         }, false);
         document.getElementById("m-send").addEventListener("click", function (event) {
-            mchessSocket.send(JSON.stringify({ 'fen_setup': document.getElementById("m-edit").value, actor: 'WebAgent' }));
+            mchessSocket.send(JSON.stringify({
+                'fen_setup': document.getElementById("m-edit").value,
+                actor: 'WebAgent'
+            }));
             document.getElementById("m-send").blur();
         }, false);
     }
@@ -59,7 +84,9 @@ function wsConnect(address) {
         document.getElementById("connect-state").style.color = "red";
         document.getElementById("connect-text").innerText = "disconnected";
         mchessSocket = null;
-        setTimeout(function () { wsConnect(address) }, 1000);
+        setTimeout(function () {
+            wsConnect(address)
+        }, 1000);
     };
     mchessSocket.onmessage = function (event) {
         var msg;

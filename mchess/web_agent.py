@@ -5,7 +5,7 @@ import queue
 import json
 import copy
 import socket
-
+import mimetypes
 import chess
 import chess.pgn
 
@@ -14,6 +14,10 @@ from flask_sockets import Sockets
 
 from gevent import pywsgi
 from geventwebsocket.handler import WebSocketHandler
+
+
+mimetypes.add_type('text/css', '.css')
+mimetypes.add_type('text/javascript', '.js')
 
 
 class WebAgent:
