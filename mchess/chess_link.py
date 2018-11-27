@@ -270,11 +270,24 @@ class ChessLink:
         while self.thread_active:
             if self.trque.empty() is False:
                 msg = self.trque.get()
-                if msg == 'error':
-                    self.log.error("Commication error")
-                    self.error_condition = True
+                token = 'agent-state: '
+                if msg(len(token)) == token:
+                    toks = msg[token:]
+                    i = toks.find(' ')
+                    if i != -1:
+                        state = toks[:i]
+                        emsg = toks[i+1:]
+                    else:
+                        state = toks
+                        emsg = ''
+                    self.log.info("Agent state of {} changed to {}, {}".format(
+                        self.name, state, emsg))
+                    if state == 'offline':
+                        self.error_condition = True
+                    else:
+                        self.error_condition = False
                     self.appque.put(
-                        {'error': 'transport failure or not available.', 'actor': self.name})
+                        {'agent-state': state, 'message': emsg, 'actor': self.name})
                     continue
 
                 if len(msg) > 0:

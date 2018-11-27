@@ -195,6 +195,14 @@ class WebAgent:
                 self.log.warning(
                     "Sending to WebSocket client {} failed with {}".format(w, e))
 
+    def agent_states(self, msg):
+        for w in self.ws_clients:
+            try:
+                self.ws_clients[w].send(json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending to WebSocket client {} failed with {}".format(w, e))
+
     def set_valid_moves(self, board, vals):
         self.socket_moves = []
         if vals != None:

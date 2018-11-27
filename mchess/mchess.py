@@ -416,8 +416,19 @@ class Mchess:
                     self.log.warning("None message received.")
                     continue
                 self.log.debug("App received msg: {}".format(msg))
+                # TODO: remove 'error' element after all transports are updated.
                 if 'error' in msg:
-                    self.log.error('Error condition: {}'.format(msg['error']))
+                    self.log.error('OBSOLETE PROTOCOL ELEMENT! Error condition: {}'.format(msg['error']))
+
+                if 'agent-state' in msg:
+                    if 'message' not in msg or 'actor' not in msg:
+                        self.log.error('Invalid <agent-state> message: {}'.format(msg))
+                    else:
+                        for agent in self.agents_all:
+                            if agent!=msg['actor']:
+                                fstate = getattr(agent, "agent_states", None)
+                                if callable(fstate):
+                                    agent.agent_states(msg)
 
                 if 'new game' in msg:
                     self.stop()

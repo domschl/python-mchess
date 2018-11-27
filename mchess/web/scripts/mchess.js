@@ -222,6 +222,8 @@ function wsConnect(address) {
                     n += 1;
                 }
             }
+        } else if (msg.hasOwnProperty("agent-state")) {
+            console.log('agent-state msg: ' + msg['actor'] + ' ' + msg['agent-state'] + ' ' + msg['message'])
         }
     }
 }

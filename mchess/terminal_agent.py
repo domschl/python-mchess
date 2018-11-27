@@ -229,6 +229,10 @@ class TerminalAgent:
                 col = '<-'
             print('{}{}{}'.format(txa[i], col, ams[i]))
 
+    def agent_states(self, msg):
+        print('State of agent {} changed to {}, {}'.format(
+            msg['actor'], msg['agent-state'], msg['message']))
+
     def display_move(self, move_msg):
         if 'score' in move_msg['move']:
             new_move = '\nMove {} (ev: {}) by {}'.format(

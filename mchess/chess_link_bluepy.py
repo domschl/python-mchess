@@ -147,6 +147,9 @@ class Transport():
         """
         return self.init
 
+    def agent_state(self, que, state, msg):
+        que.put('agent-state: '+state + ' ' + msg)
+
     def mil_open(self, address, mil, que, log):
 
         class PeriDelegate(DefaultDelegate):
@@ -185,8 +188,10 @@ class Transport():
         try:
             services = mil.getServices()
         except Exception as e:
-            log.error(
-                'Failed to enumerate services for {}, {}'.format(address, e))
+            emsg = 'Failed to enumerate services for {}, {}'.format(address, e)
+            log.error(emsg)
+            self.agent_state(que, 'offline', emsg)
+            return None, None
         # time.sleep(0.1)
         log.debug("services: {}".format(len(services)))
         for ser in services:
@@ -216,8 +221,12 @@ class Transport():
             delegate.que = que
             mil.withDelegate(delegate)
         except Exception as e:
-            log.error(
-                'Failed to install peripheral delegate! {}'.format(e))
+            emsg = 'Bluetooth LE: Failed to install peripheral delegate! {}'.format(
+                e)
+            log.error(emsg)
+            self.agent_state(que, 'offline', emsg)
+            return None, None
+        self.agent_state(que, 'online', 'Connected to ChessLink board via BLE')
         return (rx, tx)
 
     def worker_thread(self, log, address, wrque, que):
@@ -238,19 +247,20 @@ class Transport():
             log.debug("per2")
         except Exception as e:
             log.debug("per3")
-            log.error(
-                'Failed to create ble peripheral at {}, {}'.format(address, e))
-            # TODO: error message to agent-state, reflect connect/disconnect.
-            que.put('error')
+            emsg = 'Failed to create BLE peripheral at {}, {}'.format(
+                address, e)
+            log.error(emsg)
+            self.agent_state(que, 'offline', e)
             return
-#            while True:
-#                time.sleep(1)
-        # time.sleep(0.1)
+
         rx, tx = self.mil_open(address, mil, que, log)
 
         time_last_out = time.time()+0.2
 
-        bt_error = False
+        if rx is None or tx is None:
+            bt_error = True
+        else:
+            bt_error = False
         while self.worker_thread_active is True:
             while bt_error is True:
                 time.sleep(1)
@@ -288,6 +298,8 @@ class Transport():
                     log.error(
                         "bluepy_ble: failed to write {}: {}".format(msg, e))
                     bt_error = True
+                    self.agent_state(
+                        que, 'offline', 'Connected to Bluetooth peripheral lost: {}'.format(e))
                 wrque.task_done()
 
             try:
@@ -297,6 +309,8 @@ class Transport():
             except Exception as e:
                 self.log.warning("Bluetooth error {}".format(e))
                 bt_error = True
+                self.agent_state(
+                    que, 'offline', 'Connected to Bluetooth peripheral lost: {}'.format(e))
                 continue
 
         log.debug('wt-end')
