@@ -1,7 +1,7 @@
 # ChessLink fixes and enhancements
-- [ ] Handle USB-reconnect
+- [x] Handle USB-reconnect
 - [x] Handle Bluetooth-reconnect
-- [ ] Sync agent states (CL and others) to GUI-clients
+- [x] Sync agent states (CL and others) to GUI-clients
 - [ ] Select look-ahead engine for LED display
 - [ ] Fix errors with board-fast-forwards (missing moves)
 - [ ] Verify consistent mutex usage
