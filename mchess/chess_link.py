@@ -375,8 +375,8 @@ class ChessLink:
                                 if self.reference_position == None:
                                     self.reference_position = copy.deepcopy(
                                         position)
-                            self.show_delta(
-                                self.reference_position, self.position)
+                                self.show_delta(
+                                    self.reference_position, self.position)
                             # self.print_position_ascii(position)
                             self.appque.put({'fen': fen, 'actor': self.name})
                             self._check_move(position)
@@ -467,11 +467,13 @@ class ChessLink:
                 self.legal_moves = legal_moves
                 self.turn = color
                 self.reference_position = self.fen_to_position(fen)
-                self.show_delta(self.reference_position, self.position)
+                with self.board_mutex:
+                    self.show_delta(self.reference_position, self.position)
             else:
                 eval_position = self.fen_to_position(fen)
-                self.show_delta(self.position, eval_position,
-                                freq=0x15, ontime1=0x02, ontime2=0x01)
+                with self.board_mutex:
+                    self.show_delta(self.position, eval_position,
+                                    freq=0x15, ontime1=0x02, ontime2=0x01)
         else:
             self.log.warning(
                 "Not connected to Chess Link.")

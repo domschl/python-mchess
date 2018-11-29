@@ -7,7 +7,7 @@
 - [x] Sync agent states (CL and others) to GUI-clients
 - [o] Select look-ahead engine for LED display
 - [ ] Fix errors with board-fast-forwards (missing moves)
-- [ ] Verify consistent mutex usage
+- [o] Verify consistent mutex usage
 
 ## Bugs and testing
 
@@ -50,6 +50,7 @@
 - [ ] Local tournaments
 - [ ] more complex multi-agent topologies (e.g. two web agents with different players,
       remote connections between mchess instances, distributed tournaments) c.f. JSON-Prot.
+- [ ] MQTT agent
 - [ ] Mac/Windows bluetooth support for ChessLink
 - [ ] Elo calc
 - [ ] (PGN-)Library agent (see: http://www.kingbase-chess.net/)
