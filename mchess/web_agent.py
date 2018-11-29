@@ -21,8 +21,9 @@ mimetypes.add_type('text/javascript', '.js')
 
 
 class WebAgent:
-    def __init__(self, appque):
+    def __init__(self, appque, prefs):
         self.name = 'WebAgent'
+        self.prefs = prefs
         self.log = logging.getLogger("WebAgent")
         self.appque = appque
         self.orientation = True

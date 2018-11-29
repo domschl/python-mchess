@@ -14,8 +14,9 @@ class UciEngines:
     """Search for UCI engines and make a list of all available engines
     """
 
-    def __init__(self, appque):
+    def __init__(self, appque, prefs):
         self.log = logging.getLogger("UciEngines")
+        self.prefs = prefs
         self.appque = appque
 
         COMMON_ENGINES = ['stockfish', 'crafty', 'komodo']
@@ -137,7 +138,7 @@ class UciEngines:
                     json.dump(self.engines[name]['params'], f, indent=4)
             except Exception as e:
                 self.log.error(
-                    f"Can't save prefs to {engine_json_path}, {e}")
+                    f"Can't save engine.json to {engine_json_path}, {e}")
             try:
                 with open(engine_json_help_path, 'w') as f:
                     json.dump(self.engines[name]
@@ -304,8 +305,9 @@ class UciEngines:
 
 
 class UciAgent:
-    def __init__(self, engine_spec):
+    def __init__(self, engine_spec, prefs):
         self.active = False
+        self.prefs = prefs
         self.name = engine_spec['params']['name']
         self.log = logging.getLogger('UciAgent_'+self.name)
         self.engine = engine_spec['engine']

@@ -88,18 +88,18 @@ class Mchess:
 
     def init_agents(self):
         self.agents_all=[]
-        self.chess_link_agent = ChessLinkAgent(self.appque)
+        self.chess_link_agent = ChessLinkAgent(self.appque, self.prefs)
         self.chess_link_agent.max_plies = self.prefs['max_plies_board']
         self.agents_all+=[self.chess_link_agent]
 
-        self.term_agent = TerminalAgent(self.appque)
+        self.term_agent = TerminalAgent(self.appque, self.prefs)
         self.term_agent.max_plies = self.prefs['max_plies_terminal']
         self.agents_all+=[self.term_agent]
 
-        self.web_agent = WebAgent(self.appque)
+        self.web_agent = WebAgent(self.appque, self.prefs)
         self.agents_all+=[self.web_agent]
 
-        self.uci_engines = UciEngines(self.appque)
+        self.uci_engines = UciEngines(self.appque, self.prefs)
         self.uci_agent = None
         self.uci_agent2 = None
         avail_engines = ""
@@ -112,14 +112,14 @@ class Mchess:
         if len(self.uci_engines.engines) > 0:
             if self.prefs['computer_player_name'] in self.uci_engines.engines:
                 self.uci_agent = UciAgent(
-                    self.uci_engines.engines[self.prefs['computer_player_name']])
+                    self.uci_engines.engines[self.prefs['computer_player_name']], self.prefs)
             else:
                 uci_names = list(self.uci_engines.engines.keys())
-                self.uci_agent = UciAgent(uci_names[0])
+                self.uci_agent = UciAgent(uci_names[0], self.prefs)
             self.agents_all+=[self.uci_agent]
             if self.prefs['computer_player2_name'] in self.uci_engines.engines and self.prefs['computer_player2_name'] != '':
                 self.uci_agent2 = UciAgent(
-                    self.uci_engines.engines[self.prefs['computer_player2_name']])
+                    self.uci_engines.engines[self.prefs['computer_player2_name']], self.prefs)
                 self.agents_all+=[self.uci_agent2]
             else:
                 self.uci_agent2 = None
@@ -265,9 +265,10 @@ class Mchess:
         for p in self.agents_all:
             if p.agent_ready() is False:
                 self.log.error('Failed to initialize agent {}.'.format(p.name))
-            if len(ags) > 0:
-                ags += ", "
-            ags += '"'+p.name+'"'
+            else:
+                if len(ags) > 0:
+                    ags += ", "
+                ags += '"'+p.name+'"'
         self.log.info("Agents {} initialized".format(ags))
 
     def __init__(self):
@@ -668,7 +669,21 @@ class Mchess:
 
 if __name__ == '__main__':
     logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.INFO)
+       format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
+    logger = logging.getLogger('mchess')
+    logger.setLevel(logging.DEBUG)
+    fh = logging.FileHandler('mchess.log')
+    fh.setLevel(logging.DEBUG)
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.ERROR)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(ch)
 
     mc = Mchess()
     mc.game_state_machine()

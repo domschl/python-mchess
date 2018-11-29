@@ -7,9 +7,10 @@ import chess_link as cl
 
 
 class ChessLinkAgent:
-    def __init__(self, appque, timeout=30):
+    def __init__(self, appque, prefs, timeout=30):
         self.name = 'ChessLinkAgent'
         self.appque = appque
+        self.prefs = prefs
         self.log = logging.getLogger(self.name)
         self.cl_brd = cl.ChessLink(appque, self.name)
         self.init_position = False
