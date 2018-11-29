@@ -175,6 +175,8 @@ div.board {
 .variant {
     font-size: 6pt;
     padding-bottom: 0.25em;
+    padding-left: 4em;
+    text-indent:-4em;
 }
 .variant:nth-child(odd) {
     font-size: 6pt;
@@ -185,6 +187,17 @@ div.board {
 .movenr {
     font-size: 6pt;
     color: var(--color-turquoise);
+}
+
+.leadt {
+    font-size: 6pt;
+    color: var(--color-dlight);
+}
+
+.mainmove {
+    font-size: 6pt;
+    font-weight: bold;
+    /* background: var(--color-xdddark); */
 }
 
 .movenrb {

@@ -142,10 +142,10 @@ function wsConnect(address) {
             if (pi != -1) {
                 pgn = msg.pgn.substring(pi);
             }
-            pgn = pgn.replace(" *", "");
+            // pgn = pgn.replace(" *", "");
             pgn = pgn.replace(" ", "&nbsp;")
             var regex = /([0-9]+\.)/g;
-            pgn = pgn.replace(regex, "<span class=\"movenrb\"> &nbsp;$1</span>")
+            pgn = pgn.replace(regex, " <span class=\"movenrb\"> $1</span>")
             document.getElementById("mainmoves").innerHTML = pgn;
 
             if (miniBoard1 == null) {
@@ -212,7 +212,8 @@ function wsConnect(address) {
                 }
                 hd += " |";
                 StatHeader[actor] = hd;
-                var htmlpgn = "<div class=\"variant\">[" + msg.info.score + "] &nbsp;";
+                var htmlpgn = "<div class=\"variant\"><span class=\"leadt\">[" + msg.info.score + "]</span>&nbsp;&nbsp;";
+                var first = true;
                 for (var mvi in msg.info.variant) {
                     if (mvi == "fen") continue;
                     var mv = msg.info.variant[mvi];
@@ -222,7 +223,15 @@ function wsConnect(address) {
                     if (mv.length > 2) {
                         var mv2 = mv[2].replace('-', '‑');
                     }
-                    htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;" + mv2 + " ";
+                    if (first) {
+                        if (mv1 == '..')
+                            htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;<span class=\"mainmove\">" + mv2 + "</span> ";
+                        else
+                            htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;<span class=\"mainmove\">" + mv1 + "</span>&nbsp;" + mv2 + " ";
+                        first = false;
+                    } else {
+                        htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;" + mv2 + " ";
+                    }
                 }
                 htmlpgn += "</div>";
                 VariantInfo[actor][id] = htmlpgn

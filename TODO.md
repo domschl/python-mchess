@@ -1,19 +1,12 @@
 # Mchess todos
 
-## ChessLink fixes and enhancements
-
-- [x] Handle USB-reconnect
-- [x] Handle Bluetooth-reconnect
-- [x] Sync agent states (CL and others) to GUI-clients
-- [o] Select look-ahead engine for LED display
-- [ ] Fix errors with board-fast-forwards (missing moves)
-- [o] Verify consistent mutex usage
-
 ## Bugs and testing
 
 - [ ] Clear analysis of engines on new game or new pos
 - [ ] Analyse python-chess corruptions (thread race-conditions?)
-- [ ] Handle inline TODOs.
+- [ ] Filter duplicate UCI depth messages (esp. lc0)
+- [ ] Handle inline TODOs
+- [ ] ChessLink latency tests
 - [ ] Raspi event queue performance tests
 - [ ] General latency tests
 
@@ -59,3 +52,14 @@
 - [ ] Define proper agent JSON protocol (Net/JSON-UCI)
 - [ ] Unit-tests, Travis
 - [ ] PyPI publication
+
+## Done
+
+### ChessLink fixes and enhancements
+
+- [x] Handle USB-reconnect
+- [x] Handle Bluetooth-reconnect
+- [x] Sync agent states (CL and others) to GUI-clients
+- [x] Select look-ahead engine for LED display
+- [x] Verify consistent mutex usage
+
