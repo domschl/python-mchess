@@ -84,13 +84,14 @@ class ChessLinkAgent:
         self.cl_brd.show_deltas(pos, freq)
 
     def display_info(self, board, info):
-        if 'multipv_ind' in info:
-            if info['multipv_ind'] == 1:  # Main variant only
-                if 'variant' in info:
-                    self.visualize_variant(
-                        board, info['variant'], plies=self.max_plies)
-        else:
-            self.log.error('Unexpected info-format')
+        if info['actor'] == self.prefs['computer_player_name']:
+            if 'multipv_ind' in info:
+                if info['multipv_ind'] == 1:  # Main variant only
+                    if 'variant' in info:
+                        self.visualize_variant(
+                            board, info['variant'], plies=self.max_plies)
+            else:
+                self.log.error('Unexpected info-format')
 
     def set_valid_moves(self, board, val):
         if board.turn == chess.WHITE:
