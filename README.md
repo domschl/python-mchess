@@ -6,6 +6,7 @@
 `python-mchess` is a collections of libraries to work with Millennium's Chess Genius Exclusive chess board via the Chess Link interface.
 
 It provides two layers of functionality:
+
 * A hardware driver for the Chess Genius Exclusive chess board, supporting piece recognition and leds via USB or Bluetooth LE
 * A sample implementation to connect arbitrary UCI engines to the chess board.
 
@@ -16,12 +17,12 @@ Currently, the following platforms are under development:
 | USB          | x     | x            | x     | x       |
 | Bluetooth LE | x     | x            |       |
 
-
 ## Alpha installation instructions
 
 This project is under heavy development, and basically everything described below might change at some point.
 
 ### Dependencies
+
 `python-mchess` is written for Python 3.x
 
 `python-mchess` board driver for Chess Link depends on `PySerial` and (Linux/Raspberry Pi only) `BluePy`
@@ -35,14 +36,17 @@ pip3 install pyserial [bluepy] [python-chess]
 ```
 
 Then clone the repository
+
 ```bash
 git clone https://github.com/domschl/python-mchess
 ```
 
 Now configure some engines:
-```
+
+```bash
 cd mchess/engines
 ```
+
 Copy `engine-template.json` for each UCI engine to a file `<engine-name>.json`, and edit the fields `'name'` and `'path'`. 
 
 A sample content for stockfish in Linux would be: 
@@ -55,7 +59,8 @@ A sample content for stockfish in Linux would be:
     "active": true
 }
 ```
-Note: Windows users need to use paths with `\\` for proper json encoding.
+
+Note: Windows users need to use paths with `\\` or `/` for proper json encoding.
 
 #### Web client
 
@@ -67,11 +72,13 @@ Node JS packet manager `npm` is needed to install the javascript dependencies:
 cd mchess/web
 npm install
 ```
+
 This installs the dependencies `Normalize.css` and `cm-chessboard`.
 
 ### Start
 
 Then in directory `mchess`, simply start from console:
+
 ```bash
 python3 mchess.py
 ```
@@ -104,6 +111,7 @@ the best current line is displayed on the board for up to 3 half-moves (see `pre
 feature).
 
 ## Architecture
+
 ```
                                 +--------------------+
                                 |      mchess.py     |   Start and connect agents
