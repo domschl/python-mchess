@@ -18,6 +18,8 @@ from uci_agent import UciAgent, UciEngines
 from web_agent import WebAgent
 
 
+__version__="0.1.0"
+
 class Mchess:
     def write_preferences(self, pref):
         try:
@@ -668,12 +670,26 @@ class Mchess:
 
 
 if __name__ == '__main__':
+    msg="""
+ _______                          _                
+|__   __|                        (_)               
+    | |_   _ _ __ __ _ _   _  ___  _ ___  ___       
+    | | | | | '__/ _` | | | |/ _ \| / __|/ _ \      
+    | | |_| | | | (_| | |_| | (_) | \__ \  __/      
+    |_|\__,_|_|  \__, |\__,_|\___/|_|___/\___|      
+                    | |   _____ _         {} 
+                    |_|  / ____| |                  
+               _ __ ___ | |    | |__   ___  ___ ___ 
+              | '_ ` _ \| |    | '_ \ / _ \/ __/ __|
+              | | | | | | |____| | | |  __/\__ \__ \\
+              |_| |_| |_|\_____|_| |_|\___||___/___/"""
+    print(msg.format(__version__))
     logging.basicConfig(
-       format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
+       format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.WARNING)
     logger = logging.getLogger('mchess')
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.WARNING)
     fh = logging.FileHandler('mchess.log')
-    fh.setLevel(logging.DEBUG)
+    fh.setLevel(logging.WARNING)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
     ch.setLevel(logging.ERROR)
