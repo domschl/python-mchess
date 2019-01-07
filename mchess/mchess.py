@@ -66,7 +66,12 @@ class Mchess:
         if 'human_name' not in prefs:
             prefs['human_name'] = 'human'
             changed_prefs = True
-
+        if 'active_agents' not in prefs:
+            prefs['active_agents'] = {
+                "human": ["chess_link", "terminal", "web"],
+                "computer": ["stockfish", "lc0"]
+                }
+            changed_prefs=True
         if changed_prefs is True:
             self.write_preferences(prefs)
         return prefs
@@ -90,16 +95,26 @@ class Mchess:
 
     def init_agents(self):
         self.agents_all=[]
-        self.chess_link_agent = ChessLinkAgent(self.appque, self.prefs)
-        self.chess_link_agent.max_plies = self.prefs['max_plies_board']
-        self.agents_all+=[self.chess_link_agent]
 
-        self.term_agent = TerminalAgent(self.appque, self.prefs)
-        self.term_agent.max_plies = self.prefs['max_plies_terminal']
-        self.agents_all+=[self.term_agent]
+        if 'chess_link' in self.prefs['active_agents']['human']:
+            self.chess_link_agent = ChessLinkAgent(self.appque, self.prefs)
+            self.chess_link_agent.max_plies = self.prefs['max_plies_board']
+            self.agents_all+=[self.chess_link_agent]
+        else:
+            self.chess_link_agent=None
 
-        self.web_agent = WebAgent(self.appque, self.prefs)
-        self.agents_all+=[self.web_agent]
+        if 'terminal' in self.prefs['active_agents']['human']:
+            self.term_agent = TerminalAgent(self.appque, self.prefs)
+            self.term_agent.max_plies = self.prefs['max_plies_terminal']
+            self.agents_all+=[self.term_agent]
+        else:
+            self.term_agent=None
+
+        if 'web' in self.prefs['active_agents']['human']:
+            self.web_agent = WebAgent(self.appque, self.prefs)
+            self.agents_all+=[self.web_agent]
+        else:
+            self.web_agent=None
 
         self.uci_engines = UciEngines(self.appque, self.prefs)
         self.uci_agent = None
@@ -146,9 +161,9 @@ class Mchess:
 
     def get_human_agents(self):
         agents = []
-        if self.term_agent.agent_ready() is True:
+        if self.term_agent and self.term_agent.agent_ready() is True:
             agents += [self.term_agent]
-        if self.chess_link_agent.agent_ready() is True:
+        if self.chess_link_agent and self.chess_link_agent.agent_ready() is True:
             agents += [self.chess_link_agent]
         return agents
 
@@ -255,12 +270,13 @@ class Mchess:
         BUSY = 1
 
     def import_chesslink_position(self):
-        self.appque.put(
-            {'position_fetch': 'ChessLinkAgent', 'actor': self.chess_link_agent.name})
+        if self.chess_link_agent:
+            self.appque.put(
+                {'position_fetch': 'ChessLinkAgent', 'actor': self.chess_link_agent.name})
         # self.state = self.State.BUSY  # Check?
 
     def init_board_agents(self):
-        if self.chess_link_agent.agent_ready() and self.prefs['import_chesslink_position'] is True:
+        if self.chess_link_agent and self.chess_link_agent.agent_ready() and self.prefs['import_chesslink_position'] is True:
             self.import_chesslink_position()
 
         ags = ""
@@ -343,7 +359,8 @@ class Mchess:
     def quit(self):
         print("Quitting...")
         # leds off
-        self.chess_link_agent.cl_brd.set_led_off()
+        if self.chess_link_agent:
+            self.chess_link_agent.cl_brd.set_led_off()
         time.sleep(1)
         for agent in self.agents_all:
             fquit = getattr(agent, "quit", None)
@@ -670,7 +687,7 @@ class Mchess:
 
 
 if __name__ == '__main__':
-    msg="""
+    msg=r"""
  _______                          _                
 |__   __|                        (_)               
     | |_   _ _ __ __ _ _   _  ___  _ ___  ___       
