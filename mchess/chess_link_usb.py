@@ -36,10 +36,12 @@ class Transport():
         :param que: Python queue that will eceive events from chess board.
         :param protocol_dbg: True: byte-level ChessLink protocol debug messages
         """
+        self.log = logging.getLogger("ChessLinkUSB")
         if usb_support == False:
+            self.log.error(
+                'Cannot communicate: PySerial module not installed.')
             self.init = False
             return
-        self.log = logging.getLogger("ChessLinkUSB")
         self.que = que  # asyncio.Queue()
         self.init = True
         self.log.debug("USB init ok")

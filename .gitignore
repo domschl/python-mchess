@@ -9,3 +9,4 @@ chess_link_config.json
 mchess/engines/
 mchess/web/node_modules
 mchess/mchess.log
+mchess/web/package-lock.json

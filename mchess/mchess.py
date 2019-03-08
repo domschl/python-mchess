@@ -1,3 +1,4 @@
+import argparse
 import logging
 import sys
 import signal
@@ -687,6 +688,12 @@ class Mchess:
 
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(prog='python mchess.py')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='output verbose logging information')
+    args = parser.parse_args()
+
     msg=r"""
  _______                          _                
 |__   __|                        (_)               
@@ -701,15 +708,22 @@ if __name__ == '__main__':
               | | | | | | |____| | | |  __/\__ \__ \\
               |_| |_| |_|\_____|_| |_|\___||___/___/"""
     print(msg.format(__version__))
+    if args.verbose is True:
+        log_level=logging.DEBUG
+        log_level_e=logging.DEBUG
+    else:
+        log_level=logging.WARNING
+        log_level_e=logging.ERROR
+
     logging.basicConfig(
-       format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.WARNING)
+       format='%(asctime)s %(levelname)s %(name)s %(message)s', level=log_level)
     logger = logging.getLogger('mchess')
-    logger.setLevel(logging.WARNING)
+    logger.setLevel(log_level)
     fh = logging.FileHandler('mchess.log')
-    fh.setLevel(logging.WARNING)
+    fh.setLevel(log_level)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
+    ch.setLevel(log_level_e)
     # create formatter and add it to the handlers
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s %(message)s')
     fh.setFormatter(formatter)

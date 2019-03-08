@@ -139,6 +139,20 @@ feature).
 
 It whould be straight forward to include other agents at a later point.
 
+## Troubleshooting
+
+* Start with option `-v` to get more logging output:
+
+```bash
+python3 mchess.py
+```
+
+* Linux users: many distris require users to be be in group `DIALOUT` in order to access USB and serials.
+
+```bash
+# usermod -aG dialout <username>
+```
+
 ## Documentation
 
 [API Documentation for chess_link.py](https://domschl.github.io/python-mchess/doc/build/html/index.html)
