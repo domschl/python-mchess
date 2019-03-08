@@ -144,13 +144,13 @@ It whould be straight forward to include other agents at a later point.
 * Start with option `-v` to get more logging output:
 
 ```bash
-python3 mchess.py
+python3 mchess.py -v
 ```
 
 * Linux users: many distris require users to be be in group `DIALOUT` in order to access USB and serials.
 
 ```bash
-# usermod -aG dialout <username>
+usermod -aG dialout <username>
 ```
 
 ## Documentation
