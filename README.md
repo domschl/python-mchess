@@ -85,6 +85,8 @@ python3 mchess.py
 
 This will start chess agents for the chess board, automatically detecting board hardware via USB or BLuetooth LE (Linux, Raspberry PI only), and load the [first active] UCI engine (testet with Leela Chess Zero (Lc0) and Stockfish 9).
 
+Enter `help` in terminal to get an overview of available console commands (e.g. switch sides, take back moves, analyze position).
+
 The web client can be reached at `http://localhost:8001`. From remote use `http://computer-name:8001`.
 
 ![Early alpha web preview](https://raw.github.com/domschl/python-mchess/master/images/WebClientAlpha.png)
@@ -95,6 +97,9 @@ Note: Bluetooth LE hardware detection requires admin privileges for the one-time
 ```bash
 sudo python3 mchess.py
 ```
+Restart the program, once the board has connected (the connection address is saved in `chess_link_config.json`)
+
+Do NOT use `sudo` on subsequent starts, or the communication might fail.
 
 Once the board is found, stop the program and restart without `sudo`. You might want to set ownership for `chess_link_config.json` to your user-account, since the file will be rewritten, if the detected board orientation is changed.
 
@@ -153,6 +158,25 @@ python3 mchess.py -v
 usermod -aG dialout <username>
 ```
 
+* ChessLink communication debug
+
+Open `chess_link_config.json` and insert a line:
+
+`"protocol_debug": true,`
+
+like so:
+
+```json
+{
+"protocol_debug": true,
+"transport": "chess_link_bluepy",
+"address": "xx:xx:xx:xx:xx:xx",
+"orientation": true,
+"autodetect": true
+}
+```
+
+This will show bit-level communication with the ChessLink board.
 ## Documentation
 
 [API Documentation for chess_link.py](https://domschl.github.io/python-mchess/doc/build/html/index.html)
