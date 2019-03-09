@@ -11,6 +11,7 @@ class ChessLinkAgent:
         self.name = 'ChessLinkAgent'
         self.appque = appque
         self.prefs = prefs
+        self.ply_vis_delay = prefs['ply_vis_delay']
         self.log = logging.getLogger(self.name)
         self.cl_brd = cl.ChessLink(appque, self.name)
         self.init_position = False
@@ -77,7 +78,9 @@ class ChessLinkAgent:
             col = self.cl_brd.BLACK
         return col
 
-    def visualize_variant(self, board, moves, plies=1, freq=80):
+    def visualize_variant(self, board, moves, plies=1, freq=-1):
+        if freq == -1:
+            freq = self.ply_vis_delay
         if plies > 4:
             plies = 4
         pos = self.variant_to_positions(board, moves, plies)

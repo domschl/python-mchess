@@ -55,6 +55,9 @@ class Mchess:
         if 'max_plies_board' not in prefs:
             prefs['max_plies_board'] = 3
             changed_prefs = True
+        if 'ply_vis_delay' not in prefs:
+            prefs['ply_vis_delay'] = 80
+            changed_prefs = True
         if 'import_chesslink_position' not in prefs:
             prefs['import_chesslink_position'] = True
             changed_prefs = True
