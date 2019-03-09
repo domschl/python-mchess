@@ -708,6 +708,7 @@ if __name__ == '__main__':
               | | | | | | |____| | | |  __/\__ \__ \\
               |_| |_| |_|\_____|_| |_|\___||___/___/"""
     print(msg.format(__version__))
+    print("    Enter 'help' to see an overview of console commands")
     if args.verbose is True:
         log_level=logging.DEBUG
         log_level_e=logging.DEBUG

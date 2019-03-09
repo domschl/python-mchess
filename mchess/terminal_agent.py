@@ -417,27 +417,27 @@ class TerminalAgent:
                     appque.put({'turn': 'black', 'actor': self.name})
 
                 elif cmd == 'help':
-                    log.info('Terminal commands:')
-                    log.info('e2e4 - enter a valid move (in UCI format)')
-                    log.info('--  null move')
-                    log.info('a - analyze current position')
-                    log.info('b - take back move')
-                    log.info(
+                    print('Terminal commands:')
+                    print('e2e4 - enter a valid move (in UCI format)')
+                    print('--  null move')
+                    print('a - analyze current position')
+                    print('b - take back move')
+                    print(
                         'c - change cable orientation (eboard cable left/right')
-                    log.info("fen <fen> - set board to <fen> position")
-                    log.info(
+                    print("fen <fen> - set board to <fen> position")
+                    print(
                         'g - go, current player (default white) or force current move')
-                    log.info('h <ply> - show hints for <ply> levels on board')
-                    log.info(
+                    print('h <ply> - show hints for <ply> levels on board')
+                    print(
                         'm <mode> - modes: PP: Player-Player, PE: Engine-Player, EP, EE.')
-                    log.info('n - new game')
-                    log.info('p - import ChessLink board position')
-                    log.info('q - quit')
-                    log.info('s - stop and discard calculation')
-                    log.info('tw - next move: white')
-                    log.info('tb - next move: black')
+                    print('n - new game')
+                    print('p - import ChessLink board position')
+                    print('q - quit')
+                    print('s - stop and discard calculation')
+                    print('tw - next move: white')
+                    print('tb - next move: black')
                 else:
-                    log.info(
+                    print(
                         'Unknown keyboard cmd <{}>, enter "help" for a list of valid commands.'.format(cmd))
 
     def keyboard_handler(self):
