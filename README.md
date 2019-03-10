@@ -156,6 +156,30 @@ A few caveats:
 
 ### Json files in `mchess/engines`
 
+Currently `mchess` supports up to two concurrent UCI chess engines. Each engine needs a configuration file `mchess/engines/<engine-name>.json`. On first start `mchess.py` automatically searches for stockfish, komodo and crafty.
+
+The mandatory fields in `<engine-name>.json` are:
+
+| Field                | Default  | Description                                             |
+| -------------------- | -------- | --------------------------------------------------------|
+| `name`               | e.g. `"stockfish"`     | Name of executable of the engine, e.g. `stockfish`. Unfortunately this name must be precisely equal to the name of the json file, and must be referenced in `preferences.json` as either `computer_player_name` or `computer_player2_name` and within `active_agents`. That is subject to improvement in the future. |
+| `path` | e.g. `"/usr/local/bin/stockfish"` | Path to the engine executable. Windows users must either use `\\` or `/` in json files as path separators. |
+| `active` | `true` | `mchess.py` currently uses only the first two active engines. If more engines are configured, the unused ones should be set to `false` |
+
+Once the UCI engine is started for the first time, the UCI-options of the engine are enumerated and added to the `<engine-name>.json` config file. That allows further customization of each engine. Some commonly used options are:
+
+| Field                | Default  | Description                                             |
+| -------------------- | -------- | --------------------------------------------------------|
+| `Threads`            | `1`      | Number of threads used for the engine, increase for higher engine performance. |
+| `Hash` | `""` | Size of hash table, usually in MB. Increase for better performance |
+| `MultiPV` | `1` | Increasing this shows more concurrent lines during analysis both on terminal and web client. A maximum of `4` is recommended, so not enforced. |
+| `SyzygyPath` | `""` | Path to tablebase endgame databases. `mchess` outputs the number of tablebase references (TB) |
+
+Warning: all customizations are reset, if an engine-update changes the available UCI-options. If a new engine version introduces
+new UCI-options, all fields are reset to engine-defaults.
+
+Additionally a file `<engine-name>-help.json` is auto-created, it contains descriptions for each UCI-option, and will be used in 
+the future for an UCI-customization option.
 
 ## Architecture
 
