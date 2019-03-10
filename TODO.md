@@ -27,6 +27,7 @@
 
 ## Agents and main
 
+- [ ] Current UCI API of python-chess is deprecated. Change to ASYNC engine api.
 - [ ] PGN-Libraries and ECO handling
 - [ ] Data import module
 
