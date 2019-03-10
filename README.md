@@ -125,7 +125,7 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 
 | Field                | Default  | Description                                             |
 | -------------------- | -------- | --------------------------------------------------------|
-| `think_ms`           | `500`    | Number of milli seconds, computer calculates for a move |
+| `think_ms`           | `500`    | Number of milli seconds, computer calculates for a move.<br>Better level configuration will be added at a later point. |
 | `use_unicode_figures`| `true`   | Most terminals can display Unicode chess figures, if<br>that doesn't work, set to `false`, and letters are used for<br>chess pieces instead.|                                   |
 
 ### `chess_link_config.json`, configuration options for Millennium ChessLink hardware
