@@ -115,6 +115,24 @@ Simply start making a move on the board, and the UCI engine will reply. During t
 the best current line is displayed on the board for up to 3 half-moves (see `preferences.json` to enable/disable this
 feature).
 
+Enter `help` on the terminal console to get an overview of commands, and see below for more customization options
+
+## Customization
+
+Currrently, there doesn't exist much of a GUI to configure `mchess`, and configuration relies on a number of JSON files.
+
+### `preferences.json`, general options for mchess
+
+| Field               | Default  | Description                                             |
+| ------------------- | -------- | -------------------------ßßßßßßßßßßßßß------------------|
+| think_ms            | 500      | Number of milli seconds, computer calculates for a move |
+| use_unicode_figures | true     | Most terminals can display Unicode chess figures, if that doesn't work, set to false, and letters are used for chess pieces instead |
+
+### `chess_link_config.json`, configuration options for Millennium ChessLink hardware
+
+### Json files in `mchess/engines`
+
+
 ## Architecture
 
 ```
