@@ -126,7 +126,13 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 | Field                | Default  | Description                                             |
 | -------------------- | -------- | --------------------------------------------------------|
 | `think_ms`           | `500`    | Number of milli seconds, computer calculates for a move.<br>Better level configuration will be added at a later point. |
-| `use_unicode_figures`| `true`   | Most terminals can display Unicode chess figures, if<br>that doesn't work, set to `false`, and letters are used for<br>chess pieces instead.|                                   |
+| `use_unicode_figures`| `true`   | Most terminals can display Unicode chess figures, if<br>that doesn't work, set to `false`, and letters are used for<br>chess pieces instead.|
+| `invert_term_color`  | `false`  | How chess board colors black and white are displayed<br>might depend on the background color of your<br>terminal. Change, if black and white are mixed up. |
+| `max_plies_terminal` | `6`      | The number of half-moves (plies) that are displayed<br>in analysis in terminal |
+| `max_plies_board`    | `3`      | The number of half-moves that are indicated through<br>blink led sequences on the Millennium<br>chess board. Maximum (due to hardware protocol limitations)<br>is `3`. If more than one UCI engine is used<br>for analysis, the results of the first engine are shown.|
+| `ply_vis_delay`      | `80`     | The delay used went indicating move-sequences on the<br>Millenium chess board. Use a higher value (e.g. `160`)<br>to slow down the speed of change. |
+| `import_chesslink_position` | `true` | On `true` the current position on the Millennium chess board<br> is imported at start of `mchess.py`.<br>On `false`, always the start position is used. |
+| `computer_player_name` | `stockfish` | Name of the first computer UCI engine.<br>It must correspond to the name of a json file in<br>`mchess/engines/\<computername\>.json`. The first<br>computer_player is the actual oponent in <br>human-computer games and is used for<br>display of analysis on the Millennium board.<br>Spelling (including case) must match engine filename _and_<br>`name` field in `\<engine\>.json`.<br>[This is not really an optimal solution and will change.] |
 
 ### `chess_link_config.json`, configuration options for Millennium ChessLink hardware
 
