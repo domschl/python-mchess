@@ -130,7 +130,7 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 | `invert_term_color`  | `false`  | How chess board colors black and white are displayed might depend on the background color of your terminal. Change, if black and white are mixed up. |
 | `max_plies_terminal` | `6`      | The number of half-moves (plies) that are displayed in analysis in terminal |
 | `max_plies_board`    | `3`      | The number of half-moves that are indicated through blink led sequences on the Millennium chess board. Maximum (due to hardware protocol limitations) is `3`. If more than one UCI engine is used for analysis, the results of the first engine are shown.|
-| `ply_vis_delay`      | `80`     | The delay used went indicating move-sequences on the Millenium chess board. Use a higher value (e.g. `160`) to slow down the speed of change. |
+| `ply_vis_delay`      | `80`     | The delay used went indicating move-sequences on the  Millennium chess board. Use a higher value (e.g. `160`) to slow down the speed of change. |
 | `import_chesslink_position` | `true` | On `true` the current position on the Millennium chess board  is imported at start of `mchess.py`. On `false`, always the start position is used. |
 | `computer_player_name` | `stockfish` | Name of the first computer UCI engine. It must correspond to the name of a json file in `mchess/engines/<computername>.json`. The first computer_player is the actual oponent in  human-computer games and is used for display of analysis on the Millennium board. Spelling (including case) must match engine filename _and_ `name` field in `<engine>.json`. [This is not really an optimal solution and will change.] |
 | `computer_player2_name` | `""` | Name of optional second UCI engine, used for computer-computer games and as second, concurrent analysis engine. |
@@ -139,7 +139,7 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 
 ### `chess_link_config.json`, configuration options for Millennium ChessLink hardware
 
-This file configures the Millenium chess board ChessLink hardware connection. This file is created during automatic hardware
+This file configures the  Millennium chess board ChessLink hardware connection. This file is created during automatic hardware
 detection at start of `mchess.py`.
 
 A few caveats:
