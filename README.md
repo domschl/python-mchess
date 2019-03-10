@@ -139,6 +139,21 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 
 ### `chess_link_config.json`, configuration options for Millennium ChessLink hardware
 
+This file configures the Millenium chess board ChessLink hardware connection. This file is created during automatic hardware
+detection at start of `mchess.py`.
+
+A few caveats:
+
+* Automatic Bluetooth-LE hardware detection (Linux only) requires root, `sudo python3 mchess.py`. After successful hardware-detection, `mchess.py` should be restarted _without_ `sudo`.
+* If `mchess.py` has been started with `sudo`, it is advisible to change the ownership of `chess_link_config.json` to the user account that is used for games, otherwise `mchess.py` cannot update the configuration (e.g. orientation changes) automatically. This will be simplified in the future.
+
+| Field                | Default  | Description                                             |
+| -------------------- | -------- | --------------------------------------------------------|
+| `transport` | `chess_link_usb` | Name of the Python module to connect to the ChessLink hardware, currently supported are `chess_link_usb` or `chess_link_bluepy`. It's possible to add additional implementations (e.g. macOS or Windows Bluetooth) at a later time. |
+| `address` | `""` | Bluetooth address or USB port name. |
+| `orientation` | true | Orientation of the Millennium chess board. The orientation is detected and saved automatically as soon as the start position is setup on the Millennium board.
+| `autodetect` | `true` | On `true`, automatic hardware detection of Millennium ChessLink is tried on each start of `mchess.py`, if the default connection does not work. Setting to `false` disables automatic hardware detection (e.g. if no board hardware is available) |
+
 ### Json files in `mchess/engines`
 
 
