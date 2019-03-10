@@ -123,10 +123,12 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 
 ### `preferences.json`, general options for mchess
 
-| Field               | Default  | Description                                             |
-| ------------------- | -------- | -------------------------ßßßßßßßßßßßßß------------------|
-| think_ms            | 500      | Number of milli seconds, computer calculates for a move |
-| use_unicode_figures | true     | Most terminals can display Unicode chess figures, if that doesn't work, set to false, and letters are used for chess pieces instead |
+| Field                | Default  | Description                                             |
+| -------------------- | -------- | --------------------------------------------------------|
+| `think_ms`           | `500`    | Number of milli seconds, computer calculates for a move |
+| `use_unicode_figures`| `true`   | Most terminals can display Unicode chess figures, if    |
+|                      |          |that doesn't work, set to `false`, and letters are used for|
+|                      |          | chess pieces instead.                                   |
 
 ### `chess_link_config.json`, configuration options for Millennium ChessLink hardware
 
