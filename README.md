@@ -134,6 +134,8 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 | `import_chesslink_position` | `true` | On `true` the current position on the Millennium chess board  is imported at start of `mchess.py`. On `false`, always the start position is used. |
 | `computer_player_name` | `stockfish` | Name of the first computer UCI engine. It must correspond to the name of a json file in `mchess/engines/<computername>.json`. The first computer_player is the actual oponent in  human-computer games and is used for display of analysis on the Millennium board. Spelling (including case) must match engine filename _and_ `name` field in `<engine>.json`. [This is not really an optimal solution and will change.] |
 | `computer_player2_name` | `""` | Name of optional second UCI engine, used for computer-computer games and as second, concurrent analysis engine. |
+| `human_name` | `human` | Name of human player displayed in terminal. This will change (support for second name) |
+| `active_agents` | `{ "human": ["chess_link", "terminal", "web"], "computer": ["stockfish", "lc0"]}` | Work in progress! A list of active agent modules. The agent-architecture is very flexible and allow adding arbitrary input and output hard- and software or interfaces to remote sites. |
 
 ### `chess_link_config.json`, configuration options for Millennium ChessLink hardware
 
