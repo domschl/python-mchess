@@ -428,8 +428,8 @@ class TerminalAgent:
                     print(
                         'g - go, current player (default white) or force current move')
                     print('h <ply> - show hints for <ply> levels on board')
-                    print(
-                        'm <mode> - modes: PP: Player-Player, PE: Engine-Player, EP, EE.')
+                    print("m < mode > - modes: PP: Player-Player, PE: Player-Engine, ")
+                    print("                    EP: Engine-Player, EE: Engine1-Engine2.")
                     print('n - new game')
                     print('p - import ChessLink board position')
                     print('q - quit')
