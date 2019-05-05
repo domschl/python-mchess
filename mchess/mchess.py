@@ -584,18 +584,19 @@ class Mchess:
                     self.state = self.State.IDLE
 
                 if 'go' in msg:
+                    if self.analysis_active is True:
+                        self.log.debug("Aborting analysis...")
+                        self.analysis_debris=time.time()
+                        self.analysis_active=False
+                    self.stop(new_mode=None)
                     if (self.board.turn==chess.WHITE and self.mode==self.Mode.ENGINE_PLAYER) or (self.board.turn==chess.BLACK and self.mode==self.Mode.PLAYER_ENGINE):
-                        old_mode=self.mode
-                        self.stop()
-                        self.set_mode(old_mode)
+                        pass
                     else:
-                        self.stop()
                         if self.board.turn == chess.WHITE:
                             self.set_mode(self.Mode.ENGINE_PLAYER)
                         else:
                             self.set_mode(self.Mode.PLAYER_ENGINE)
                         self.update_display_board()
-                        self.state = self.State.IDLE
 
                 if 'analysis' in msg:
                     self.stop()
@@ -662,8 +663,11 @@ class Mchess:
 
                 if 'stop' in msg:
                     # self.analysis_active=False
+                    if self.analysis_active is True:
+                        self.log.debug("Aborting analysis...")
+                        self.analysis_debris=time.time()
+                        self.analysis_active=False
                     self.stop()
-                    self.state=self.State.IDLE
 
                 if 'curmove' in msg:
                     # if time.time()-self.last_info > 0.04:  # throttle moved to event source
