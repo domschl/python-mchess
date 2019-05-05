@@ -667,7 +667,7 @@ class Mchess:
                         self.log.debug("Aborting analysis...")
                         self.analysis_debris=time.time()
                         self.analysis_active=False
-                    self.stop()
+                    self.stop(silent=False)
 
                 if 'curmove' in msg:
                     # if time.time()-self.last_info > 0.04:  # throttle moved to event source
