@@ -44,12 +44,51 @@ class UciEngines:
             self.log.warning(
                 'No UCI engines found, and none is defined in engines subdir.')
         self.engines = {}
+        for engine_json_path in self.engine_json_list:
+            if '-template' in engine_json_path or '-help' in engine_json_path:
+                continue
+            try:
+                with open(engine_json_path, 'r') as f:
+                    engine_json = json.load(f)
+            except:
+                self.log.error(
+                    f'Failed to read UCI engine description {engine_json_path}')
+                continue
+            if 'name' not in engine_json:
+                self.log.error(
+                    f"Mandatory parameter 'name' is not in UCI description {engine_json_path}, ignoring this engine.")
+                continue
+            if 'path' not in engine_json:
+                self.log.error(
+                    f"Mandatory parameter 'path' is not in UCI description {engine_json_path}, ignoring this engine.")
+                continue
+            if os.path.exists(engine_json['path']) is False:
+                self.log.error(
+                    f"Invalid path {engine_json['path']} in UCI description {engine_json_path}, ignoring this engine.")
+                continue
+
+            if 'active' not in engine_json or engine_json['active'] is False:
+                self.log.debug(
+                    f"UCI engine at {engine_json_path} has not property 'active': true, ignoring this engine.")
+                continue
+
+            base_name, _ = os.path.splitext(engine_json_path)
+            engine_json_help_path = base_name + "-help.json"
+            engine_json['help_path'] = engine_json_help_path
+            name = engine_json['name']
+            self.engines[name] = {}
+            self.engines[name]['params'] = engine_json
+        self.log.debug(f"{len(self.engines)} engine descriptions loaded.")
+
+
+'''
+    def debris():
         asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())
         asyncio.run(self.open_ucis())
 
         self.log.info("Starting ping timer...")
         self.timer_sec = 0.05
-        self.loop=asyncio.get_event_loop()
+        self.loop = asyncio.get_event_loop()
         thr = threading.Timer(self.timer_sec, self.timer_thread)
         thr.daemon = True
         thr.start()
@@ -67,34 +106,34 @@ class UciEngines:
     #     asyncio.run(self.open_ucis())
     #     self.log.info("done open_ucis!")
 
-    async def async_ping(self):
-        for e in self.engines:
-            self.log.debug(f"thr ping {e}")
-            await self.engines[e]['engine'].ping()
-            self.log.debug(f"thr pong {e}")
+    # async def async_ping(self):
+    #     for e in self.engines:
+    #         self.log.debug(f"thr ping {e}")
+    #         await self.engines[e]['engine'].ping()
+    #         self.log.debug(f"thr pong {e}")
 
-    def timer_thread(self):
-        self.log.info("T-Thr")
-        asyncio.set_event_loop(self.loop)
-        asyncio.run(self.async_ping())
-        # cur_time = time.time()
-        thr = threading.Timer(self.timer_sec, self.timer_thread)
-        thr.daemon = True
-        thr.start()
+    # def timer_thread(self):
+    #     self.log.info("T-Thr")
+    #     asyncio.set_event_loop(self.loop)
+    #     asyncio.run(self.async_ping())
+    #     # cur_time = time.time()
+    #     thr = threading.Timer(self.timer_sec, self.timer_thread)
+    #     thr.daemon = True
+    #     thr.start()
 
-    async def open_ucis(self):
-        self.log.info("entered open_ucis()")
-        tasks=[]
-        for engine_json_path in self.engine_json_list:
-            self.log.info(f"Open UCIs: {engine_json_path}")
-            if '-help.json' in engine_json_path or 'engine-template.json' in engine_json_path:
-                continue
-            self.log.debug(f'Checking UCI engine {engine_json_path}')
-            tasks.append(asyncio.create_task(self.open_engine(engine_json_path)))
-        for task in tasks:
-            await task
-        self.log.info("opening done.")
-        self.opened=True
+    # async def open_ucis(self):
+    #     self.log.info("entered open_ucis()")
+    #     tasks=[]
+    #     for engine_json_path in self.engine_json_list:
+    #         self.log.info(f"Open UCIs: {engine_json_path}")
+    #         if '-help.json' in engine_json_path or 'engine-template.json' in engine_json_path:
+    #             continue
+    #         self.log.debug(f'Checking UCI engine {engine_json_path}')
+    #         tasks.append(asyncio.create_task(self.open_engine(engine_json_path)))
+    #     for task in tasks:
+    #         await task
+    #     self.log.info("opening done.")
+    #     self.opened=True
 
     async def open_engine(self, engine_json_path):
         try:
@@ -127,6 +166,8 @@ class UciEngines:
         name = engine_json['name']
         self.engines[name] = {}
         self.engines[name]['params'] = engine_json
+
+        # ----
         try:
             transport, engine = await chess.engine.popen_uci(
                 engine_json['path'])
@@ -204,9 +245,9 @@ class UciEngines:
 
         # if 'Ponder' in opts:
         #     self.engines[name]['use_ponder'] = opts['Ponder']
-        # else:  
+        # else:
         #     self.engines[name]['use_ponder'] = False
-        auto_opts=['Ponder', 'MultiPV', 'UCI_Chess960']
+        auto_opts = ['Ponder', 'MultiPV', 'UCI_Chess960']
         for o in auto_opts:
             if o in opts:
                 del opts[o]
@@ -219,7 +260,9 @@ class UciEngines:
         self.log.info(f"Pong {name}")
         # asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())
         # self.engines[name]['engine'].isready()
+'''
 
+'''
     class UciHandler():
         def __init__(self):
             self.que = None
@@ -275,7 +318,7 @@ class UciEngines:
             #         else:
             #             rep['move']['score'] = '{:.2f}'.format(
             #                 float(score)/100.0)
-            
+
             # if self.cdepth is not None:
             #     rep['move']['depth'] = self.cdepth
             # if self.cseldepth is not None:
@@ -365,27 +408,30 @@ class UciEngines:
             self.ctbhits = n
             self.que.put({'tbhits': n})
             # super().tbhits(n)
+'''
 
 
 class UciAgent:
-    def __init__(self, appque, engine_spec, prefs):
+    def __init__(self, appque, engine_json, prefs):
         self.active = False
-        self.que=appque
+        self.que = appque
+        self.engine_json = engine_json
         self.prefs = prefs
-        self.name = engine_spec['params']['name']
+        self.name = engine_json['name']
         self.log = logging.getLogger('UciAgent_'+self.name)
-        self.engine = engine_spec['engine']
+        # self.engine = engine_spec['engine']
         # self.ponder_board = None
         self.active = True
         self.busy = False
+        self.cmd_que = queue.Queue()
         # self.loop=asyncio.new_event_loop()
-        # self.worker = threading.Thread(target=self.async_agent_thread, args=())
-        # self.worker.setDaemon(True)
-        # self.worker.start()
+        self.worker = threading.Thread(target=self.async_agent_thread, args=())
+        self.worker.setDaemon(True)
+        self.worker.start()
 
     # async def fake_open(self, filepath):
     #    _, self.engine = await chess.engine.popen_uci(filepath) # engine_spec['engine']
-        
+
     async def async_quit(self):
         await self.engine.quit()
 
@@ -398,25 +444,124 @@ class UciAgent:
     def agent_ready(self):
         return self.active
 
-    async def do_go(self, board, mtime, ponder=False):
-        mtime=mtime/1000.0
+    async def async_go(self, board, mtime, ponder=False):
+        mtime = mtime/1000.0
         # _, self.engine = await chess.engine.popen_uci('/usr/local/bin/stockfish')
         self.log.info(f"{self.name} go, mtime={mtime}, board={board}")
-        result=await self.engine.play(board, chess.engine.Limit(time=0.1))
+        result = await self.engine.play(board, chess.engine.Limit(time=0.1))
         self.log.info("end go")
         board.push(result.move)
         rep = {'move': {
-                        'uci': result.move.uci(),
-                        'actor': self.name
-                    }}
+            'uci': result.move.uci(),
+            'actor': self.name
+        }}
         self.log.info(f"Queing result: {rep}")
         self.que.put(rep)
 
+    async def uci_open_engine(self):
+        try:
+            transport, engine = await chess.engine.popen_uci(
+                self.engine_json['path'])
+            self.engine = engine
+            self.transport = transport
+            self.log.info(f"Engine {self.name} opened.")
+        except:
+            self.log.error(
+                f"Failed to popen UCI engine {self.name} at {self.engine_json['path']}, ignoring this engine.")
+            self.engine = None
+            self.transport = None
+            return False
+
+        optsh = {}
+        opts = {}
+        rewrite_json = False
+        if os.path.exists(self.engine_json['path']) is False:
+            rewrite_json = True
+            self.engine_json['uci-options'] = {}
+        if 'uci-options' not in self.engine_json or self.engine_json['uci-options'] == {}:
+            rewrite_json = True
+            self.engine_json['uci-options'] = {}
+        else:
+            for opt in self.engine_json['engine'].options:
+                if opt not in self.engine_json['uci-options']:
+                    entries = self.engine_json['engine'].options[opt]
+                    # Ignore buttons
+                    if entries.type != 'button':
+                        self.log.warning(
+                            'New UCI option {} for {}, resetting to defaults'.format(opt, self.name))
+                        rewrite_json = True
+
+        if rewrite_json is True:
+            self.log.info("Writing defaults for {} to {}".format(
+                self.name, self.engine_json['path']))
+            for opt in self.engine_json['engine'].options:
+                entries = self.engine_json['engine'].options[opt]
+                optvs = {}
+                optvs['name'] = entries.name
+                optvs['type'] = entries.type
+                optvs['default'] = entries.default
+                optvs['min'] = entries.min
+                optvs['max'] = entries.max
+                optvs['var'] = entries.var
+                optsh[opt] = optvs
+                # TODO: setting buttons to their default causes python_chess uci to crash (komodo 9), see above
+                if entries.type != 'button':
+                    opts[opt] = entries.default
+            self.engine_json['uci-options'] = opts
+            self.engine_json['uci-options-help'] = optsh
+            try:
+                with open(self.engine_json['path'], 'w') as f:
+                    json.dump(self.engine_json, f, indent=4)
+            except Exception as e:
+                self.log.error(
+                    f"Can't save engine.json to {self.engine_json['path']}, {e}")
+            try:
+                with open(self.engine_json['help_path'], 'w') as f:
+                    json.dump(
+                        self.engine_json['uci-options-help'], f, indent=4)
+            except Exception as e:
+                self.log.error(
+                    f"Can't save help to {self.engine_json['help_path']}, {e}")
+        else:
+            opts = self.engine_json['uci-options']
+
+        # if 'Ponder' in opts:
+        #     self.engines[name]['use_ponder'] = opts['Ponder']
+        # else:
+        #     self.engines[name]['use_ponder'] = False
+        auto_opts = ['Ponder', 'MultiPV', 'UCI_Chess960']
+        for o in auto_opts:
+            if o in opts:
+                del opts[o]
+
+        await self.engine.configure(opts)
+        await asyncio.sleep(0.1)
+
+        self.log.info(f"Ping {self.name}")
+        await self.engine.ping()
+        self.log.info(f"Pong {self.name}")
+        return True
+
+    async def uci_event_loop(self):
+        ok = await self.uci_open_engine()
+        self.loop_active = True
+        if ok is True:
+            while self.loop_active is True:
+                try:
+                    cmd = self.cmd_que.get_nowait()
+                    self.log("Go!")
+                    await self.async_go(cmd['board'], cmd['mtime'], cmd['ponder'])
+                except:
+                    await asyncio.sleep(0.05)
+
     def async_agent_thread(self):
-        pass
-        # asyncio.run(blurb)
+        asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())
+        asyncio.run(self.uci_event_loop())
 
     def go(self, board, mtime, ponder=False):
+        self.log.info('cmd_que put:')
+        self.cmd_que.put({'board': board, 'mtime': mtime, 'ponder': ponder})
+        '''
         # asyncio.run(self.fake_open('/usr/local/bin/stockfish'))
         self.log.info("Start a-run")
         # asyncio.set_event_loop(self.loop)
@@ -431,3 +576,4 @@ class UciAgent:
         # else:
         #     self.engine.go(movetime=mtime,
         #                    async_callback=True, ponder=ponder)
+'''
