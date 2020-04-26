@@ -176,13 +176,18 @@ class UciEngines:
         else:
             opts = self.engines[name]['params']['uci-options']
 
-        if 'Ponder' in opts:
-            self.engines[name]['use_ponder'] = opts['Ponder']
-        else:
-            self.engines[name]['use_ponder'] = False
+        # if 'Ponder' in opts:
+        #     self.engines[name]['use_ponder'] = opts['Ponder']
+        # else:  
+        #     self.engines[name]['use_ponder'] = False
+        auto_opts=['Ponder', 'MultiPV', 'UCI_Chess960']
+        for o in auto_opts:
+            if o in opts:
+                del opts[o]
 
-        # self.engines[name]['engine'].setoption(opts)
+        await self.engines[name]['engine'].configure(opts)
         time.sleep(0.1)
+        self.log.warning("Not implemented: .isready()")
         # self.engines[name]['engine'].isready()
 
     class UciHandler():
