@@ -39,16 +39,37 @@ class UciEngines:
                                 f'Failed to write no engine description {engine_json_path}')
                             continue
                     self.log.info(f'Found new UCI engine {engine_name}')
-        engine_json_list = glob.glob('engines/*.json')
-        if len(engine_json_list) == 0:
+        self.engine_json_list = glob.glob('engines/*.json')
+        if len(self.engine_json_list) == 0:
             self.log.warning(
                 'No UCI engines found, and none is defined in engines subdir.')
         self.engines = {}
-        for engine_json_path in engine_json_list:
+        self.worker = threading.Thread(target=self.async_uci_thread, args=())
+        self.worker.setDaemon(True)
+        self.worker.start()
+        self.opened=False
+        while self.opened is False:
+            time.sleep(0.5)
+            self.log.debug("Waiting for engines...")
+
+    def async_uci_thread(self):
+        self.log.info("calling open_ucis via asyncio.run()")
+        asyncio.run(self.open_ucis())
+        self.log.info("done open_ucis!")
+
+    async def open_ucis(self):
+        self.log.info("entered open_ucis()")
+        tasks=[]
+        for engine_json_path in self.engine_json_list:
+            self.log.info(f"Open UCIs: {engine_json_path}")
             if '-help.json' in engine_json_path or 'engine-template.json' in engine_json_path:
                 continue
-            self.log.debug(f'Checking UCI engine {engine_name}')
-            self.open_engine(engine_json_path)
+            self.log.debug(f'Checking UCI engine {engine_json_path}')
+            tasks.append(asyncio.create_task(self.open_engine(engine_json_path)))
+        for task in tasks:
+            await task
+        self.log.info("opening done.")
+        self.opened=True
 
     async def open_engine(self, engine_json_path):
         try:
@@ -97,10 +118,10 @@ class UciEngines:
         self.engines[name]['info_handler'].name = name
         self.engines[name]['info_handler'].active = True
         self.engines[name]['info_handler'].que = self.appque
-        self.engines[name]['engine'].info_handlers.append(
-            self.engines[name]['info_handler'])
+        # self.engines[name]['engine'].info_handlers.append(
+        #    self.engines[name]['info_handler'])
 
-        self.engines[name]['engine'].uci()
+        # self.engines[name]['engine'].uci()
 
         optsh = {}
         opts = {}
@@ -160,11 +181,11 @@ class UciEngines:
         else:
             self.engines[name]['use_ponder'] = False
 
-        self.engines[name]['engine'].setoption(opts)
+        # self.engines[name]['engine'].setoption(opts)
         time.sleep(0.1)
-        self.engines[name]['engine'].isready()
+        # self.engines[name]['engine'].isready()
 
-    class UciHandler(chess.uci.InfoHandler):
+    class UciHandler():
         def __init__(self):
             self.que = None
             self.name = 'UciAgent'
@@ -200,9 +221,10 @@ class UciEngines:
             self.que_cache = {}
 
         def post_info(self):
+            pass
             # Called whenever a complete info line has been processed.
             # print(self.info)
-            super().post_info()  # Release the lock
+            # super().post_info()  # Release the lock
 
         def on_bestmove(self, bestmove, ponder):
             self.log.debug("Best: {}, ponder: {}".format(bestmove, ponder))
@@ -210,15 +232,16 @@ class UciEngines:
                 'uci': bestmove.uci(),
                 'actor': self.name
             }}
-            with self:
-                if 1 in self.info["score"]:
-                    score = self.info["score"][1].cp
-                    mate = self.info["score"][1].mate
-                    if mate is not None:
-                        rep['move']['score'] = '#{}'.format(mate)
-                    else:
-                        rep['move']['score'] = '{:.2f}'.format(
-                            float(score)/100.0)
+            # with self:
+            #     if 1 in self.info["score"]:
+            #         score = self.info["score"][1].cp
+            #         mate = self.info["score"][1].mate
+            #         if mate is not None:
+            #             rep['move']['score'] = '#{}'.format(mate)
+            #         else:
+            #             rep['move']['score'] = '{:.2f}'.format(
+            #                 float(score)/100.0)
+            
             # if self.cdepth is not None:
             #     rep['move']['depth'] = self.cdepth
             # if self.cseldepth is not None:
@@ -244,7 +267,7 @@ class UciEngines:
             self.mpv_num = 1
             self.que_cache = {}
 
-            super().on_bestmove(bestmove, ponder)
+            # super().on_bestmove(bestmove, ponder)
 
         def score(self, cp, mate, lowerbound, upperbound):
             # if self.last_board.turn == chess.BLACK:
@@ -257,11 +280,11 @@ class UciEngines:
                 self.cscore = '#{}'.format(mate)
             else:
                 self.cscore = '{:.2f}'.format(float(cp)/100.0)
-            super().score(cp, mate, lowerbound, upperbound)
+            # super().score(cp, mate, lowerbound, upperbound)
 
         def multipv(self, num):
             self.mpv_num = num
-            super().multipv(num)
+            # super().multipv(num)
 
         def pv(self, moves):
             rep = {'curmove': {
@@ -287,27 +310,27 @@ class UciEngines:
                 rep['timestamp'] = self.que_cache[que_key]['timestamp']
             self.que_cache[que_key] = rep
             # self.que.put(rep)
-            super().pv(moves)
+            # super().pv(moves)
 
         def depth(self, n):
             self.cdepth = n
             self.que.put({'depth': n})
-            super().depth(n)
+            # super().depth(n)
 
         def seldepth(self, n):
             self.cseldepth = n
             self.que.put({'seldepth': n})
-            super().seldepth(n)
+            # super().seldepth(n)
 
         def nps(self, n):
             self.cnps = n
             self.que.put({'nps': n})
-            super().nps(n)
+            # super().nps(n)
 
         def tbhits(self, n):
             self.ctbhits = n
             self.que.put({'tbhits': n})
-            super().tbhits(n)
+            # super().tbhits(n)
 
 
 class UciAgent:

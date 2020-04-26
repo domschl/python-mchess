@@ -111,7 +111,7 @@ class WebAgent:
                 ws.send(json.dumps(msg))
             except Exception as e:
                 self.log.warning(
-                    "Sending to WebSocket client {} failed with {}".format(w, e))
+                    "Sending to WebSocket client {} failed with {}".format(handle, e))
                 return
         self.ws_clients[handle] = ws
         while not ws.closed:
