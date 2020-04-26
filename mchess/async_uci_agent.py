@@ -44,18 +44,43 @@ class UciEngines:
             self.log.warning(
                 'No UCI engines found, and none is defined in engines subdir.')
         self.engines = {}
-        self.worker = threading.Thread(target=self.async_uci_thread, args=())
-        self.worker.setDaemon(True)
-        self.worker.start()
-        self.opened=False
-        while self.opened is False:
-            time.sleep(0.5)
-            self.log.debug("Waiting for engines...")
-
-    def async_uci_thread(self):
-        self.log.info("calling open_ucis via asyncio.run()")
+        asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())
         asyncio.run(self.open_ucis())
-        self.log.info("done open_ucis!")
+
+        self.log.info("Starting ping timer...")
+        self.timer_sec = 0.05
+        self.loop=asyncio.get_event_loop()
+        thr = threading.Timer(self.timer_sec, self.timer_thread)
+        thr.daemon = True
+        thr.start()
+
+        # self.worker = threading.Thread(target=self.async_uci_thread, args=())
+        # self.worker.setDaemon(True)
+        # self.worker.start()
+        # self.opened=False
+        # while self.opened is False:
+        #     time.sleep(0.5)
+        #     self.log.debug("Waiting for engines...")
+
+    # def async_uci_thread(self):
+    #     self.log.info("calling open_ucis via asyncio.run()")
+    #     asyncio.run(self.open_ucis())
+    #     self.log.info("done open_ucis!")
+
+    async def async_ping(self):
+        for e in self.engines:
+            self.log.debug(f"thr ping {e}")
+            await self.engines[e]['engine'].ping()
+            self.log.debug(f"thr pong {e}")
+
+    def timer_thread(self):
+        self.log.info("T-Thr")
+        asyncio.set_event_loop(self.loop)
+        asyncio.run(self.async_ping())
+        # cur_time = time.time()
+        thr = threading.Timer(self.timer_sec, self.timer_thread)
+        thr.daemon = True
+        thr.start()
 
     async def open_ucis(self):
         self.log.info("entered open_ucis()")
@@ -107,6 +132,7 @@ class UciEngines:
                 engine_json['path'])
             self.engines[name]['engine'] = engine
             self.engines[name]['transport'] = transport
+            self.log.info(f"Engine {name} opened.")
         except:
             self.log.error(
                 f'Failed to popen UCI engine {name} at {engine_json_path}, ignoring this engine.')
@@ -187,7 +213,11 @@ class UciEngines:
 
         await self.engines[name]['engine'].configure(opts)
         time.sleep(0.1)
-        self.log.warning("Not implemented: .isready()")
+
+        self.log.info(f"Ping {name}")
+        await self.engines[name]['engine'].ping()
+        self.log.info(f"Pong {name}")
+        # asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())
         # self.engines[name]['engine'].isready()
 
     class UciHandler():
@@ -207,7 +237,6 @@ class UciEngines:
             thr = threading.Timer(self.que_timer_sec, self.que_timer)
             thr.daemon = True
             thr.start()
-            super().__init__()
 
         def que_timer(self):
             cur_time = time.time()
@@ -339,8 +368,9 @@ class UciEngines:
 
 
 class UciAgent:
-    def __init__(self, engine_spec, prefs):
+    def __init__(self, appque, engine_spec, prefs):
         self.active = False
+        self.que=appque
         self.prefs = prefs
         self.name = engine_spec['params']['name']
         self.log = logging.getLogger('UciAgent_'+self.name)
@@ -348,21 +378,56 @@ class UciAgent:
         # self.ponder_board = None
         self.active = True
         self.busy = False
+        # self.loop=asyncio.new_event_loop()
+        # self.worker = threading.Thread(target=self.async_agent_thread, args=())
+        # self.worker.setDaemon(True)
+        # self.worker.start()
+
+    # async def fake_open(self, filepath):
+    #    _, self.engine = await chess.engine.popen_uci(filepath) # engine_spec['engine']
+        
+    async def async_quit(self):
+        await self.engine.quit()
 
     def quit(self):
-        ft = self.engine.terminate(async_callback=True)
-        ft.result()
+        # ft = self.engine.terminate(async_callback=True)
+        # ft.result()
+        asyncio.run(self.async_quit())
         self.active = False
 
     def agent_ready(self):
         return self.active
 
+    async def do_go(self, board, mtime, ponder=False):
+        mtime=mtime/1000.0
+        # _, self.engine = await chess.engine.popen_uci('/usr/local/bin/stockfish')
+        self.log.info(f"{self.name} go, mtime={mtime}, board={board}")
+        result=await self.engine.play(board, chess.engine.Limit(time=0.1))
+        self.log.info("end go")
+        board.push(result.move)
+        rep = {'move': {
+                        'uci': result.move.uci(),
+                        'actor': self.name
+                    }}
+        self.log.info(f"Queing result: {rep}")
+        self.que.put(rep)
+
+    def async_agent_thread(self):
+        pass
+        # asyncio.run(blurb)
+
     def go(self, board, mtime, ponder=False):
-        self.engine.position(board)
-        self.last_board = board
-        if mtime == 0:
-            self.engine.go(infinite=True,
-                           async_callback=True, ponder=ponder)
-        else:
-            self.engine.go(movetime=mtime,
-                           async_callback=True, ponder=ponder)
+        # asyncio.run(self.fake_open('/usr/local/bin/stockfish'))
+        self.log.info("Start a-run")
+        # asyncio.set_event_loop(self.loop)
+        asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())
+        asyncio.run(self.do_go(board, mtime))
+        self.log.info("Left a-run")
+        # self.engine.position(board)
+        # self.last_board = board
+        # if mtime == 0:
+        #     self.engine.go(infinite=True,
+        #                    async_callback=True, ponder=ponder)
+        # else:
+        #     self.engine.go(movetime=mtime,
+        #                    async_callback=True, ponder=ponder)
