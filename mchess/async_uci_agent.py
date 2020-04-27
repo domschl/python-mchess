@@ -15,6 +15,7 @@ import chess.engine
 class UciEngines:
     """Search for UCI engines and make a list of all available engines
     """
+    ENGINE_JSON_VERSION=1
 
     def __init__(self, appque, prefs):
         self.log = logging.getLogger("UciEngines")
@@ -25,20 +26,31 @@ class UciEngines:
         for engine_name in COMMON_ENGINES:
             engine_json_path = os.path.join('engines', engine_name+'.json')
             if os.path.exists(engine_json_path):
-                continue
-            else:
-                engine_path = find_executable(engine_name)
-                if engine_path is not None:
-                    engine_json = {'name': engine_name,
-                                   'path': engine_path, 'active': True}
-                    with open(engine_json_path, 'w') as f:
-                        try:
-                            json.dump(engine_json, f, indent=4)
-                        except:
-                            self.log.error(
-                                f'Failed to write no engine description {engine_json_path}')
-                            continue
-                    self.log.info(f'Found new UCI engine {engine_name}')
+                inv=False
+                try:
+                    engine_json = json.load(f)
+                    if 'version' in engine_json and engine_json['version']==self.ENGINE_JSON_VERSION:
+                        inv=False;
+                    else:
+                        inv=True;
+                except:
+                    inv=True
+                if inv is False:
+                    continue
+            engine_path = find_executable(engine_name)
+            if engine_path is not None:
+                engine_json = {'name': engine_name,
+                                'path': engine_path, 
+                                'active': True,
+                                'version': self.ENGINE_JSON_VERSION}
+                with open(engine_json_path, 'w') as f:
+                    try:
+                        json.dump(engine_json, f, indent=4)
+                    except:
+                        self.log.error(
+                            f'Failed to write no engine description {engine_json_path}')
+                        continue
+                self.log.info(f'Found new UCI engine {engine_name}')
         self.engine_json_list = glob.glob('engines/*.json')
         if len(self.engine_json_list) == 0:
             self.log.warning(
@@ -62,6 +74,9 @@ class UciEngines:
                 self.log.error(
                     f"Mandatory parameter 'path' is not in UCI description {engine_json_path}, ignoring this engine.")
                 continue
+            if 'version' not in engine_json or engine_json['version'] < self.ENGINE_JSON_VERSION:
+                self.log.error(f"{engine_json_path} is outdated. Resetting content")
+                continue
             if os.path.exists(engine_json['path']) is False:
                 self.log.error(
                     f"Invalid path {engine_json['path']} in UCI description {engine_json_path}, ignoring this engine.")
@@ -75,6 +90,7 @@ class UciEngines:
             base_name, _ = os.path.splitext(engine_json_path)
             engine_json_help_path = base_name + "-help.json"
             engine_json['help_path'] = engine_json_help_path
+            engine_json['json_path'] = engine_json_path
             name = engine_json['name']
             self.engines[name] = {}
             self.engines[name]['params'] = engine_json
@@ -475,16 +491,16 @@ class UciAgent:
         optsh = {}
         opts = {}
         rewrite_json = False
-        if os.path.exists(self.engine_json['path']) is False:
+        if os.path.exists(self.engine_json['json_path']) is False:
             rewrite_json = True
             self.engine_json['uci-options'] = {}
         if 'uci-options' not in self.engine_json or self.engine_json['uci-options'] == {}:
             rewrite_json = True
             self.engine_json['uci-options'] = {}
         else:
-            for opt in self.engine_json['engine'].options:
+            for opt in self.engine.options:
                 if opt not in self.engine_json['uci-options']:
-                    entries = self.engine_json['engine'].options[opt]
+                    entries = self.engine.options[opt]
                     # Ignore buttons
                     if entries.type != 'button':
                         self.log.warning(
@@ -493,9 +509,9 @@ class UciAgent:
 
         if rewrite_json is True:
             self.log.info("Writing defaults for {} to {}".format(
-                self.name, self.engine_json['path']))
-            for opt in self.engine_json['engine'].options:
-                entries = self.engine_json['engine'].options[opt]
+                self.name, self.engine_json['json_path']))
+            for opt in self.engine.options:
+                entries = self.engine.options[opt]
                 optvs = {}
                 optvs['name'] = entries.name
                 optvs['type'] = entries.type
@@ -510,11 +526,11 @@ class UciAgent:
             self.engine_json['uci-options'] = opts
             self.engine_json['uci-options-help'] = optsh
             try:
-                with open(self.engine_json['path'], 'w') as f:
+                with open(self.engine_json['json_path'], 'w') as f:
                     json.dump(self.engine_json, f, indent=4)
             except Exception as e:
                 self.log.error(
-                    f"Can't save engine.json to {self.engine_json['path']}, {e}")
+                    f"Can't save engine.json to {self.engine_json['json_path']}, {e}")
             try:
                 with open(self.engine_json['help_path'], 'w') as f:
                     json.dump(
@@ -549,10 +565,10 @@ class UciAgent:
             while self.loop_active is True:
                 try:
                     cmd = self.cmd_que.get_nowait()
-                    self.log("Go!")
+                    self.log.debug("Go!")
                     await self.async_go(cmd['board'], cmd['mtime'], cmd['ponder'])
-                except:
-                    await asyncio.sleep(0.05)
+                except Exception as e:
+                    await asyncio.sleep(1)
 
     def async_agent_thread(self):
         asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())

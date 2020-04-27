@@ -135,19 +135,22 @@ class Mchess:
         self.log.info(f'Available UCI engines: {avail_engines}')
 
         if len(self.uci_engines.engines) > 0:
+
             if self.prefs['computer_player_name'] in self.uci_engines.engines:
                 self.log.info(
                     f"{self.prefs['computer_player_name']} | {self.uci_engines.engines[self.prefs['computer_player_name']]['params']} | {self.prefs}")
-                self.uci_agent = UciAgent(self.appque,
-                                          self.uci_engines.engines[self.prefs['computer_player_name']]['params'], self.prefs)
+                name=self.prefs['computer_player_name']
+                ejs=self.uci_engines.engines[name]['params']
+                self.uci_agent = UciAgent(self.appque, ejs, self.prefs)
             else:
                 uci_names = list(self.uci_engines.engines.keys())
-                self.uci_agent = UciAgent(
-                    self.appque, uci_names[0], self.prefs)
+                ejs=self.uci_engines.engines[uci_names[0]]['params']
+                self.uci_agent = UciAgent(self.appque, ejs, self.prefs)
             self.agents_all += [self.uci_agent]
             if self.prefs['computer_player2_name'] in self.uci_engines.engines and self.prefs['computer_player2_name'] != '':
-                self.uci_agent2 = UciAgent(self.appque,
-                                           self.uci_engines.engines[self.prefs['computer_player2_name']], self.prefs)
+                name=self.prefs['computer_player2_name']
+                ejs=self.uci_engines.engines[name]['params']['params']
+                self.uci_agent2 = UciAgent(self.appque, ejs, self.prefs)
                 self.agents_all += [self.uci_agent2]
             else:
                 self.uci_agent2 = None
