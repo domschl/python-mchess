@@ -32,10 +32,10 @@ class UciEngines:
                     with open(engine_json_path) as f:
                         engine_json = json.load(f)
                     if 'version' in engine_json and engine_json['version']==self.ENGINE_JSON_VERSION:
-                        inv=False;
+                        inv=False
                     else:
                         self.log.warning(f"Wrong version information in {engine_json_path}")
-                        inv=True;
+                        inv=True
                 except Exception as e:
                     self.log.error(f"Json engine load of {engine_json_path} failed: {e}")
                     inv=True
@@ -490,8 +490,30 @@ class UciAgent:
                         'variant': info['pv'],
                         'actor': self.name
                     }}
+                    self.log.info("ADD")
+                    if 'score' in info:
+                        try:
+                            if info['score'].is_mate():
+                                sc=str(info['score']) # .Mate().score(0)
+                            else:
+                                cp=float(str(info['score']))/100.0
+                                sc='{:.2f}'.format(cp)  # XXX mate? transform pov, /100.0
+                        except:
+                            self.log.error(f"Score transform failed {info['score']}")
+                            sc='?'
+                        rep['curmove']['score']=sc
+                        self.log.info("stored")
+                    self.log.info("ADD1")
+                    if 'depth' in info:
+                        rep['curmove']['depth']=info['depth']
+                    if 'seldepth' in info:
+                        rep['curmove']['seldepth']=info['seldepth']
+                    if 'nps' in info:
+                        rep['curmove']['nps']=info['nps']
+                    if 'tbhits' in info:
+                        rep['curmove']['tbhits']=info['tbhits']
+                    self.log.info("ENDADD")
                     self.que.put(rep)
-
 
         self.log.info(f"pv: {pv}")
         if len(pv)>0 and len(pv[0])>0:

@@ -149,7 +149,7 @@ class Mchess:
             self.agents_all += [self.uci_agent]
             if self.prefs['computer_player2_name'] in self.uci_engines.engines and self.prefs['computer_player2_name'] != '':
                 name=self.prefs['computer_player2_name']
-                ejs=self.uci_engines.engines[name]['params']['params']
+                ejs=self.uci_engines.engines[name]['params']
                 self.uci_agent2 = UciAgent(self.appque, ejs, self.prefs)
                 self.agents_all += [self.uci_agent2]
             else:
@@ -559,16 +559,16 @@ class Mchess:
                         if self.uci_agent is not None:
                             # self.uci_agent.engine.isready()
                             # print("A1 {} start".format(self.uci_agent.name))
-                            self.uci_agent.engine.position(self.board)
+                            # self.uci_agent.engine.position(self.board)
                             self.uci_agent.busy = True
-                            self.uci_agent.engine.go(
+                            self.uci_agent.go(
                                 infinite=True, async_callback=True)
                         if self.uci_agent2 is not None:
                             # self.uci_agent2.engine.isready()
                             # print("A2 {} start".format(self.uci_agent2.name))
-                            self.uci_agent2.engine.position(self.board)
+                            # self.uci_agent2.engine.position(self.board)
                             self.uci_agent2.busy = True
-                            self.uci_agent2.engine.go(
+                            self.uci_agent2.go(
                                 infinite=True, async_callback=True)
 
                 if 'back' in msg:
@@ -634,17 +634,15 @@ class Mchess:
                     if self.uci_agent is not None:
                         self.log.info("Starting analysis with {}".format(
                             self.uci_agent.name))
-                        self.uci_agent.engine.position(self.board)
+                        # self.uci_agent.engine.position(self.board)
                         self.uci_agent.busy = True
-                        self.uci_agent.engine.go(
-                            infinite=True, async_callback=True)
+                        self.uci_agent.go(self.board,9999999)   # XXX infinite
                     if self.uci_agent2 is not None:
                         self.log.info("Starting analysis with {}".format(
                             self.uci_agent2.name))
-                        self.uci_agent2.engine.position(self.board)
+                        # self.uci_agent2.engine.position(self.board)
                         self.uci_agent2.busy = True
-                        self.uci_agent2.engine.go(
-                            infinite=True, async_callback=True)
+                        self.uci_agent2.go(self.board, 9999999)  # XXX infinite
 
                 if 'turn' in msg:
                     if msg['turn'] == 'white':
