@@ -445,6 +445,7 @@ class UciAgent:
         self.worker = threading.Thread(target=self.async_agent_thread, args=())
         self.worker.setDaemon(True)
         self.worker.start()
+        self.info_throttle=0.5
 
     # async def fake_open(self, filepath):
     #    _, self.engine = await chess.engine.popen_uci(filepath) # engine_spec['engine']
@@ -486,6 +487,9 @@ class UciAgent:
             self.log.info("Infinite analysis")
         else:
             lm=chess.engine.Limit(time=mtime)
+        last_info=0
+        rep=None
+        skipped=False
         with await self.engine.analysis(board, lm, multipv=mpv, info=chess.engine.Info.ALL) as analysis:
             # self.log.info(f"RESULT: {result}")
             async for info in analysis:
@@ -524,8 +528,15 @@ class UciAgent:
                         rep['curmove']['nps']=info['nps']
                     if 'tbhits' in info:
                         rep['curmove']['tbhits']=info['tbhits']
-                    self.que.put(rep)
+                    if time.time()-last_info > self.info_throttle:
+                        self.que.put(rep)
+                        last_info=time.time()
+                        skipped=False
+                    else:
+                        skipped=True
 
+        if skipped is True and rep is not None:
+            self.que.put(rep)
         self.log.info(f"pv: {pv}")
         if len(pv)>0 and len(pv[0])>0:
             move=pv[0][0]
