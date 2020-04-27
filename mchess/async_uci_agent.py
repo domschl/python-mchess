@@ -461,8 +461,13 @@ class UciAgent:
     def agent_ready(self):
         return self.active
 
+    async def async_stop(self):
+        self.stopped=True
+
     async def async_go(self, board, mtime, ponder=False):
-        mtime = mtime/1000.0
+        if mtime!=-1:
+            mtime = mtime/1000.0
+        self.stopped=False
         # _, self.engine = await chess.engine.popen_uci('/usr/local/bin/stockfish')
         # self.log.info(f"{self.name} go, mtime={mtime}, board={board}")
         pv=[]
@@ -475,9 +480,18 @@ class UciAgent:
             pv.append([])
             mpv=1
         self.log.info(f"pv0: {pv}")
-        with await self.engine.analysis(board, chess.engine.Limit(time=mtime), multipv=mpv, info=chess.engine.Info.ALL) as analysis:
+        if mtime==-1:
+            self.log.info("Infinite analysis")
+            lm=None
+            self.log.info("Infinite analysis")
+        else:
+            lm=chess.engine.Limit(time=mtime)
+        with await self.engine.analysis(board, lm, multipv=mpv, info=chess.engine.Info.ALL) as analysis:
             # self.log.info(f"RESULT: {result}")
             async for info in analysis:
+                if self.stopped is True:
+                    self.log.info(f"Analysis aborted.")
+                    break
                 # self.log.info(info)
                 if 'pv' in info:
                     if 'multipv' in info:
@@ -490,7 +504,6 @@ class UciAgent:
                         'variant': info['pv'],
                         'actor': self.name
                     }}
-                    self.log.info("ADD")
                     if 'score' in info:
                         try:
                             if info['score'].is_mate():
@@ -503,7 +516,6 @@ class UciAgent:
                             sc='?'
                         rep['curmove']['score']=sc
                         self.log.info("stored")
-                    self.log.info("ADD1")
                     if 'depth' in info:
                         rep['curmove']['depth']=info['depth']
                     if 'seldepth' in info:
@@ -512,7 +524,6 @@ class UciAgent:
                         rep['curmove']['nps']=info['nps']
                     if 'tbhits' in info:
                         rep['curmove']['tbhits']=info['tbhits']
-                    self.log.info("ENDADD")
                     self.que.put(rep)
 
         self.log.info(f"pv: {pv}")
@@ -632,6 +643,10 @@ class UciAgent:
     def async_agent_thread(self):
         asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())
         asyncio.run(self.uci_event_loop())
+
+    def stop(self):
+        self.log.info('stop received')
+        asyncio.run(self.async_stop())
 
     def go(self, board, mtime, ponder=False):
         self.log.info('cmd_que put:')
