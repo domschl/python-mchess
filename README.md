@@ -95,6 +95,13 @@ _Early alpha preview of web client "Turquoise"_
 
 Note: Bluetooth LE hardware detection requires admin privileges for the one-time intial bluetooth scan. For first time start with Bluetooth LE support, use:
 
+*TBD*
+
+or (without sudo using): 
+```bash
+sudo setcap 'cap_net_raw,cap_net_admin+eip' PATH/TO/LIB/python3._x_/site-packages/bluepy/bluepy-helper
+```
+
 ```bash
 sudo python3 mchess.py
 ```

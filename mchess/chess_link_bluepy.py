@@ -73,7 +73,8 @@ class Transport():
                     self.log.debug(
                         "Received new data from {}".format(dev.addr))
 
-        scanner = Scanner().withDelegate(ScanDelegate(self.log))
+        # XXX make iface no configurable, it seems to change over linux releases...
+        scanner = Scanner(iface=1).withDelegate(ScanDelegate(self.log))
 
         try:
             devices = scanner.scan(10.0)
