@@ -198,7 +198,7 @@ function wsConnect(address) {
                 VariantInfo = {};
             }
             if (msg.info.hasOwnProperty("variant")) {
-                console.log("V");
+                //console.log("V");
                 var actor = msg.info.actor;
                 var id = msg.info.multipv_ind;
                 if (!(actor in VariantInfo)) {
@@ -251,23 +251,23 @@ function wsConnect(address) {
                 VariantInfo[actor][id] = htmlpgn
 
                 var n = 0;
-                for (var i in VariantInfo) {
-                    var ai = VariantInfo[i];
+                for (var actorName in VariantInfo) {
+                    var ai = VariantInfo[actorName];
                     var htmlpi = "";
                     for (var j in ai) {
                         htmlpi += ai[j];
                     }
                     if (n == 0) {
                         document.getElementById("miniinfo1").innerHTML = htmlpi;
-                        document.getElementById("ph2").innerText = i;
-                        miniBoard1.setPosition(FenRef[i], false);
-                        document.getElementById("ph21").innerText = StatHeader[i];
+                        document.getElementById("ph2").innerText = actorName;
+                        miniBoard1.setPosition(FenRef[actorName], false);
+                        document.getElementById("ph21").innerText = StatHeader[actorName];
                     }
                     if (n == 1) {
                         document.getElementById("miniinfo2").innerHTML = htmlpi;
-                        document.getElementById("ph3").innerText = i;
-                        miniBoard2.setPosition(FenRef[i], false);
-                        document.getElementById("ph31").innerText = StatHeader[i];
+                        document.getElementById("ph3").innerText = actorName;
+                        miniBoard2.setPosition(FenRef[actorName], false);
+                        document.getElementById("ph31").innerText = StatHeader[actorName];
                     }
                     n += 1;
                 }

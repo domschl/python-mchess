@@ -164,15 +164,18 @@ class WebAgent:
     def display_move(self, move_msg):
         pass
 
-    def display_info(self, board, info):
+    def display_info(self, board, info, max_board_preview_hmoves=6):
         ninfo = copy.deepcopy(info)
         nboard = copy.deepcopy(board)
+        nboard_cut = copy.deepcopy(nboard)
+        max_cut=max_board_preview_hmoves
         if 'variant' in ninfo:
             ml = []
             mv = ''
             if nboard.turn is False:
                 mv = (nboard.fullmove_number,)
                 mv += ("..",)
+            rel_mv=0
             for move in ninfo['variant']:
                 if move is None:
                     self.log.error("None-move in variant: {}".format(ninfo))
@@ -194,12 +197,15 @@ class WebAgent:
                     ml.append(mv)
                     mv = ""
                 nboard.push(move)
+                if rel_mv < max_cut:
+                    nboard_cut.push(move)
+                    rel_mv += 1
             if mv != "":
                 ml.append(mv)
                 mv = ""
             ninfo['variant'] = ml
 
-        msg = {'fenref': nboard.fen(), 'info': ninfo}
+        msg = {'fenref': nboard_cut.fen(), 'info': ninfo}
         for w in self.ws_clients:
             try:
                 self.ws_clients[w].send(json.dumps(msg))

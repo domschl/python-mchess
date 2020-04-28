@@ -554,6 +554,28 @@ class UciAgent:
                 'uci': move.uci(),
                 'actor': self.name
             }}
+
+            if 'score' in info:
+                try:
+                    if info['score'].is_mate():
+                        sc=str(info['score']) # .Mate().score(0)
+                    else:
+                        cp=float(str(info['score']))/100.0
+                        sc='{:.2f}'.format(cp)  # XXX mate? transform pov, /100.0
+                except:
+                    self.log.error(f"Score transform failed {info['score']}")
+                    sc='?'
+                rep['move']['score']=sc
+                self.log.info("stored")
+            if 'depth' in info:
+                rep['move']['depth']=info['depth']
+            if 'seldepth' in info:
+                rep['move']['seldepth']=info['seldepth']
+            if 'nps' in info:
+                rep['move']['nps']=info['nps']
+            if 'tbhits' in info:
+                rep['move']['tbhits']=info['tbhits']
+
             self.log.info(f"Queing result: {rep}")
             self.que.put(rep)
         else:
