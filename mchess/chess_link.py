@@ -267,7 +267,7 @@ class ChessLink:
         if 'transport' in self.mill_config:
             self.mill_config['orientation'] = self.orientation
         if 'btle_iface' not in self.mill_config:
-            self.mill_config['iface'] = 1
+            self.mill_config['btle_iface'] = 1
         if 'autodetect' not in self.mill_config:
             self.mill_config['autodetect'] = True
         try:
