@@ -744,9 +744,11 @@ if __name__ == '__main__':
     if args.verbose is True:
         log_level = logging.DEBUG
         log_level_e = logging.DEBUG
+        log_level_pce = logging.DEBUG
     else:
         log_level = logging.WARNING
         log_level_e = logging.ERROR
+        log_level_pce = logging.ERROR
 
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(name)s %(message)s', level=log_level)
@@ -764,6 +766,8 @@ if __name__ == '__main__':
     # add the handlers to the logger
     # logger.addHandler(fh)
     # logger.addHandler(ch)
+    pc_engine_log = logging.getLogger('chess.engine')
+    pc_engine_log.setLevel(log_level_pce)
 
     mc = Mchess()
     mc.game_state_machine()
