@@ -13,6 +13,8 @@ var VariantInfo = null;
 var FenRef = {};
 var StatHeader = {};
 
+var oldFen = null;
+
 wsConnect("ws://" + window.location.host + "/ws");
 
 function wsConnect(address) {
@@ -116,6 +118,11 @@ function wsConnect(address) {
             */
             var title = msg.attribs.white_name + " - " + msg.attribs.black_name;
             console.log(msg.fen)
+            if (msg.fen==oldFen) {
+                console.log("position did not change, ignoring FEN update");
+                return;
+            }
+            oldFen=msg.fen;
             if (mainBoard == null) {
                 mainBoard = new Chessboard(document.getElementById("board1"), {
                     position: msg.fen,
@@ -165,6 +172,8 @@ function wsConnect(address) {
             } else {
                 miniBoard1.setPosition(msg.fen);
             }
+            document.getElementById("miniinfo1").innerHTML=""
+            document.getElementById("ph21").innerHTML=""
             if (miniBoard2 == null) {
                 miniBoard2 = new Chessboard(document.getElementById("miniboard2"), {
                     position: msg.fen,
@@ -182,12 +191,14 @@ function wsConnect(address) {
             } else {
                 miniBoard2.setPosition(msg.fen);
             }
+            document.getElementById("miniinfo2").innerHTML=""
+            document.getElementById("ph31").innerHTML=""
         } else if (msg.hasOwnProperty("info")) {
             if (VariantInfo == null) {
                 VariantInfo = {};
             }
             if (msg.info.hasOwnProperty("variant")) {
-                console.log("V");
+                //console.log("V");
                 var actor = msg.info.actor;
                 var id = msg.info.multipv_ind;
                 if (!(actor in VariantInfo)) {
@@ -212,7 +223,10 @@ function wsConnect(address) {
                 }
                 hd += " |";
                 StatHeader[actor] = hd;
-                var htmlpgn = "<div class=\"variant\"><span class=\"leadt\">[" + msg.info.score + "]</span>&nbsp;&nbsp;";
+                var htmlpgn = "<div class=\"variant\"><span class=\"leadt\">";
+                if (msg.info.score!="") htmlpgn+="[" + msg.info.score + "]";
+                else htmlpgn+="&nbsp;&nbsp;&nbsp;&nbsp;";
+                htmlpgn+="</span>&nbsp;&nbsp;";
                 var first = true;
                 for (var mvi in msg.info.variant) {
                     if (mvi == "fen") continue;
@@ -237,23 +251,23 @@ function wsConnect(address) {
                 VariantInfo[actor][id] = htmlpgn
 
                 var n = 0;
-                for (var i in VariantInfo) {
-                    var ai = VariantInfo[i];
+                for (var actorName in VariantInfo) {
+                    var ai = VariantInfo[actorName];
                     var htmlpi = "";
                     for (var j in ai) {
                         htmlpi += ai[j];
                     }
                     if (n == 0) {
                         document.getElementById("miniinfo1").innerHTML = htmlpi;
-                        document.getElementById("ph2").innerText = i;
-                        miniBoard1.setPosition(FenRef[i], false);
-                        document.getElementById("ph21").innerText = StatHeader[i];
+                        document.getElementById("ph2").innerText = actorName;
+                        miniBoard1.setPosition(FenRef[actorName], false);
+                        document.getElementById("ph21").innerText = StatHeader[actorName];
                     }
                     if (n == 1) {
                         document.getElementById("miniinfo2").innerHTML = htmlpi;
-                        document.getElementById("ph3").innerText = i;
-                        miniBoard2.setPosition(FenRef[i], false);
-                        document.getElementById("ph31").innerText = StatHeader[i];
+                        document.getElementById("ph3").innerText = actorName;
+                        miniBoard2.setPosition(FenRef[actorName], false);
+                        document.getElementById("ph31").innerText = StatHeader[actorName];
                     }
                     n += 1;
                 }

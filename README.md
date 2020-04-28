@@ -24,9 +24,11 @@ This project is under heavy development, and basically everything described belo
 
 ### Dependencies
 
-`python-mchess` is written for Python 3.x
+`python-mchess` is written for Python >= 3.7. 
+If UCI-engine support (python-chess dependecy) is not used, any Python 3.x works. (python-mchess makes use of latest async features of Python 3.7 and later)
 
 `python-mchess` board driver for Chess Link depends on `PySerial` and (Linux/Raspberry Pi only) `BluePy`
+
 
 #### Optional UCI engine support
 
@@ -93,16 +95,23 @@ The web client can be reached at `http://localhost:8001`. From remote use `http:
 ![Early alpha web preview](https://raw.github.com/domschl/python-mchess/master/images/WebClientAlpha.png)
 _Early alpha preview of web client "Turquoise"_
 
-Note: Bluetooth LE hardware detection requires admin privileges for the one-time intial bluetooth scan. For first time start with Bluetooth LE support, use:
+Note: Bluetooth LE hardware detection either requires admin privileges for the one-time intial bluetooth scan, or the `setcap` command below.
 
+*TBD*
+
+or (without sudo using): 
+```bash
+sudo setcap 'cap_net_raw,cap_net_admin+eip' PATH/TO/LIB/python3._x_/site-packages/bluepy/bluepy-helper
+```
+After this, bluetooth scanning should work without `sudo`.
+
+If that fails, try to scan once with `sudo`:
 ```bash
 sudo python3 mchess.py
 ```
 Restart the program, once the board has connected (the connection address is saved in `chess_link_config.json`)
 
-Do NOT use `sudo` on subsequent starts, or the communication might fail.
-
-Once the board is found, stop the program and restart without `sudo`. You might want to set ownership for `chess_link_config.json` to your user-account, since the file will be rewritten, if the detected board orientation is changed.
+Do NOT use `sudo` on subsequent starts, or the communication might fail. If scan was executed with sude, then you might want to set ownership for `chess_link_config.json` to your user-account, since the file will be rewritten, if the detected board orientation is changed.
 
 All engine descriptions in directory 'engines' will now contain the default-UCI options for each engine. Those can be edited e.g. to enable tablebases or other UCI options.
 
@@ -191,11 +200,11 @@ the future for an UCI-customization option.
                                          |     
                         +----------------+---------------+----------------------+  
                         |                |               |                      |
-         +---------------------+  +--------------+  +-------------------+ +--------------+
-         | chess_link_agent.py |  | uci_agent.py |  | terminal_agent.py | | web_agent.py |
-         +---------------------+  +--------------+  +-------------------+ +--------------+
-                        |            uci-engines         I/O hardware      multiple web
-                        |            Stockfish,                            clients
+     +---------------------+  +--------------------+  +-------------------+ +--------------+
+     | chess_link_agent.py |  | async_uci_agent.py |  | terminal_agent.py | | web_agent.py |
+     +---------------------+  +--------------------+  +-------------------+ +--------------+
+                        |            uci-engines         I/O hardware         multiple web
+                        |            Stockfish,                               clients
                         |            Lc0 etc.                
  -  -  -  -  -  -  -  - | -  -  -  -  -  -  -  -  -  -  -  -
                +---------------+
@@ -244,9 +253,20 @@ like so:
 ```
 
 This will show bit-level communication with the ChessLink board.
+
+## History
+* 2020-04-28: Work started on updating changes in module depencies (especially the async interface python-chess)
+
 ## Documentation
 
 [API Documentation for chess_link.py](https://domschl.github.io/python-mchess/doc/build/html/index.html)
+
+## Important external projects used by this project
+
+* [python-chess](https://python-chess.readthedocs.io/en/latest/): a pure Python chess library
+* [cm-chessboard](https://github.com/shaack/cm-chessboard): a chessboard rendered in SVG, coded in ES6. Views FEN, handles move input, animated, responsive, mobile friendly.
+* [bluepy](https://github.com/IanHarvey/bluepy): Python interface to Bluetooth LE on Linux
+* TBD
 
 ## Acknowledgements
 
