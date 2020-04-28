@@ -1,22 +1,20 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>ChessLink object &#8212; mchess 0.1.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>ChessLink object &#8212; mchess 0.2.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Chess link protocol helper functions" href="chess_link_protocol.html" />
+    <link rel="next" title="ChessLink protocol" href="chess_link_protocol.html" />
     <link rel="prev" title="Welcome to mchess’s documentation!" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -36,9 +34,9 @@
             
   <div class="section" id="chesslink-object">
 <h1>ChessLink object<a class="headerlink" href="#chesslink-object" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="chess_link.ChessLink">
-<em class="property">class </em><code class="descclassname">chess_link.</code><code class="descname">ChessLink</code><span class="sig-paren">(</span><em>appque</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">chess_link.</code><code class="sig-name descname">ChessLink</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appque</span></em>, <em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink" title="Permalink to this definition">¶</a></dt>
 <dd><p>This implements the ‘Chess Link’ protocol for Millennium Chess Genius Exclusive and future boards 
 compatible with that protocol.</p>
 <p>For the details of the Chess Link protocol, please refer to: 
@@ -78,71 +76,62 @@ part should be used.</p>
 <p>In order for the board to detect valid move, a list of possible valid moves has to given
 to the board using <cite>move_from()</cite>. Typically, this list is generated using the python
 module <cite>python_chess</cite>. See chess_link_agent.py for an example.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>appque</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appque</span></em>, <em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructor, searches, configures and connectors to Chess Link compatible 
 Millennium Chess Genius Exclusive or similar boards.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>appque</strong> – a Queue that receive chess board events</li>
-<li><strong>name</strong> – identifies this protocol</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>appque</strong> – a Queue that receive chess board events</p></li>
+<li><p><strong>name</strong> – identifies this protocol</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.fen_to_position">
-<code class="descname">fen_to_position</code><span class="sig-paren">(</span><em>fen</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.fen_to_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.fen_to_position" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">fen_to_position</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fen</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.fen_to_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.fen_to_position" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a FEN position into an 8x8 <cite>position</cite> array.</p>
 <p>Note that the current implementation of <cite>position</cite> arrays does not maintain move-counts,
 castling stati or any history data.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">8x8 <cite>position</cite> array.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>8x8 <cite>position</cite> array.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.get_debounce">
-<code class="descname">get_debounce</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_debounce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_debounce" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_debounce</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_debounce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_debounce" title="Permalink to this definition">¶</a></dt>
 <dd><p>Asynchronuosly request the current debounce setting. The answer will be
 written to the queue <cite>appqueue</cite> given during initialization.</p>
 <p>See see <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.get_led_brightness_percent">
-<code class="descname">get_led_brightness_percent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_led_brightness_percent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_led_brightness_percent" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_led_brightness_percent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_led_brightness_percent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_led_brightness_percent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Asynchronuosly request the current led brightness setting. The answer will be
 written to the queue <cite>appqueue</cite> given during initialization.</p>
 <p>See see <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.get_orientation">
-<code class="descname">get_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_orientation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Asynchronuosly request the Chess Link board orientation. The answer will be
-written to the queue <cite>appqueue</cite> given during initialization.</p>
-<p>ChessLink tries to autodetect the orientation of the board by looking for
+<code class="sig-name descname">get_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>ChessLink tries to autodetect the orientation of the board by looking for
 initial start positions.</p>
 <p>If the board has never been set to the initial start position, the orientation
 must be set using <cite>set_orientation()</cite>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.get_position">
-<code class="descname">get_position</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_position" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_position</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_position" title="Permalink to this definition">¶</a></dt>
 <dd><p>Asynchronuosly request the Chess Link board position. The answer will be
 written to the queue <cite>appqueue</cite> given during initialization.</p>
 <p>By default, the Chess Link board sends a position to <cite>appqueue</cite> on all changes
@@ -150,260 +139,224 @@ to the board position, so explicit calls to <cite>get_position()</cite> should n
 most of the times.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.get_scan_time_ms">
-<code class="descname">get_scan_time_ms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_scan_time_ms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_scan_time_ms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_scan_time_ms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_scan_time_ms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_scan_time_ms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Asynchronuosly request the current scan time setting. The answer will be
 written to the queue <cite>appqueue</cite> given during initialization.</p>
 <p>See see <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.get_version">
-<code class="descname">get_version</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_version" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_version</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.get_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.get_version" title="Permalink to this definition">¶</a></dt>
 <dd><p>Asynchronuosly request the Chess Link version number. The answer will be
 written to the queue <cite>appqueue</cite> given during initialization.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.move_from">
-<code class="descname">move_from</code><span class="sig-paren">(</span><em>fen</em>, <em>legal_moves</em>, <em>color</em>, <em>eval_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.move_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.move_from" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">move_from</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fen</span></em>, <em class="sig-param"><span class="n">legal_moves</span></em>, <em class="sig-param"><span class="n">color</span></em>, <em class="sig-param"><span class="n">eval_only</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.move_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.move_from" title="Permalink to this definition">¶</a></dt>
 <dd><p>Register all legal moves possible in current position. Once the legal moves are
 registered, the background thread checks for board changes, and signals a legal
 move using the python queue <cite>appqueue</cite> given during initialization.</p>
 <p>Non-legal changes or incomplete moves will cause the affected fields to blink continously.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fen</strong> – current position</li>
-<li><strong>legal_moves</strong> – dictionary of key:fen value: uci_move (e.g. e2e4). python_chess
-is the recommended module to calculate all legal moves.</li>
-<li><strong>color</strong> – color to move (ChessLink.WHITE or ChessLink.BLACK)</li>
-<li><strong>eval_only</strong> – True: indicate ponder evals</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fen</strong> – current position</p></li>
+<li><p><strong>legal_moves</strong> – dictionary of key:fen value: uci_move (e.g. e2e4). python_chess
+is the recommended module to calculate all legal moves.</p></li>
+<li><p><strong>color</strong> – color to move (ChessLink.WHITE or ChessLink.BLACK)</p></li>
+<li><p><strong>eval_only</strong> – True: indicate ponder evals</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.new_game">
-<code class="descname">new_game</code><span class="sig-paren">(</span><em>pos</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.new_game"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.new_game" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">new_game</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pos</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.new_game"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.new_game" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initiate a new game</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pos</strong> – <cite>position</cite> array of the current position. If the hardware board has 
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pos</strong> – <cite>position</cite> array of the current position. If the hardware board has 
 currently a different position, all differences are indicated by 
-blinking leds.</td>
-</tr>
-</tbody>
-</table>
+blinking leds.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.position_initialized">
-<code class="descname">position_initialized</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.position_initialized"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.position_initialized" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">position_initialized</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.position_initialized"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.position_initialized" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check, if a board position has been received and chess link board is online.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True, if board position has been received.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True, if board position has been received.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.position_to_fen">
-<code class="descname">position_to_fen</code><span class="sig-paren">(</span><em>position</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.position_to_fen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.position_to_fen" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">position_to_fen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">position</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.position_to_fen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.position_to_fen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a 8x8 <cite>position</cite> array to a fen position. Typically, an 8x8 <cite>position</cite> is generated
 by the Chess Link board, which has no information about the current move, side to move, or
 castling status.</p>
 <p>The returned FEN has always ending <cite>w KQkq - 0 1</cite> after the actual position (only rudimentary
 checks for castling are done)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">FEN string derived from postion-array</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>FEN string derived from postion-array</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
+<dt id="chess_link.ChessLink.quit">
+<code class="sig-name descname">quit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.quit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.quit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quit ChessLink</p>
+<p>Try to terminate transport threads gracefully.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="chess_link.ChessLink.reset">
-<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.reset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset Chess Link module.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.set_debounce">
-<code class="descname">set_debounce</code><span class="sig-paren">(</span><em>count</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_debounce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_debounce" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_debounce</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">count</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_debounce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_debounce" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the debounce-value. Debouncing helps to prevent random fluke events. Should be tested
 together with different <cite>set_scan_time_ms()</cite> values.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>count</strong> – 0-4, 0: no debounce, 1-4: 1-4 scan times debounce.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>count</strong> – 0-4, 0: no debounce, 1-4: 1-4 scan times debounce.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.set_led">
-<code class="descname">set_led</code><span class="sig-paren">(</span><em>pos</em>, <em>freq</em>, <em>ontime1</em>, <em>ontime2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_led"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_led" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_led</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pos</span></em>, <em class="sig-param"><span class="n">freq</span></em>, <em class="sig-param"><span class="n">ontime1</span></em>, <em class="sig-param"><span class="n">ontime2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_led"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_led" title="Permalink to this definition">¶</a></dt>
 <dd><p>Static blinking leds according to <cite>position</cite>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>pos</strong> – <cite>position</cite> array, field != 0 indicates a led that should blink.</li>
-<li><strong>freq</strong> – <p>blink frequency, see <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
-</li>
-<li><strong>ontime1</strong> – 8-bit value, bits indicate cycles led is on.</li>
-<li><strong>ontime2</strong> – 8-bit value, bits indicate cycles led is off.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pos</strong> – <cite>position</cite> array, field != 0 indicates a led that should blink.</p></li>
+<li><p><strong>freq</strong> – <p>blink frequency, see <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
+</p></li>
+<li><p><strong>ontime1</strong> – 8-bit value, bits indicate cycles led is on.</p></li>
+<li><p><strong>ontime2</strong> – 8-bit value, bits indicate cycles led is off.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.set_led_brightness">
-<code class="descname">set_led_brightness</code><span class="sig-paren">(</span><em>level=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_led_brightness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_led_brightness" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_led_brightness</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">level</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_led_brightness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_led_brightness" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the led brighness.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>level</strong> – 0.0 - 1.0: 0(darkest) up to 1.0(brightest).</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>level</strong> – 0.0 - 1.0: 0(darkest) up to 1.0(brightest).</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.set_led_off">
-<code class="descname">set_led_off</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_led_off"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_led_off" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_led_off</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_led_off"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_led_off" title="Permalink to this definition">¶</a></dt>
 <dd><p>Switch off all leds.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.set_orientation">
-<code class="descname">set_orientation</code><span class="sig-paren">(</span><em>orientation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_orientation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_orientation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">orientation</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_orientation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the Chess Link board orientation.</p>
 <p>Setting the orientation is only necessary, when autodecection cannot work,
 because the board has never been set to a start position.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>orientation</strong> – True: cable right, False: cable left.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>orientation</strong> – True: cable right, False: cable left.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.set_scan_time_ms">
-<code class="descname">set_scan_time_ms</code><span class="sig-paren">(</span><em>scan_ms=41</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_scan_time_ms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_scan_time_ms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_scan_time_ms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scan_ms</span><span class="o">=</span><span class="default_value">41</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.set_scan_time_ms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.set_scan_time_ms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the scan time value. Lower scan times make the board less susceptible to random unexpected
 events and can be used together with <cite>set_debounce()</cite> to prevent random fluke events.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>scan_ms</strong> – 30.72(fastest)-522.24(slowest), scan time in ms. A value around 100ms is 
-recommended, board default is 41ms.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>scan_ms</strong> – 30.72(fastest)-522.24(slowest), scan time in ms. A value around 100ms is 
+recommended, board default is 41ms.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.short_fen">
-<code class="descname">short_fen</code><span class="sig-paren">(</span><em>fen</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.short_fen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.short_fen" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">short_fen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fen</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.short_fen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.short_fen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Utility-function to cut off all information after the actual position, since the board
 does not know about move counts or castling.</p>
 <p>E.g. <cite>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</cite> is transformed to
 <cite>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR</cite></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">position-only part of the fen string.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>position-only part of the fen string.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.show_delta">
-<code class="descname">show_delta</code><span class="sig-paren">(</span><em>pos1</em>, <em>pos2</em>, <em>freq=32</em>, <em>ontime1=15</em>, <em>ontime2=240</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.show_delta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.show_delta" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">show_delta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pos1</span></em>, <em class="sig-param"><span class="n">pos2</span></em>, <em class="sig-param"><span class="n">freq</span><span class="o">=</span><span class="default_value">32</span></em>, <em class="sig-param"><span class="n">ontime1</span><span class="o">=</span><span class="default_value">15</span></em>, <em class="sig-param"><span class="n">ontime2</span><span class="o">=</span><span class="default_value">240</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.show_delta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.show_delta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Indicate difference between two <cite>position</cite> arrays using the board’s leds.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>pos1</strong> – <cite>position</cite> array of the start position</li>
-<li><strong>pos2</strong> – <cite>position</cite> array of the target position</li>
-<li><strong>freq</strong> – <p>blink frequency, see <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
-</li>
-<li><strong>ontime1</strong> – 8-bit value, bits indicate cycles led is on.</li>
-<li><strong>ontime2</strong> – 8-bit value, bits indicate cycles led is off.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pos1</strong> – <cite>position</cite> array of the start position</p></li>
+<li><p><strong>pos2</strong> – <cite>position</cite> array of the target position</p></li>
+<li><p><strong>freq</strong> – <p>blink frequency, see <a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">magic-link.md</a>.</p>
+</p></li>
+<li><p><strong>ontime1</strong> – 8-bit value, bits indicate cycles led is on.</p></li>
+<li><p><strong>ontime2</strong> – 8-bit value, bits indicate cycles led is off.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.show_deltas">
-<code class="descname">show_deltas</code><span class="sig-paren">(</span><em>positions</em>, <em>freq</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.show_deltas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.show_deltas" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">show_deltas</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">positions</span></em>, <em class="sig-param"><span class="n">freq</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.show_deltas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.show_deltas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Signal leds to show difference between current position on board, and intended position.
 This is used to signal moves by other agents, or discrepancies with the current position.</p>
 <p>Up to four half-moves can be indicated at sequence of up to 5 positions.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>positions</strong> – array of <cite>position</cite> arrays. Max length is 5 (4 half-moves incl. start
-position)</li>
-<li><strong>freq</strong> – Blink frequency</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>positions</strong> – array of <cite>position</cite> arrays. Max length is 5 (4 half-moves incl. start
+position)</p></li>
+<li><p><strong>freq</strong> – Blink frequency</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="chess_link.ChessLink.write_configuration">
-<code class="descname">write_configuration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.write_configuration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.write_configuration" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write_configuration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/chess_link.html#ChessLink.write_configuration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chess_link.ChessLink.write_configuration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the configuration for hardware connection (USB/Bluetooth LE) 
 and board orientation to ‘chess_link_config.json’</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True on success, False on error</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True on success, False on error</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -430,9 +383,9 @@ and board orientation to ‘chess_link_config.json’</p>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ChessLink object</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chess_link_protocol.html">Chess link protocol helper functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chess_link_transports.html">USB ChessLink transport</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chess_link_transports.html#bluetooth-le-chesslink-transport">Bluetooth LE ChessLink transport</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chess_link_protocol.html">ChessLink protocol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chess_link_transports.html">USB transport</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chess_link_transports.html#ble-transport">BLE transport</a></li>
 </ul>
 
 <div class="relations">
@@ -440,22 +393,28 @@ and board orientation to ‘chess_link_config.json’</p>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="index.html" title="previous chapter">Welcome to mchess’s documentation!</a></li>
-      <li>Next: <a href="chess_link_protocol.html" title="next chapter">Chess link protocol helper functions</a></li>
+      <li>Next: <a href="chess_link_protocol.html" title="next chapter">ChessLink protocol</a></li>
   </ul></li>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -464,8 +423,8 @@ and board orientation to ‘chess_link_config.json’</p>
       &copy;2018, Dominik Schlösser.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/chess_link.rst.txt"

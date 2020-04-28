@@ -1,19 +1,17 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Welcome to mchess’s documentation! &#8212; mchess 0.1.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>Welcome to mchess’s documentation! &#8212; mchess 0.2.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="ChessLink object" href="chess_link.html" />
@@ -44,23 +42,23 @@
 <li class="toctree-l1"><a class="reference internal" href="chess_link_transports.html#ble-transport">BLE transport</a></li>
 </ul>
 </div>
-<table border="1" class="longtable docutils">
+<table class="longtable docutils align-default">
 <colgroup>
-<col width="10%" />
-<col width="90%" />
+<col style="width: 10%" />
+<col style="width: 90%" />
 </colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="chess_link.html#chess_link.ChessLink" title="chess_link.ChessLink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chess_link.ChessLink</span></code></a>(appque,&nbsp;name)</td>
-<td>This implements the ‘Chess Link’ protocol for Millennium Chess Genius Exclusive and future boards  compatible with that protocol.</td>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="chess_link.html#chess_link.ChessLink" title="chess_link.ChessLink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chess_link.ChessLink</span></code></a>(appque, name)</p></td>
+<td><p>This implements the ‘Chess Link’ protocol for Millennium Chess Genius Exclusive and future boards  compatible with that protocol.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="chess_link_protocol.html#module-chess_link_protocol" title="chess_link_protocol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chess_link_protocol</span></code></a></td>
-<td>Helper functions for the Chess Link protocol for character-based odd-parity and  message-block-parity.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="chess_link_protocol.html#module-chess_link_protocol" title="chess_link_protocol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chess_link_protocol</span></code></a></p></td>
+<td><p>Helper functions for the Chess Link protocol for character-based odd-parity and  message-block-parity.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="chess_link_transports.html#chess_link_usb.Transport" title="chess_link_usb.Transport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chess_link_usb.Transport</span></code></a>(que)</td>
-<td>ChessLink transport implementation for USB connections.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="chess_link_transports.html#chess_link_usb.Transport" title="chess_link_usb.Transport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chess_link_usb.Transport</span></code></a>(que[, protocol_dbg])</p></td>
+<td><p>ChessLink transport implementation for USB connections.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="chess_link_transports.html#chess_link_bluepy.Transport" title="chess_link_bluepy.Transport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chess_link_bluepy.Transport</span></code></a>(que)</td>
-<td>ChessLink transport implementation for Bluetooth LE connections using <cite>bluepy</cite>.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="chess_link_transports.html#chess_link_bluepy.Transport" title="chess_link_bluepy.Transport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chess_link_bluepy.Transport</span></code></a>(que[, protocol_dbg])</p></td>
+<td><p>ChessLink transport implementation for Bluetooth LE connections using <cite>bluepy</cite>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -68,15 +66,15 @@
 <div class="section" id="other-references">
 <h1>Other references<a class="headerlink" href="#other-references" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li><a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/README.md">README</a></li>
-<li><a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">ChessLink protocol specification</a></li>
+<li><p><a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/README.md">README</a></p></li>
+<li><p><a class="reference external" href="https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md">ChessLink protocol specification</a></p></li>
 </ul>
 </div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
-<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
 </div>
 
@@ -114,17 +112,23 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -133,8 +137,8 @@
       &copy;2018, Dominik Schlösser.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/index.rst.txt"

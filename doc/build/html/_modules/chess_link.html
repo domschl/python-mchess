@@ -1,19 +1,17 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>chess_link &#8212; mchess 0.1.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>chess_link &#8212; mchess 0.2.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
    
@@ -114,7 +112,7 @@
 <span class="sd">    module `python_chess`. See chess_link_agent.py for an example.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ChessLink.__init__"><a class="viewcode-back" href="../chess_link.html#chess_link.ChessLink.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">appque</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="viewcode-block" id="ChessLink.__init__"><a class="viewcode-back" href="../chess_link.html#chess_link.ChessLink.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">appque</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Constructor, searches, configures and connectors to Chess Link compatible </span>
 <span class="sd">        Millennium Chess Genius Exclusive or similar boards.</span>
@@ -132,6 +130,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Chess Link starting&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">WHITE</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">BLACK</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_condition</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">turn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">WHITE</span>
         <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;FATAL: You need Python 3.x to run this module.&quot;</span><span class="p">)</span>
@@ -165,76 +164,117 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">event_thread</span><span class="o">.</span><span class="n">setDaemon</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">event_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;chess_link_config.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
                 <span class="k">if</span> <span class="s1">&#39;orientation&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;orientation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Checking default configuration for board via </span><span class="si">{}</span><span class="s1"> at </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;orientation&#39;</span><span class="p">]</span>
-                <span class="n">trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_open_transport</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">trans</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">trans</span><span class="o">.</span><span class="n">test_board</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Default board operational.&#39;</span><span class="p">)</span>
-                        <span class="n">found_board</span> <span class="o">=</span> <span class="kc">True</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">trans</span> <span class="o">=</span> <span class="n">trans</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                            <span class="s1">&#39;Default board not available, start scan.&#39;</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">write_configuration</span><span class="p">()</span>
+                <span class="k">if</span> <span class="s1">&#39;protocol_debug&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;protocol_debug&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">write_configuration</span><span class="p">()</span>
+                <span class="k">if</span> <span class="s1">&#39;btle_iface&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;btle_iface&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">write_configuration</span><span class="p">()</span>
+                <span class="k">if</span> <span class="s1">&#39;transport&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="ow">and</span> <span class="s1">&#39;address&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Checking default configuration for board via </span><span class="si">{}</span><span class="s1"> at </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;orientation&#39;</span><span class="p">]</span>
+                    <span class="n">trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_open_transport</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;protocol_debug&#39;</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">trans</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">trans</span><span class="o">.</span><span class="n">test_board</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Default board config used.&#39;</span><span class="p">)</span>
+                            <span class="n">found_board</span> <span class="o">=</span> <span class="kc">True</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">trans</span> <span class="o">=</span> <span class="n">trans</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;autodetect&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                                    <span class="s1">&#39;Default board not available and autodetect=False.&#39;</span><span class="p">)</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">error_condition</span> <span class="o">=</span> <span class="kc">True</span>
+                                <span class="k">return</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                                    <span class="s1">&#39;Default board not available, start scan.&#39;</span><span class="p">)</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                 <span class="s1">&#39;No valid default configuration, starting board-scan: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="n">reps</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># These repetitions are caused by monolitic arch of bluepy single-threads.</span>
+                  <span class="c1"># Should be replaced by async refactor at some point.</span>
+        <span class="k">while</span> <span class="n">reps</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">reps</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Retrying scan and connect after error.&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">found_board</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">address</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s1">&#39;autodetect&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;autodetect&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">transport</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transports</span><span class="p">[</span><span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()]:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">tri</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">transport</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;imported </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transport</span><span class="p">))</span>
+                            <span class="n">tr</span> <span class="o">=</span> <span class="n">tri</span><span class="o">.</span><span class="n">Transport</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trque</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;created obj&quot;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">is_init</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                    <span class="s2">&quot;Transport </span><span class="si">{}</span><span class="s2"> loaded.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+                                <span class="n">address</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">search_board</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;btle_iface&#39;</span><span class="p">])</span>
+                                <span class="k">if</span> <span class="n">address</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found board on transport </span><span class="si">{}</span><span class="s2"> at address </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                        <span class="n">tr</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">address</span><span class="p">))</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="o">=</span> <span class="p">{</span>
+                                        <span class="s1">&#39;transport&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="n">address</span><span class="p">}</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">trans</span> <span class="o">=</span> <span class="n">tr</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">write_configuration</span><span class="p">()</span>
+                                    <span class="k">break</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Transport </span><span class="si">{}</span><span class="s2"> failed to initialize&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                    <span class="n">tr</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+                        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Internal error, import of </span><span class="si">{}</span><span class="s2"> failed: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                <span class="n">transport</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="n">found_board</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
-            <span class="n">address</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">for</span> <span class="n">transport</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transports</span><span class="p">[</span><span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()]:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">tri</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">transport</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;imported </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transport</span><span class="p">))</span>
-                    <span class="n">tr</span> <span class="o">=</span> <span class="n">tri</span><span class="o">.</span><span class="n">Transport</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trque</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;created obj&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">is_init</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                            <span class="s2">&quot;Transport </span><span class="si">{}</span><span class="s2"> loaded.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
-                        <span class="n">address</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">search_board</span><span class="p">()</span>
-                        <span class="k">if</span> <span class="n">address</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found board on transport </span><span class="si">{}</span><span class="s2"> at address </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">tr</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">address</span><span class="p">))</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="o">=</span> <span class="p">{</span>
-                                <span class="s1">&#39;transport&#39;</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="n">address</span><span class="p">}</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">trans</span> <span class="o">=</span> <span class="n">tr</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">write_configuration</span><span class="p">()</span>
-                            <span class="k">break</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Transport </span><span class="si">{}</span><span class="s2"> failed to initialize&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">tr</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
-                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Internal error, import of </span><span class="si">{}</span><span class="s2"> failed: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">transport</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">trans</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="s2">&quot;No transport available, cannot connect.&quot;</span><span class="p">)</span>
-            <span class="k">return</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Valid board available on </span><span class="si">{}</span><span class="s1"> at </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span>
-            <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;Windows&#39;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">geteuid</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                        <span class="s1">&#39;Do not run as root, once intial BLE scan is done.&#39;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Connecting to Chess Link via </span><span class="si">{}</span><span class="s1"> at </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">open_mt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">])</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Connected to Chess Link via </span><span class="si">{}</span><span class="s1"> at </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">trans</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s2">&quot;No transport available, cannot connect.&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">write_configuration</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error_condition</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">return</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Connection to Chess Link via </span><span class="si">{}</span><span class="s1"> at </span><span class="si">{}</span><span class="s1"> FAILED.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Valid board available on </span><span class="si">{}</span><span class="s1"> at </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span>
+                <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;Windows&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">geteuid</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                            <span class="s1">&#39;Do not run as root, once intial BLE scan is done.&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Connecting to Chess Link via </span><span class="si">{}</span><span class="s1"> at </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">open_mt</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Connected to Chess Link via </span><span class="si">{}</span><span class="s1"> at </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Connection to Chess Link via </span><span class="si">{}</span><span class="s1"> at </span><span class="si">{}</span><span class="s1"> FAILED.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;transport&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">error_condition</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_condition</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">reps</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error_condition</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">found_board</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="ChessLink.quit"><a class="viewcode-back" href="../chess_link.html#chess_link.ChessLink.quit">[docs]</a>    <span class="k">def</span> <span class="nf">quit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Quit ChessLink</span>
+
+<span class="sd">        Try to terminate transport threads gracefully.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trans</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thread_active</span> <span class="o">=</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="ChessLink.position_initialized"><a class="viewcode-back" href="../chess_link.html#chess_link.ChessLink.position_initialized">[docs]</a>    <span class="k">def</span> <span class="nf">position_initialized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -257,10 +297,15 @@
 
 <span class="sd">        :return: True on success, False on error</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;orientation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span>
+        <span class="k">if</span> <span class="s1">&#39;transport&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;orientation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span>
+        <span class="k">if</span> <span class="s1">&#39;btle_iface&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;btle_iface&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="s1">&#39;autodetect&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;autodetect&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;chess_link_config.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">True</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to save default configuration </span><span class="si">{}</span><span class="s2"> to </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -278,9 +323,24 @@
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">thread_active</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trque</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trque</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">msg</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+                <span class="n">token</span> <span class="o">=</span> <span class="s1">&#39;agent-state: &#39;</span>
+                <span class="k">if</span> <span class="n">msg</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">token</span><span class="p">)]</span> <span class="o">==</span> <span class="n">token</span><span class="p">:</span>
+                    <span class="n">toks</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">token</span><span class="p">):]</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="n">toks</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="n">state</span> <span class="o">=</span> <span class="n">toks</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">emsg</span> <span class="o">=</span> <span class="n">toks</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">state</span> <span class="o">=</span> <span class="n">toks</span>
+                        <span class="n">emsg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Agent state of </span><span class="si">{}</span><span class="s2"> changed to </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">emsg</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;offline&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">error_condition</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">error_condition</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">appque</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
-                        <span class="p">{</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;transport failure or not available.&#39;</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
+                        <span class="p">{</span><span class="s1">&#39;agent-state&#39;</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">emsg</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
                     <span class="k">continue</span>
 
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -355,8 +415,8 @@
                                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
                                     <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span>
                                         <span class="n">position</span><span class="p">)</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">show_delta</span><span class="p">(</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">show_delta</span><span class="p">(</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
                             <span class="c1"># self.print_position_ascii(position)</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">appque</span><span class="o">.</span><span class="n">put</span><span class="p">({</span><span class="s1">&#39;fen&#39;</span><span class="p">:</span> <span class="n">fen</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_check_move</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
@@ -419,6 +479,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">fen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">short_fen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position_to_fen</span><span class="p">(</span><span class="n">pos</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span><span class="p">:</span>
+            <span class="c1"># TODO: inconsistent message format</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">appque</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
                 <span class="p">{</span><span class="s1">&#39;move&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;uci&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span><span class="p">[</span><span class="n">fen</span><span class="p">],</span> <span class="s1">&#39;fen&#39;</span><span class="p">:</span> <span class="n">fen</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">}})</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span> <span class="o">=</span> <span class="kc">None</span>
@@ -441,15 +502,21 @@
 <span class="sd">        :param color: color to move (ChessLink.WHITE or ChessLink.BLACK)</span>
 <span class="sd">        :param eval_only: True: indicate ponder evals</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">eval_only</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span> <span class="o">=</span> <span class="n">legal_moves</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">turn</span> <span class="o">=</span> <span class="n">color</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fen_to_position</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">show_delta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">eval_only</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">legal_moves</span> <span class="o">=</span> <span class="n">legal_moves</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">turn</span> <span class="o">=</span> <span class="n">color</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fen_to_position</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">board_mutex</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">show_delta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference_position</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">eval_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fen_to_position</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">board_mutex</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">show_delta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="n">eval_position</span><span class="p">,</span>
+                                    <span class="n">freq</span><span class="o">=</span><span class="mh">0x15</span><span class="p">,</span> <span class="n">ontime1</span><span class="o">=</span><span class="mh">0x02</span><span class="p">,</span> <span class="n">ontime2</span><span class="o">=</span><span class="mh">0x01</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">eval_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fen_to_position</span><span class="p">(</span><span class="n">fen</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">show_delta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="n">eval_position</span><span class="p">,</span>
-                            <span class="n">freq</span><span class="o">=</span><span class="mh">0x15</span><span class="p">,</span> <span class="n">ontime1</span><span class="o">=</span><span class="mh">0x02</span><span class="p">,</span> <span class="n">ontime2</span><span class="o">=</span><span class="mh">0x01</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ChessLink.show_deltas"><a class="viewcode-back" href="../chess_link.html#chess_link.ChessLink.show_deltas">[docs]</a>    <span class="k">def</span> <span class="nf">show_deltas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">freq</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -462,22 +529,26 @@
 <span class="sd">                          position)</span>
 <span class="sd">        :param freq: Blink frequency</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
-            <span class="n">npos</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="n">npos</span> <span class="o">=</span> <span class="mi">5</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">npos</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
+            <span class="n">dpos</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">ply</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">npos</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">frame</span> <span class="o">=</span> <span class="n">ply</span><span class="o">*</span><span class="mi">2</span>
+                <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">positions</span><span class="p">[</span><span class="n">ply</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">!=</span> <span class="n">positions</span><span class="p">[</span><span class="n">ply</span><span class="p">][</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]:</span>
+                            <span class="k">if</span> <span class="n">positions</span><span class="p">[</span><span class="n">ply</span><span class="p">][</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="n">dpos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">|=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span> <span class="o">-</span> <span class="n">frame</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">dpos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">|=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span> <span class="o">-</span> <span class="p">(</span><span class="n">frame</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_mv_led</span><span class="p">(</span><span class="n">dpos</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">npos</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
-        <span class="n">dpos</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span>
-        <span class="k">for</span> <span class="n">ply</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">npos</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">frame</span> <span class="o">=</span> <span class="n">ply</span><span class="o">*</span><span class="mi">2</span>
-            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">positions</span><span class="p">[</span><span class="n">ply</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">!=</span> <span class="n">positions</span><span class="p">[</span><span class="n">ply</span><span class="p">][</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]:</span>
-                        <span class="k">if</span> <span class="n">positions</span><span class="p">[</span><span class="n">ply</span><span class="p">][</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="n">dpos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">|=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span> <span class="o">-</span> <span class="n">frame</span><span class="p">)</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="n">dpos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">|=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span> <span class="o">-</span> <span class="p">(</span><span class="n">frame</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_mv_led</span><span class="p">(</span><span class="n">dpos</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_set_mv_led</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">freq</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -518,15 +589,19 @@
 <span class="sd">        :param ontime1: 8-bit value, bits indicate cycles led is on.</span>
 <span class="sd">        :param ontime2: 8-bit value, bits indicate cycles led is off.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">dpos</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span>
-        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">pos2</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">!=</span> <span class="n">pos1</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]:</span>
-                    <span class="k">if</span> <span class="n">pos1</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="n">dpos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">dpos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_led</span><span class="p">(</span><span class="n">dpos</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">ontime1</span><span class="p">,</span> <span class="n">ontime2</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">dpos</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">pos2</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">!=</span> <span class="n">pos1</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="n">pos1</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">dpos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">dpos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_led</span><span class="p">(</span><span class="n">dpos</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">ontime1</span><span class="p">,</span> <span class="n">ontime2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ChessLink.set_led"><a class="viewcode-back" href="../chess_link.html#chess_link.ChessLink.set_led">[docs]</a>    <span class="k">def</span> <span class="nf">set_led</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">ontime1</span><span class="p">,</span> <span class="n">ontime2</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -585,8 +660,8 @@
 
 <span class="sd">        See see `magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;`_.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
@@ -599,15 +674,20 @@
 
 <span class="sd">        :param count: 0-4, 0: no debounce, 1-4: 1-4 scan times debounce.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;W02&quot;</span>
-        <span class="k">if</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="s1">&#39;Invalid debounce count </span><span class="si">{}</span><span class="s1">, should be 0: no debounce, 1 .. 4: 1-4  scan times debounce&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">count</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;W02&quot;</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s1">&#39;Invalid debounce count </span><span class="si">{}</span><span class="s1">, should be 0: no debounce, 1 .. 4: 1-4  scan times debounce&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">count</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># 3: no debounce, 4: 2 scans debounce, -&gt; 7: 4 scans</span>
+                <span class="n">cmd</span> <span class="o">+=</span> <span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="n">count</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;Setting board scan debounce to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">count</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># 3: no debounce, 4: 2 scans debounce, -&gt; 7: 4 scans</span>
-            <span class="n">cmd</span> <span class="o">+=</span> <span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="n">count</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Setting board scan debounce to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">count</span><span class="p">))</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ChessLink.get_led_brightness_percent"><a class="viewcode-back" href="../chess_link.html#chess_link.ChessLink.get_led_brightness_percent">[docs]</a>    <span class="k">def</span> <span class="nf">get_led_brightness_percent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -616,8 +696,8 @@
 
 <span class="sd">        See see `magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;`_.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
@@ -629,16 +709,20 @@
 
 <span class="sd">        :param level: 0.0 - 1.0: 0(darkest) up to 1.0(brightest).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;W04&quot;</span>
-        <span class="k">if</span> <span class="n">level</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">level</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="s1">&#39;Invalid brightness level </span><span class="si">{}</span><span class="s1">, shouldbe between 0(darkest)..1.0(brightest)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">level</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;W04&quot;</span>
+            <span class="k">if</span> <span class="n">level</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">level</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s1">&#39;Invalid brightness level </span><span class="si">{}</span><span class="s1">, shouldbe between 0(darkest)..1.0(brightest)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">level</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ilevel</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">level</span><span class="o">*</span><span class="mi">15</span><span class="p">)</span>
+                <span class="n">cmd</span> <span class="o">+=</span> <span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="n">ilevel</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;Setting led brightness to </span><span class="si">{}</span><span class="s2"> (bri=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ilevel</span><span class="p">,</span> <span class="n">level</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">ilevel</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">level</span><span class="o">*</span><span class="mi">15</span><span class="p">)</span>
-            <span class="n">cmd</span> <span class="o">+=</span> <span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="n">ilevel</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="s2">&quot;Setting led brightness to </span><span class="si">{}</span><span class="s2"> (bri=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ilevel</span><span class="p">,</span> <span class="n">level</span><span class="p">))</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ChessLink.get_scan_time_ms"><a class="viewcode-back" href="../chess_link.html#chess_link.ChessLink.get_scan_time_ms">[docs]</a>    <span class="k">def</span> <span class="nf">get_scan_time_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -647,9 +731,13 @@
 
 <span class="sd">        See see `magic-link.md &lt;https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md&gt;`_.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span><span class="o">+</span><span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
@@ -663,22 +751,25 @@
 <span class="sd">        :param scan_ms: 30.72(fastest)-522.24(slowest), scan time in ms. A value around 100ms is </span>
 <span class="sd">                        recommended, board default is 41ms.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;W01&quot;</span>
-        <span class="k">if</span> <span class="n">scan_ms</span> <span class="o">&lt;</span> <span class="mf">2.048</span> <span class="o">*</span> <span class="mf">15.0</span> <span class="ow">or</span> <span class="n">scan_ms</span> <span class="o">&gt;</span> <span class="mf">255.0</span> <span class="o">*</span> <span class="mf">2.048</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="s1">&#39;Invalid scan_ms </span><span class="si">{}</span><span class="s1">, shouldbe between 30.72(fastest, might not work)..522.24(slowest, about 2 scans per sec))&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scan_ms</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;W01&quot;</span>
+            <span class="k">if</span> <span class="n">scan_ms</span> <span class="o">&lt;</span> <span class="mf">2.048</span> <span class="o">*</span> <span class="mf">15.0</span> <span class="ow">or</span> <span class="n">scan_ms</span> <span class="o">&gt;</span> <span class="mf">255.0</span> <span class="o">*</span> <span class="mf">2.048</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s1">&#39;Invalid scan_ms </span><span class="si">{}</span><span class="s1">, shouldbe between 30.72(fastest, might not work)..522.24(slowest, about 2 scans per sec))&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scan_ms</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">iscans</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">scan_ms</span><span class="o">/</span><span class="mf">2.048</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">iscans</span> <span class="o">&lt;</span> <span class="mi">15</span><span class="p">:</span>
+                    <span class="n">iscans</span> <span class="o">=</span> <span class="mi">15</span>
+                <span class="k">if</span> <span class="n">iscans</span> <span class="o">&gt;</span> <span class="mi">255</span><span class="p">:</span>
+                    <span class="n">iscans</span> <span class="o">=</span> <span class="mi">255</span>
+                <span class="n">cmd</span> <span class="o">+=</span> <span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="n">iscans</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;Setting scan_ms intervall to </span><span class="si">{}</span><span class="s2"> -&gt; </span><span class="si">{}</span><span class="s2">ms (</span><span class="si">{}</span><span class="s2"> scans per sec)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iscans</span><span class="p">,</span> <span class="n">scan_ms</span><span class="p">,</span> <span class="mf">1000.0</span><span class="o">/</span><span class="n">scan_ms</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">iscans</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">scan_ms</span><span class="o">/</span><span class="mf">2.048</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">iscans</span> <span class="o">&lt;</span> <span class="mi">15</span><span class="p">:</span>
-                <span class="n">iscans</span> <span class="o">=</span> <span class="mi">15</span>
-            <span class="k">if</span> <span class="n">iscans</span> <span class="o">&gt;</span> <span class="mi">255</span><span class="p">:</span>
-                <span class="n">iscans</span> <span class="o">=</span> <span class="mi">255</span>
-            <span class="n">cmd</span> <span class="o">+=</span> <span class="n">clp</span><span class="o">.</span><span class="n">hex2</span><span class="p">(</span><span class="n">iscans</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="o">.</span><span class="n">write_mt</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="s2">&quot;Setting scan_ms intervall to </span><span class="si">{}</span><span class="s2"> -&gt; </span><span class="si">{}</span><span class="s2">ms (</span><span class="si">{}</span><span class="s2"> scans per sec)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iscans</span><span class="p">,</span> <span class="n">scan_ms</span><span class="p">,</span> <span class="mf">1000.0</span><span class="o">/</span><span class="n">scan_ms</span><span class="p">))</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Not connected to Chess Link.&quot;</span><span class="p">)</span></div>
 
-    <span class="c1"># TODO: move this?</span>
 <div class="viewcode-block" id="ChessLink.short_fen"><a class="viewcode-back" href="../chess_link.html#chess_link.ChessLink.short_fen">[docs]</a>    <span class="k">def</span> <span class="nf">short_fen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fen</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Utility-function to cut off all information after the actual position, since the board</span>
@@ -787,14 +878,14 @@
             <span class="n">fi</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="n">position</span></div>
 
-    <span class="k">def</span> <span class="nf">_open_transport</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transport</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_open_transport</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transport</span><span class="p">,</span> <span class="n">protocol_debug</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Internal function to load transport modules (USB or bluetooth)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">tri</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">transport</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;imported </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transport</span><span class="p">))</span>
-            <span class="n">tr</span> <span class="o">=</span> <span class="n">tri</span><span class="o">.</span><span class="n">Transport</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trque</span><span class="p">)</span>
+            <span class="n">tr</span> <span class="o">=</span> <span class="n">tri</span><span class="o">.</span><span class="n">Transport</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trque</span><span class="p">,</span> <span class="n">protocol_debug</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;created obj&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">is_init</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Transport </span><span class="si">{}</span><span class="s2"> loaded.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
@@ -857,14 +948,19 @@
 
 <span class="sd">        :param orientation: True: cable right, False: cable left.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">orientation</span>
+        <span class="k">if</span> <span class="n">orientation</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">orientation</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Swapping board position&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">board_mutex</span><span class="p">:</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+                        <span class="n">pos</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">7</span><span class="o">-</span><span class="n">y</span><span class="p">][</span><span class="mi">7</span><span class="o">-</span><span class="n">x</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">pos</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_configuration</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="ChessLink.get_orientation"><a class="viewcode-back" href="../chess_link.html#chess_link.ChessLink.get_orientation">[docs]</a>    <span class="k">def</span> <span class="nf">get_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Asynchronuosly request the Chess Link board orientation. The answer will be</span>
-<span class="sd">        written to the queue `appqueue` given during initialization.</span>
-
 <span class="sd">        ChessLink tries to autodetect the orientation of the board by looking for</span>
 <span class="sd">        initial start positions.</span>
 
@@ -908,17 +1004,23 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -927,8 +1029,8 @@
       &copy;2018, Dominik Schlösser.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

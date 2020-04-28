@@ -1,20 +1,18 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Index &#8212; mchess 0.1.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>Index &#8212; mchess 0.2.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -49,6 +47,7 @@
  | <a href="#N"><strong>N</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
@@ -87,10 +86,15 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chess_link_protocol.html#chess_link_protocol.check_block_crc">check_block_crc() (in module chess_link_protocol)</a>
 </li>
+      <li>
+    chess_link_protocol
+
+      <ul>
+        <li><a href="chess_link_protocol.html#module-chess_link_protocol">module</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="chess_link_protocol.html#module-chess_link_protocol">chess_link_protocol (module)</a>
-</li>
       <li><a href="chess_link.html#chess_link.ChessLink">ChessLink (class in chess_link)</a>
 </li>
   </ul></td>
@@ -165,6 +169,15 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    module
+
+      <ul>
+        <li><a href="chess_link_protocol.html#module-chess_link_protocol">chess_link_protocol</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chess_link.html#chess_link.ChessLink.move_from">move_from() (chess_link.ChessLink method)</a>
 </li>
   </ul></td>
@@ -199,6 +212,20 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chess_link.html#chess_link.ChessLink.position_to_fen">position_to_fen() (chess_link.ChessLink method)</a>
 </li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="chess_link.html#chess_link.ChessLink.quit">quit() (chess_link.ChessLink method)</a>
+
+      <ul>
+        <li><a href="chess_link_transports.html#chess_link_bluepy.Transport.quit">(chess_link_bluepy.Transport method)</a>
+</li>
+        <li><a href="chess_link_transports.html#chess_link_usb.Transport.quit">(chess_link_usb.Transport method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -328,17 +355,23 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -347,8 +380,8 @@
       &copy;2018, Dominik Schlösser.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 
