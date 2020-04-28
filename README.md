@@ -122,13 +122,13 @@ If `mchess.py` has been started with `sudo`, it is advisible to change the owner
 
 Restart the program, once the board has connected (the connection address is saved in `chess_link_config.json`)
 
-Do NOT use `sudo` on subsequent starts, or the communication might fail. If scan was executed with sude, then you might want to set ownership for `chess_link_config.json` to your user-account, since the file will be rewritten, if the detected board orientation is changed.
+Do NOT use `sudo` on subsequent starts, or the communication might fail. If scan was executed with `sudo`, then you might want to set ownership for `chess_link_config.json` to your user-account, since the file will be rewritten, if the detected board orientation is changed. (`chown your-username chess_link_config.json`)
 
 All engine descriptions in directory 'engines' will now contain the default-UCI options for each engine. Those can be edited e.g. to enable tablebases or other UCI options.
 
 
 ![Console mchess](https://raw.github.com/domschl/python-mchess/master/images/MchessAlpha.png)
-_Console output of python module, allows terminal interactions: enter 'help' for overview_
+_Console output of python module, allows terminal interactions: enter 'help' for an overview of console commands_
 
 ## Usage
 
