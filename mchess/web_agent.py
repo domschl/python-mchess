@@ -169,6 +169,7 @@ class WebAgent:
         nboard = copy.deepcopy(board)
         if 'variant' in ninfo:
             ml = []
+            mv = ''
             if nboard.turn is False:
                 mv = (nboard.fullmove_number,)
                 mv += ("..",)

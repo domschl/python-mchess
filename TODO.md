@@ -27,7 +27,6 @@
 
 ## Agents and main
 
-- [ ] Current UCI API of python-chess is deprecated. Change to ASYNC engine api.
 - [ ] PGN-Libraries and ECO handling
 - [ ] Data import module
 
@@ -64,3 +63,4 @@
 - [x] Select look-ahead engine for LED display
 - [x] Verify consistent mutex usage
 
+- [x] Current UCI API of python-chess is deprecated. Change to ASYNC engine api.

@@ -472,11 +472,20 @@ class UciAgent:
         # _, self.engine = await chess.engine.popen_uci('/usr/local/bin/stockfish')
         # self.log.info(f"{self.name} go, mtime={mtime}, board={board}")
         pv=[]
+        last_info=[]
         self.log.info(f"mtime: {mtime}")
         if 'MultiPV' in self.engine_json['uci-options']:
             mpv=self.engine_json['uci-options']['MultiPV']
-            for _ in range(mpv):
+            for i in range(mpv):
                 pv.append([])
+                last_info.append(0)
+                res={'curmove' : {
+                    'multipv_ind': i+1,
+                    'variant': [],
+                    'actor': self.name,
+                    'score': ''
+                }}
+                self.que.put(res)  # reset old evals
         else:
             pv.append([])
             mpv=1
@@ -487,7 +496,6 @@ class UciAgent:
             self.log.info("Infinite analysis")
         else:
             lm=chess.engine.Limit(time=mtime)
-        last_info=0
         rep=None
         skipped=False
         with await self.engine.analysis(board, lm, multipv=mpv, info=chess.engine.Info.ALL) as analysis:
@@ -528,9 +536,9 @@ class UciAgent:
                         rep['curmove']['nps']=info['nps']
                     if 'tbhits' in info:
                         rep['curmove']['tbhits']=info['tbhits']
-                    if time.time()-last_info > self.info_throttle:
+                    if time.time()-last_info[ind] > self.info_throttle:
                         self.que.put(rep)
-                        last_info=time.time()
+                        last_info[ind]=time.time()
                         skipped=False
                     else:
                         skipped=True
