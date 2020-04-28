@@ -27,29 +27,43 @@ class Transport():
     All replies are written to the python queue `que` given during initialization.
     """
 
-    def __init__(self, que):
+    def __init__(self, que, protocol_dbg=False):
         """
         Initialize with python queue for event handling.
         Events are strings conforming to the ChessLink protocol as documented in 
         `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
 
         :param que: Python queue that will eceive events from chess board.
+        :param protocol_dbg: True: byte-level ChessLink protocol debug messages
         """
+        self.log = logging.getLogger("ChessLinkUSB")
         if usb_support == False:
+            self.log.error(
+                'Cannot communicate: PySerial module not installed.')
             self.init = False
             return
-        self.log = logging.getLogger("ChessLinkUSB")
         self.que = que  # asyncio.Queue()
         self.init = True
         self.log.debug("USB init ok")
+        self.protocol_debug = protocol_dbg
+        self.last_agent_state = None
 
-    def search_board(self):
+    def quit(self):
+        """
+        Initiate worker-thread stop
+        """
+        self.thread_active = False
+
+    def search_board(self, iface=None):
         """
         Search for ChessLink connections on all USB ports.
 
+        :param iface: not used for USB.
         :returns: Name of the port with a ChessLink board, None on failure.
         """
-        self.log.debug("USB: searching for boards")
+        self.log.info("Searching for ChessLink boards...")
+        self.log.info(
+            'Note: search can be disabled in < chess_link_config.json > by setting {"autodetect": false}')
         port = None
         ports = self.usb_port_search()
         if len(ports) > 0:
@@ -142,13 +156,16 @@ class Transport():
             bo = clp.add_odd_par(c)
             bts.append(bo)
         try:
-            self.log.debug('Trying write <{}>'.format(bts))
+            if self.protocol_debug is True:
+                self.log.debug('Trying write <{}>'.format(bts))
             self.usb_dev.write(bts)
             self.usb_dev.flush()
         except Exception as e:
             self.log.error("Failed to write {}: {}".format(msg, e))
+            self.error_state = True
             return False
-        self.log.debug("Written '{}' as < {} > ok".format(msg, bts))
+        if self.protocol_debug is True:
+            self.log.debug("Written '{}' as < {} > ok".format(msg, bts))
         return True
 
     def usb_read_synchr(self, usbdev, cmd, num):
@@ -176,27 +193,35 @@ class Transport():
             return []
         return rep
 
+    def agent_state(self, que, state, msg):
+        if state != self.last_agent_state:
+            self.last_agent_state = state
+            que.put('agent-state: '+state + ' ' + msg)
+
     def open_mt(self, port):
         """
         Open an usb port to a connected ChessLink board.
 
         :returns: True on success.
         """
+        self.uport = port
         try:
             self.usb_dev = serial.Serial(port, 38400, timeout=0.1)
             self.usb_dev.dtr = 0
         except Exception as e:
-            self.log.error('USB cannot open port {}, {}'.format(port, e))
+            emsg = 'USB cannot open port {}, {}'.format(port, e)
+            self.log.error(emsg)
+            self.agent_state(self.que, 'offline', emsg)
             return False
         self.log.debug('USB port {} open'.format(port))
         self.thread_active = True
         self.event_thread = threading.Thread(
-            target=self.event_worker_thread, args=(self.usb_dev, self.que))
+            target=self.event_worker_thread, args=(self.que,))
         self.event_thread.setDaemon(True)
         self.event_thread.start()
         return True
 
-    def event_worker_thread(self, usb_dev, que):
+    def event_worker_thread(self, que):
         """
         Background thread that sends data received via usb to the queue `que`.
         """
@@ -204,9 +229,35 @@ class Transport():
         cmd_started = False
         cmd_size = 0
         cmd = ""
+        self.agent_state(self.que, 'online',
+                         'Connected to {}'.format(self.uport))
+        self.error_state = False
+        posted = False
         while self.thread_active:
+            while self.error_state is True:
+                time.sleep(1.0)
+                try:
+                    self.usb_dev.close()
+                except:
+                    pass
+                try:
+                    self.usb_dev = serial.Serial(
+                        self.uport, 38400, timeout=0.1)
+                    self.usb_dev.dtr = 0
+                    self.agent_state(self.que, 'online',
+                                     'Reconnected to {}'.format(self.uport))
+                    self.error_state = False
+                    posted = False
+                    break
+                except Exception as e:
+                    if posted is False:
+                        emsg = "Failed to reconnected to {}, {}".format(
+                            self.uport, e)
+                        self.log.warning(emsg)
+                        self.agent_state(self.que, 'offline', emsg)
+                        posted = True
+
             b = ""
-            # time.sleep(0.2)
             try:
                 if cmd_started == False:
                     self.usb_dev.timeout = None
@@ -225,6 +276,7 @@ class Transport():
                 cmd_started = False
                 cmd_size = 0
                 cmd = ""
+                self.error_state = True
                 continue
             if len(b) > 0:
                 if cmd_started is False:
@@ -239,7 +291,8 @@ class Transport():
                     if cmd_size == 0:
                         cmd_started = False
                         cmd_size = 0
-                        self.log.debug("USB received cmd: {}".format(cmd))
+                        if self.protocol_debug is True:
+                            self.log.debug("USB received cmd: {}".format(cmd))
                         if clp.check_block_crc(cmd):
                             que.put(cmd)
                         cmd = ""

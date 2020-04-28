@@ -1,0 +1,7 @@
+{
+  "lockfileVersion": 1,
+  "dependencies": {
+    "cm-chessboard": "^2.15.3",
+    "normalize.css": "^8.0.1"
+  }
+}

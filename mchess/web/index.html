@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title Turquoise>
+    </title>
+    <meta name="description" content="MChess Web Agent">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Turquoise chess">
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/images/turquoise.png">
+    <link rel="stylesheet" type="text/css" href="./node_modules/cm-chessboard/styles/page.css" />
+    <link rel="stylesheet" type="text/css" href="./node_modules/cm-chessboard/styles/cm-chessboard.css" />
+
+    <link rel="stylesheet" type="text/css" href="./node_modules/normalize.css/normalize.css">
+
+    <link rel="stylesheet" type="text/css" href="./styles/mchess.css">
+    <script type="module" type="text/xml" src="./scripts/mchess.js"></script>
+</head>
+
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="images/turquoise.png" width="40px" alt="Turquoise"></div>
+        <div class="title"><span class="turq">Turquoise</span><span class="white"> chess</span></div>
+        <div class="subtitle"><span id="connect-state" class="state-light">●</span> <span class="subtitle" id="connect-text">connected</span>
+            | <span id="chesslink-state" class="state-light">●</span> ChessLink | <span id="version" class="version">v0.2.0</span></div>
+    </div>
+
+    <main>
+        <div class="container">
+            <div class="mainboard">
+                <div>
+                    <div class="submain">
+                        <div class="panel" style="grid-column: 1/3; grid-row: 1/3"></div>
+                        <div class="panel-header" id="ph1" style="grid-column: 1/2; grid-row: 1/2"></div>
+                        <div class="panel-header" id="ph11" style="grid-column: 2/2; grid-row: 1/2; background: var(--color-ddark);"></div>
+                        <span class="board" id="board1" style="grid-column: 1/2; grid-row: 2/3"></span>
+                        <div class="maintext" id="mainmoves" style="grid-column: 2/3; grid-row: 2/3"></div>
+                    </div>
+                    <div class="controls">
+                        <button type="button" class="button" id="m-new" style="margin-left: 40px;">New</button>
+                        <button class="button" id="m-bb">❙◀&nbsp; </button>
+                        <button class="button" id="m-bw"> &nbsp;◀&nbsp; </button>
+                        <button class="button" id="m-st"> &nbsp;◼&nbsp; </button>
+                        <button class="button" id="m-fw"> &nbsp;▶&nbsp; </button>
+                        <button class="button" id="m-ff"> &nbsp;▶❙ </button>
+                    </div>
+                    <div class="controls">
+                        <span class="label">FEN:</span>
+                        <textarea class="input" id="m-edit" rows="1" cols="30"></textarea>
+                        <span class="button" id="m-send"> &nbsp;↵&nbsp; </span>
+                    </div>
+                    <div class="controls" id="chess-link-controls">
+                        <span class="label">ChessLink board:</span>
+                        <span class="button" id="m-import">Import position</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="miniboard1">
+                    <div class="submini">
+                        <div class="panel" style="grid-column: 1/3; grid-row: 1/3"></div>
+                        <div class="panel-header" id="ph2" style="grid-column: 1/2; grid-row: 1/2"></div>
+                        <div class="panel-header" id="ph21" style="text-align: left; grid-column: 2/2; grid-row: 1/2; background: var(--color-ddark);"></div>
+                        <span class="board" id="miniboard1" style="grid-column: 1/2; grid-row: 2/3"></span>
+                        <div class="maintext" id="miniinfo1" style="grid-column: 2/3; grid-row: 2/3"></div>
+                    </div>
+                    <div class="controls">
+                        <button class="sbutton" style="margin-left: 4px;">❙◀&nbsp; </button>
+                        <button class="sbutton"> &nbsp;◀&nbsp; </button>
+                        <button class="sbutton"> &nbsp;◼&nbsp; </button>
+                        <button class="sbutton"> &nbsp;▶&nbsp; </button>
+                        <button class="sbutton"> &nbsp;▶❙ </button>
+                    </div>
+                </div>
+                <div style="padding-bottom: 0.4em"></div>
+                <div class="miniboard2">
+                    <div class="submini">
+                        <div class="panel" style="grid-column: 1/3; grid-row: 1/3"></div>
+                        <div class="panel-header" id="ph3" style="grid-column: 1/2; grid-row: 1/2"></div>
+                        <div class="panel-header" id="ph31" style="text-align: left; grid-column: 2/2; grid-row: 1/2; background: var(--color-ddark);"></div>
+                        <span class="board" id="miniboard2" style="grid-column: 1/2; grid-row: 2/3"></span>
+                        <div class="maintext" id="miniinfo2" style="grid-column: 2/3; grid-row: 2/3"></div>
+                    </div>
+                    <div class="controls">
+                        <button class="sbutton" style="margin-left: 4px;">❙◀&nbsp; </button>
+                        <button class="sbutton"> &nbsp;◀&nbsp; </button>
+                        <button class="sbutton"> &nbsp;◼&nbsp; </button>
+                        <button class="sbutton"> &nbsp;▶&nbsp; </button>
+                        <button class="sbutton"> &nbsp;▶❙ </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

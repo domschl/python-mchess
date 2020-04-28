@@ -1,0 +1,5 @@
+{
+    "name": "engine-name",
+    "path": "path-to-engine-executable",
+    "active": true
+}
