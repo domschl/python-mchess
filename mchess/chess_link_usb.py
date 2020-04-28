@@ -54,10 +54,11 @@ class Transport():
         """
         self.thread_active = False
 
-    def search_board(self):
+    def search_board(self, iface=None):
         """
         Search for ChessLink connections on all USB ports.
 
+        :param iface: not used for USB.
         :returns: Name of the port with a ChessLink board, None on failure.
         """
         self.log.info("Searching for ChessLink boards...")

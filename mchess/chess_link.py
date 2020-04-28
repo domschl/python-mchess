@@ -137,8 +137,13 @@ class ChessLink:
                 self.mill_config = json.load(f)
                 if 'orientation' not in self.mill_config:
                     self.mill_config['orientation'] = True
+                    self.write_configuration()
                 if 'protocol_debug' not in self.mill_config:
                     self.mill_config['protocol_debug'] = False
+                    self.write_configuration()
+                if 'btle_iface' not in self.mill_config:
+                    self.mill_config['btle_iface'] = 1
+                    self.write_configuration()
                 if 'transport' in self.mill_config and 'address' in self.mill_config:
                     self.log.debug('Checking default configuration for board via {} at {}'.format(
                         self.mill_config['transport'], self.mill_config['address']))
@@ -179,7 +184,7 @@ class ChessLink:
                             if tr.is_init() is True:
                                 self.log.debug(
                                     "Transport {} loaded.".format(tr.get_name()))
-                                address = tr.search_board()
+                                address = tr.search_board(self.mill_config['btle_iface'])
                                 if address is not None:
                                     self.log.debug("Found board on transport {} at address {}".format(
                                         tr.get_name(), address))
@@ -261,6 +266,8 @@ class ChessLink:
         """
         if 'transport' in self.mill_config:
             self.mill_config['orientation'] = self.orientation
+        if 'btle_iface' not in self.mill_config:
+            self.mill_config['iface'] = 1
         if 'autodetect' not in self.mill_config:
             self.mill_config['autodetect'] = True
         try:

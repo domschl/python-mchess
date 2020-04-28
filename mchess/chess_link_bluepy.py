@@ -53,10 +53,11 @@ class Transport():
         """
         self.worker_thread_active = False
 
-    def search_board(self):
+    def search_board(self, iface=1):
         """
         Search for ChessLink connections using Bluetooth LE.
 
+        :param iface: interface number of bluetooth adapter, default 1.
         :returns: Bluetooth address of ChessLink board, or None on failure.
         """
         self.log.debug("bluepy_ble: searching for boards")
@@ -74,7 +75,7 @@ class Transport():
                         "Received new data from {}".format(dev.addr))
 
         # XXX make iface no configurable, it seems to change over linux releases...
-        scanner = Scanner(iface=1).withDelegate(ScanDelegate(self.log))
+        scanner = Scanner(iface=iface).withDelegate(ScanDelegate(self.log))
 
         try:
             devices = scanner.scan(10.0)
