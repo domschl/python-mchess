@@ -35,6 +35,7 @@ class WebAgent:
         self.move_cache = ""
         self.info_cache = ""
         self.info_provider = {}
+        self.agent_state_cache = {}
         self.max_mpv = 1
         self.last_board = None
         self.last_attribs = None
@@ -113,6 +114,12 @@ class WebAgent:
                 self.log.warning(
                     "Sending to WebSocket client {} failed with {}".format(handle, e))
                 return
+            for actor in self.agent_state_cache:
+                msg=self.agent_state_cache[actor]
+                try:
+                    ws.send(json.dumps(msg))
+                except Exception as e:
+                    self.log.warning(f"Failed to update agents states to new web-socket client: {e}")
         self.ws_clients[handle] = ws
         while not ws.closed:
             message = ws.receive()
@@ -214,6 +221,7 @@ class WebAgent:
                     "Sending to WebSocket client {} failed with {}".format(w, e))
 
     def agent_states(self, msg):
+        self.agent_state_cache[msg['actor']] = msg
         for w in self.ws_clients:
             try:
                 self.ws_clients[w].send(json.dumps(msg))

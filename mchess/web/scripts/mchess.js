@@ -85,6 +85,7 @@ function wsConnect(address) {
         // Try to reconnect in 1 seconds
         document.getElementById("connect-state").style.color = "red";
         document.getElementById("connect-text").innerText = "disconnected";
+        document.getElementById("chesslink-state").style.color = "red";
         mchessSocket = null;
         setTimeout(function () {
             wsConnect(address)

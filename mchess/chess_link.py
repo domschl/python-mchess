@@ -87,6 +87,7 @@ class ChessLink:
         :param appque: a Queue that receive chess board events
         :param name: identifies this protocol
         """
+        self.version="0.2.0"
         self.name = name
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "ascii": "PNBRQK.pnbrqk"}
@@ -307,7 +308,7 @@ class ChessLink:
                     else:
                         self.error_condition = False
                     self.appque.put(
-                        {'agent-state': state, 'message': emsg, 'actor': self.name})
+                        {'agent-state': state, 'message': emsg, 'version': self.version, 'actor': self.name})
                     continue
 
                 if len(msg) > 0:
