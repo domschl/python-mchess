@@ -25,7 +25,7 @@ This project is under heavy development, and basically everything described belo
 ### Dependencies
 
 `python-mchess` is written for Python >= 3.7. 
-If UCI-engine support (python-chess dependecy) is not used, any Python 3.x works. (python-mchess makes use of latest async features of Python 3.7 and later)
+If UCI-engine support (python-chess dependency) is not used, any Python 3.x works. (python-mchess makes use of latest async features of Python 3.7 and later)
 
 `python-mchess` board driver for Chess Link depends on `PySerial` and (Linux/Raspberry Pi only) `BluePy`
 

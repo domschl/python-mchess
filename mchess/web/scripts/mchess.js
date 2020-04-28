@@ -67,6 +67,13 @@ function wsConnect(address) {
             }));
             document.getElementById("m-ff").blur();
         }, false);
+        document.getElementById("m-analyse").addEventListener("click", function (event) {
+            mchessSocket.send(JSON.stringify({
+                'analysis': '',
+                actor: 'WebAgent'
+            }));
+            document.getElementById("m-analyse").blur();
+        }, false);
         document.getElementById("m-import").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
                 'position_fetch': 'ChessLinkAgent',
