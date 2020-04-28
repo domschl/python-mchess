@@ -222,8 +222,8 @@ div.board {
 }
 
 .button {
-    background: var(--color-dark);
-    color: var(--color-dlight);
+    background: var(--color-dlight);
+    color: var(--color-ddark);
     border: none;
     padding: 4px;
     text-align: center;
@@ -235,8 +235,8 @@ div.board {
 }
 
 .sbutton {
-    background: var(--color-dark);
-    color: var(--color-dlight);
+    background: var(--color-dlight);
+    color: var(--color-ddark);
     border: none;
     padding: 2px;
     vertical-align: top;

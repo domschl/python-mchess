@@ -75,8 +75,8 @@ class WebAgent:
                               'script', self.mchess_script)
         self.app.add_url_rule('/styles/mchess.css',
                               'style', self.mchess_style)
-        self.app.add_url_rule('/images/turquoise.png',
-                              'logo', self.mchess_logo)
+        self.app.add_url_rule('/images/<path:path>',
+                              'images', self.images)
         self.active = True
 
         self.sockets.add_url_rule('/ws', 'ws', self.ws_sockets)
@@ -132,8 +132,8 @@ class WebAgent:
     def mchess_style(self):
         return self.app.send_static_file('styles/mchess.css')
 
-    def mchess_logo(self):
-        return self.app.send_static_file('images/turquoise.png')
+    def images(self, path):
+        return send_from_directory('web/images', path)
 
 #    def sock_connect(self):
 #        print("CONNECT")
