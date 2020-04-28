@@ -80,7 +80,7 @@ cd mchess/web
 npm install
 ```
 
-This installs the dependencies `Normalize.css` and `cm-chessboard`.
+This installs the dependency `cm-chessboard`.
 
 ### Start
 

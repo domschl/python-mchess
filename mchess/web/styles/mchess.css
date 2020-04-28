@@ -1,5 +1,15 @@
 /* Mchess.css */
 
+/* reset everything we need, obsoletes normalize.css */
+html, body, div, span, iframe {
+    margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font:  Arial, Helvetica, sans-serif;
+	vertical-align: baseline;
+}
+
 :root {
     --color-light: #D8DBE2;
     /*Gainsboro */
