@@ -98,6 +98,9 @@ body {
 .version {
     font-size: 7pt;
     color: var(--color-turquoise);
+    padding-top: 6px;
+    line-height:0.4;
+    vertical-align: -12pt;
 }
 
 .panel-header {
