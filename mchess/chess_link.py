@@ -308,7 +308,7 @@ class ChessLink:
                     else:
                         self.error_condition = False
                     self.appque.put(
-                        {'agent-state': state, 'message': emsg, 'version': self.version, 'actor': self.name})
+                        {'agent-state': state, 'message': emsg, 'version': self.version, 'class': 'board', 'actor': self.name})
                     continue
 
                 if len(msg) > 0:

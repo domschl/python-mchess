@@ -78,6 +78,11 @@ body {
     font-size: 7pt;
 }
 
+.engine-light {
+    vertical-align: 1pt;
+    font-size: 7pt;
+}
+
 .white {
     font-size:12pt;
     vertical-align: -12pt;
