@@ -111,6 +111,7 @@ class UciAgent:
         self.active = True
         self.busy = False
         self.cmd_que = queue.Queue()
+        self.thinking = False
         # self.loop=asyncio.new_event_loop()
         self.worker = threading.Thread(target=self.async_agent_thread, args=())
         self.worker.setDaemon(True)
@@ -140,12 +141,12 @@ class UciAgent:
         self.log.debug(f"Sent {stmsg}")
 
     async def async_stop(self):
-        self.stopped=True
+        if self.thinking is True:
+            self.stopping=True
 
     async def async_go(self, board, mtime, ponder=False):
         if mtime!=-1:
             mtime = mtime/1000.0
-        self.stopped=False
         # _, self.engine = await chess.engine.popen_uci('/usr/local/bin/stockfish')
         # self.log.info(f"{self.name} go, mtime={mtime}, board={board}")
         pv=[]
@@ -176,12 +177,14 @@ class UciAgent:
         rep=None
         skipped=False
         self.send_agent_state('busy')
+        self.thinking = True
+        self.stopping=False
         with await self.engine.analysis(board, lm, multipv=mpv, info=chess.engine.Info.ALL) as analysis:
             # self.log.info(f"RESULT: {result}")
             async for info in analysis:
-                if self.stopped is True:
+                if self.stopping is True:
                     self.log.info(f"Analysis aborted.")
-                    self.stopped = False
+                    self.stopping = False
                     break
                 # self.log.info(info)
                 if 'pv' in info:
@@ -259,6 +262,7 @@ class UciAgent:
             self.que.put(rep)
         else:
             self.log.error('Engine returned no move.')
+        self.thinking = False
         self.send_agent_state('idle')
 
 

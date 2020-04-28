@@ -195,11 +195,18 @@ class Mchess:
 
     def uci_stop_engines(self):
         if self.uci_agent is not None and self.uci_agent.busy is True:
+            self.log.error("Stopping uc1")
             self.uci_agent.stop()
-            self.uci_agent.busy = False
+        else:
+            self.log.error("NOT Stopping uc1")
+            # self.uci_agent.busy = False
         if self.uci_agent2 is not None and self.uci_agent2.busy is True:
+            self.log.error("Stopping uc2")
             self.uci_agent2.stop()
-            self.uci_agent2.busy = False
+        else:
+            self.log.error("NOT Stopping uc2")
+
+            # self.uci_agent2.busy = False
 
     def set_mode(self, mode, silent=False):
         if mode == self.Mode.NONE:
@@ -466,6 +473,12 @@ class Mchess:
                         self.log.error(
                             'Invalid <agent-state> message: {}'.format(msg))
                     else:
+                        if msg['actor']==self.uci_agent.name:
+                            if msg['agent-state']=='idle':
+                                self.uci_agent.busy = False
+                        if msg['actor']==self.uci_agent2.name:
+                            if msg['agent-state']=='idle':
+                                self.uci_agent2.busy = False
                         for agent in self.agents_all:
                             if agent != msg['actor']:
                                 fstate = getattr(agent, "agent_states", None)
@@ -535,12 +548,12 @@ class Mchess:
                                 self.log.debug(
                                     "buffer_timeout skipper active!")
                             continue
-                    if self.uci_agent is not None and msg['move']['actor'] == self.uci_agent.name:
+                    # if self.uci_agent is not None and msg['move']['actor'] == self.uci_agent.name:
                         # self.uci_agent.engine.isready()
-                        self.uci_agent.busy = False
-                    if self.uci_agent2 is not None and msg['move']['actor'] == self.uci_agent2.name:
+                    #     self.uci_agent.busy = False
+                    # if self.uci_agent2 is not None and msg['move']['actor'] == self.uci_agent2.name:
                         # self.uci_agent2.engine.isready()
-                        self.uci_agent2.busy = False
+                    #     self.uci_agent2.busy = False
                     self.uci_stop_engines()
                     self.undo_stack = []
                     self.board.push(chess.Move.from_uci(msg['move']['uci']))

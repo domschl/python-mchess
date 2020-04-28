@@ -94,6 +94,8 @@ function wsConnect(address) {
         document.getElementById("connect-state").style.color = "red";
         document.getElementById("connect-text").innerText = "disconnected";
         document.getElementById("chesslink-state").style.color = "red";
+        document.getElementById("engine1-state").style.color = "red";
+        document.getElementById("engine2-state").style.color = "red";
         mchessSocket = null;
         setTimeout(function () {
             wsConnect(address)
@@ -288,11 +290,21 @@ function wsConnect(address) {
                 }
                 id=EngineStates[msg['actor']]
                 if (id==0) {
-                    if (msg['agent-state']=='busy') document.getElementById("engine1-state").style.color = "red";
-                    else document.getElementById("engine1-state").style.color = "#58A4B0";
+                    if (msg['agent-state']=='busy') {
+                        document.getElementById("engine1-state").style.color = "#D8DBE2";
+                        document.getElementById("mb1-a").style.backgroundColor = "#D8DBE2";
+                    } else { 
+                        document.getElementById("engine1-state").style.color = "#58A4B0";
+                        document.getElementById("mb1-a").style.backgroundColor = "#58A4B0";
+                    }
                 } else {
-                    if (msg['agent-state']=='busy') document.getElementById("engine2-state").style.color = "red";
-                    else document.getElementById("engine2-state").style.color = "#58A4B0";
+                    if (msg['agent-state']=='busy') {
+                        document.getElementById("engine2-state").style.color = "#D8DBE2";
+                        document.getElementById("mb2-a").style.backgroundColor = "#D8DBE2";
+                    } else { 
+                        document.getElementById("engine2-state").style.color = "#58A4B0";
+                        document.getElementById("mb2-a").style.backgroundColor = "#58A4B0";
+                    }
                 }
             }
         }
