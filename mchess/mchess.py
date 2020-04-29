@@ -21,6 +21,7 @@ if use_async is True:
 else:
     from uci_agent import UciAgent, UciEngines
 from web_agent import WebAgent
+from tk_agent import TkAgent
 
 __version__ = "0.2.0"
 
@@ -118,6 +119,13 @@ class Mchess:
         else:
             self.term_agent = None
 
+        if 'tk' in self.prefs['active_agents']['human']:
+            self.tk_agent = TkAgent(self.appque, self.prefs)
+            self.agents_all += [self.tk_agent]
+        else:
+            self.term_agent = None
+
+
         if 'web' in self.prefs['active_agents']['human']:
             self.web_agent = WebAgent(self.appque, self.prefs)
             self.agents_all += [self.web_agent]
@@ -195,18 +203,9 @@ class Mchess:
 
     def uci_stop_engines(self):
         if self.uci_agent is not None and self.uci_agent.busy is True:
-            self.log.error("Stopping uc1")
             self.uci_agent.stop()
-        else:
-            self.log.error("NOT Stopping uc1")
-            # self.uci_agent.busy = False
         if self.uci_agent2 is not None and self.uci_agent2.busy is True:
-            self.log.error("Stopping uc2")
             self.uci_agent2.stop()
-        else:
-            self.log.error("NOT Stopping uc2")
-
-            # self.uci_agent2.busy = False
 
     def set_mode(self, mode, silent=False):
         if mode == self.Mode.NONE:
@@ -335,7 +334,7 @@ class Mchess:
             self.set_mode(new_mode, silent=silent)
         if silent is False:
             self.update_display_board()
-        self.state = self.State.IDLE
+        self.state = self.State.IDLE  # XXX: make async
 
     def is_player_move(self):
         if self.mode == self.Mode.PLAYER_PLAYER:
@@ -496,7 +495,7 @@ class Mchess:
                     self.board.reset()
                     self.undo_stack = []
                     self.update_display_board()
-                    self.state = self.State.IDLE
+                    self.state = self.State.IDLE  # XXX: make async
                     if self.analysis_active is True:
                         self.analysis_debris = time.time()
                         self.analysis_active = False
@@ -515,7 +514,7 @@ class Mchess:
                                     self.analysis_active = False
                                 self.board = chess.Board(fen)
                                 self.update_display_board()
-                                self.state = self.State.IDLE
+                                self.state = self.State.IDLE  # XXX: make async
                                 break
 
                 if 'fen_setup' in msg:
@@ -526,7 +525,7 @@ class Mchess:
                     try:
                         self.board = chess.Board(msg['fen_setup'])
                         self.update_display_board()
-                        self.state = self.State.IDLE
+                        self.state = self.State.IDLE  # XXX: make async
                     except Exception as e:
                         if 'fen_setup' not in msg:
                             msg['fen_setup'] = 'None'
@@ -561,7 +560,7 @@ class Mchess:
                     self.update_display_board()
                     if 'ponder' in msg['move']:
                         self.ponder_move = msg['move']['ponder']
-                    self.state = self.State.IDLE
+                    self.state = self.State.IDLE  # XXX: make async
                     if self.analysis_active:
                         if self.uci_agent is not None:
                             # self.uci_agent.engine.isready()
@@ -582,7 +581,7 @@ class Mchess:
                         move = self.board.pop()
                         self.undo_stack.append(move)
                         self.update_display_board()
-                        self.state = self.State.IDLE
+                        self.state = self.State.IDLE  # XXX: make async
                     else:
                         self.log.debug(
                             'Cannot take back move, if none has occured.')
@@ -593,7 +592,7 @@ class Mchess:
                         move = self.board.pop()
                         self.undo_stack.append(move)
                     self.update_display_board()
-                    self.state = self.State.IDLE
+                    self.state = self.State.IDLE  # XXX: make async
 
                 if 'forward' in msg:
                     if len(self.undo_stack) > 0:
@@ -601,7 +600,7 @@ class Mchess:
                         move = self.undo_stack.pop()
                         self.board.push(move)
                         self.update_display_board()
-                        self.state = self.State.IDLE
+                        self.state = self.State.IDLE  # XXX: make async
                     else:
                         self.log.debug(
                             'Cannot move forward, nothing taken back.')
@@ -614,7 +613,7 @@ class Mchess:
                         move = self.undo_stack.pop()
                         self.board.push(move)
                     self.update_display_board()
-                    self.state = self.State.IDLE
+                    self.state = self.State.IDLE  # XXX: make async
 
                 if 'go' in msg:
                     if self.analysis_active is True:
@@ -655,7 +654,7 @@ class Mchess:
                             self.stop()
                             # self.board.turn=chess.WHITE
                             self.board.push(chess.Move.from_uci('0000'))
-                            self.state = self.State.IDLE
+                            self.state = self.State.IDLE  # XXX: make async
                             self.update_display_board()
                             if self.board.turn == chess.WHITE:
                                 self.log.info("It's now white's turn.")
@@ -668,7 +667,7 @@ class Mchess:
                             self.stop()
                             # self.board.turn=chess.BLACK
                             self.board.push(chess.Move.from_uci('0000'))
-                            self.state = self.State.IDLE
+                            self.state = self.State.IDLE  # XXX: make async
                             self.update_display_board()
                             if self.board.turn == chess.BLACK:
                                 self.log.info("It's now black's turn.")
