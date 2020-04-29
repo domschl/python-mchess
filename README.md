@@ -276,6 +276,7 @@ This will show bit-level communication with the ChessLink board.
 * [python-chess](https://python-chess.readthedocs.io/en/latest/): a pure Python chess library
 * [cm-chessboard](https://github.com/shaack/cm-chessboard): a chessboard rendered in SVG, coded in ES6. Views FEN, handles move input, animated, responsive, mobile friendly.
 * [bluepy](https://github.com/IanHarvey/bluepy): Python interface to Bluetooth LE on Linux
+* Chess pieces by [Cburnett](https://en.wikipedia.org/wiki/User:Cburnett)
 * TBD
 
 ## Acknowledgements
