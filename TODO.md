@@ -2,9 +2,6 @@
 
 ## Bugs and testing
 
-- [ ] Clear analysis of engines on new game or new pos
-- [ ] Analyse python-chess corruptions (thread race-conditions?)
-- [ ] Filter duplicate UCI depth messages (esp. lc0)
 - [ ] Handle inline TODOs
 - [ ] ChessLink latency tests
 - [ ] Raspi event queue performance tests
@@ -24,6 +21,10 @@
 - [ ] Turn board
 - [ ] Turn eboard
 - [ ] proper PWA boiler plate ('progressive web app')
+
+## GUI
+
+- [ ] TkInter tests
 
 ## Agents and main
 
@@ -64,3 +65,6 @@
 - [x] Verify consistent mutex usage
 
 - [x] Current UCI API of python-chess is deprecated. Change to ASYNC engine api.
+- [x] Clear analysis of engines on new game or new pos
+- [x] Analyse python-chess corruptions (thread race-conditions?)
+- [x] Filter duplicate UCI depth messages (esp. lc0)
