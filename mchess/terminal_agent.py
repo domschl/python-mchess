@@ -146,7 +146,7 @@ class TerminalAgent:
                     # TODO: cleanup fig-code generation
                     try:
                         fig = chess.Piece(chess.PAWN, board.piece_at(
-                            mv.from_square).color).unicode_symbol(invert_color=True)
+                            mv.from_square).color).unicode_symbol(invert_color=not invert)
                     except Exception as e:
                         self.log.error(
                             "Move contains empty origin: {}".format(e))
@@ -154,7 +154,7 @@ class TerminalAgent:
                     if use_unicode_chess_figures is True:
                         try:
                             pro = chess.Piece(mv.promotion, board.piece_at(
-                                mv.from_square).color).unicode_symbol(invert_color=True)
+                                mv.from_square).color).unicode_symbol(invert_color=not invert)
                         except Exception as e:
                             self.log.error(
                                 "Move contains empty origin: {}".format(e))
