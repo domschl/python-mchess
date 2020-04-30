@@ -16,7 +16,7 @@ import chess.engine
 class UciEngines:
     """Search for UCI engines and make a list of all available engines
     """
-    ENGINE_JSON_VERSION=1
+    ENGINE_JSON_VERSION = 1
 
     def __init__(self, appque, prefs):
         self.log = logging.getLogger("UciEngines")
@@ -31,14 +31,14 @@ class UciEngines:
                 try:
                     with open(engine_json_path) as f:
                         engine_json = json.load(f)
-                    if 'version' in engine_json and engine_json['version']==self.ENGINE_JSON_VERSION:
-                        inv=False
+                    if 'version' in engine_json and engine_json['version'] == self.ENGINE_JSON_VERSION:
+                        inv = False
                     else:
                         self.log.warning(f"Wrong version information in {engine_json_path}")
-                        inv=True
+                        inv = True
                 except Exception as e:
                     self.log.error(f"Json engine load of {engine_json_path} failed: {e}")
-                    inv=True
+                    inv = True
                 if inv is False:
                     continue
             engine_path = find_executable(engine_name)
@@ -99,6 +99,7 @@ class UciEngines:
 
 
 class UciAgent:
+    """ Support for single UCI chess engine """
     def __init__(self, appque, engine_json, prefs):
         self.active = False
         self.que = appque
@@ -112,19 +113,16 @@ class UciAgent:
         self.busy = False
         self.thinking = False
         self.stopping = False
-        self.cmd_que = queue.Queue()
+        self.cmd_que = queue.Queue()  # Asyncio queues are not thread-safe, hence useless here.
         self.thinking = False
         self.analysisresults = None
         # self.loop=asyncio.new_event_loop()
         self.worker = threading.Thread(target=self.async_agent_thread, args=())
         self.worker.setDaemon(True)
         self.worker.start()
-        self.info_throttle=0.5
-        self.version_name=self.name+" 1.0"
-        self.authors=""
-
-    # async def fake_open(self, filepath):
-    #    _, self.engine = await chess.engine.popen_uci(filepath) # engine_spec['engine']
+        self.info_throttle = 0.5
+        self.version_name = self.name+" 1.0"
+        self.authors = ""
 
     async def async_quit(self):
         await self.engine.quit()
@@ -139,7 +137,8 @@ class UciAgent:
         return self.active
 
     def send_agent_state(self, state, msg=""):
-        stmsg={'agent-state': state, 'message': msg, 'name': self.version_name, 'authors': self.authors, 'class': 'engine', 'actor': self.name}
+        stmsg = {'agent-state': state, 'message': msg, 'name': self.version_name, 
+                 'authors': self.authors, 'class': 'engine', 'actor': self.name}
         self.que.put(stmsg)
         self.log.debug(f"Sent {stmsg}")
 
@@ -152,9 +151,9 @@ class UciAgent:
             self.log.info(f"Engine {self.name} opened.")
             try:
                 if 'name' in self.engine.id:
-                    self.version_name=self.engine.id['name']
+                    self.version_name = self.engine.id['name']
                 if 'author' in self.engine.id:
-                    self.authors=self.engine.id['author']
+                    self.authors = self.engine.id['author']
             except Exception as e:
                 self.log.error(f"Failed to get engine-id-info {self.engine.id}: {e}")
             self.log.debug(f"Engine id: {self.engine.id}")
@@ -222,15 +221,11 @@ class UciAgent:
         else:
             opts = self.engine_json['uci-options']
 
-        # if 'Ponder' in opts:
-        #     self.engines[name]['use_ponder'] = opts['Ponder']
-        # else:
-        #     self.engines[name]['use_ponder'] = False
         auto_opts = ['Ponder', 'MultiPV', 'UCI_Chess960']
-        def_opts=copy.deepcopy(opts)
-        for o in auto_opts:
-            if o in def_opts:
-                del def_opts[o]
+        def_opts = copy.deepcopy(opts)
+        for op in auto_opts:
+            if op in def_opts:
+                del def_opts[op]
 
         await self.engine.configure(def_opts)
         self.log.debug(f"Ping {self.name}")
@@ -244,45 +239,39 @@ class UciAgent:
             self.log.warning('Stop aready in progress.')
             return
         if self.thinking is True:
-            # if self.analysis is not None:
-            #     try:
-            #         await self.analysis.stop()
-            #     except Exception as e:
-            #         self.log.error(f"sending stop to uci somehow failed: {e}")
-            self.stopping=True
+            self.stopping = True
 
     async def async_go(self, board, mtime, ponder=False, analysis=False):
-        if mtime!=-1:
+        if mtime != -1:
             mtime = mtime/1000.0
-        # _, self.engine = await chess.engine.popen_uci('/usr/local/bin/stockfish')
-        # self.log.info(f"{self.name} go, mtime={mtime}, board={board}")
-        pv=[]
-        last_info=[]
+        pv = []
+        last_info = []
         self.log.debug(f"mtime: {mtime}")
         if 'MultiPV' in self.engine_json['uci-options']:
-            mpv=self.engine_json['uci-options']['MultiPV']
+            mpv = self.engine_json['uci-options']['MultiPV']
             for i in range(mpv):
                 pv.append([])
                 last_info.append(0)
-                res={'curmove' : {
-                    'multipv_ind': i+1,
-                    'variant': [],
-                    'actor': self.name,
-                    'score': ''
+                res = {'curmove' : {
+                       'multipv_ind': i+1,
+                       'variant': [],
+                       'actor': self.name,
+                       'score': ''
                 }}
                 self.que.put(res)  # reset old evals
         else:
             pv.append([])
-            mpv=1
-        if mtime==-1:
+            mpv = 1
+        if mtime == -1:
             self.log.debug("Infinite analysis")
-            lm=None
+            lm = None
         else:
-            lm=chess.engine.Limit(time=mtime)
-        rep=None
-        skipped=False
+            lm = chess.engine.Limit(time=mtime)
+        rep = None
+        skipped = False
         self.send_agent_state('busy')
         self.log.info(f"Starting UCI {self.name}")
+        info = None
         with await self.engine.analysis(board, lm, multipv=mpv, info=chess.engine.Info.ALL) as self.analysisresults:
             async for info in self.analysisresults:
                 if self.stopping is True:
@@ -291,10 +280,10 @@ class UciAgent:
                 self.log.debug(info)
                 if 'pv' in info:
                     if 'multipv' in info:
-                        ind=info['multipv']-1
+                        ind = info['multipv']-1
                     else:
-                        ind=0
-                    pv[ind]=info['pv']
+                        ind = 0
+                    pv[ind] = info['pv']
                     rep = {'curmove': {
                         'multipv_ind': ind+1,
                         'variant': info['pv'],
@@ -303,13 +292,13 @@ class UciAgent:
                     if 'score' in info:
                         try:
                             if info['score'].is_mate():
-                                sc=str(info['score']) # .Mate().score(0)
+                                sc = str(info['score']) # .Mate().score(0)
                             else:
-                                cp=float(str(info['score']))/100.0
-                                sc='{:.2f}'.format(cp)  # XXX mate? transform pov, /100.0
-                        except:
-                            self.log.error(f"Score transform failed {info['score']}")
-                            sc='?'
+                                cp = float(str(info['score']))/100.0
+                                sc = '{:.2f}'.format(cp)  # XXX mate? transform pov, /100.0
+                        except Exception as e:
+                            self.log.error(f"Score transform failed {info['score']}: {e}")
+                            sc = '?'
                         rep['curmove']['score'] = sc
                     if 'depth' in info:
                         rep['curmove']['depth'] = info['depth']
@@ -334,7 +323,6 @@ class UciAgent:
         if len(pv) > 0 and len(pv[0]) > 0:
             if analysis is False:
                 move = pv[0][0]
-                # board.push(move)   ## ???
                 rep = {'move': {
                     'uci': move.uci(),
                     'actor': self.name
@@ -347,8 +335,8 @@ class UciAgent:
                         else:
                             cp = float(str(info['score']))/100.0
                             sc = '{:.2f}'.format(cp)  # XXX mate? transform pov, /100.0
-                    except:
-                        self.log.error(f"Score transform failed {info['score']}")
+                    except Exception as e:
+                        self.log.error(f"Score transform failed {info['score']}: {e}")
                         sc = '?'
                     rep['move']['score'] = sc
                 if 'depth' in info:
@@ -382,7 +370,8 @@ class UciAgent:
             return False
         self.thinking = True
         self.stopping = False
-        self.cmd_que.put({'board': board, 'mtime': mtime, 'ponder': ponder, 'analysis': analysis})
+        cmd={'board': board, 'mtime': mtime, 'ponder': ponder, 'analysis': analysis}
+        self.cmd_que.put(cmd)
         return True
 
     async def uci_event_loop(self):
@@ -394,8 +383,9 @@ class UciAgent:
                     cmd = self.cmd_que.get_nowait()
                     self.log.debug("Go!")
                     await self.async_go(cmd['board'], cmd['mtime'], ponder=cmd['ponder'], analysis=cmd['analysis'])
+                    self.cmd_que.done()
                 except:
-                    await asyncio.sleep(0.05)  # XXX retest asyncio.queue
+                    await asyncio.sleep(0.05)
 
     def async_agent_thread(self):
         asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())

@@ -352,8 +352,6 @@ class Mchess:
         self.set_default_mode()
         self.init_board_agents()
 
-        self.term_agent.show_infos = False
-
         # self.update_display_board()
         self.state_machine_active = True
 

@@ -17,14 +17,18 @@ class TerminalAgent:
         self.appque = appque
         self.orientation = True
         self.active = False
+        self.show_infos = True
         self.max_plies = 6
+        if 'max_plies_terminal' in prefs:
+            self.max_plies = prefs['max_plies_terminal']
+            if self.max_plies<=0:
+                self.show_infos = False
         self.display_cache = ""
         self.last_cursor_up = 0
         self.move_cache = ""
         self.info_cache = ""
         self.info_provider = {}
         self.max_mpv = 1
-        self.show_infos = True
 
         self.kbd_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],

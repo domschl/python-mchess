@@ -150,7 +150,7 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 | `think_ms`           | `500`    | Number of milli seconds, computer calculates for a move. Better level configuration will be added at a later point. |
 | `use_unicode_figures`| `true`   | Most terminals can display Unicode chess figures, if that doesn't work, set to `false`, and letters are used for chess pieces instead.|
 | `invert_term_color`  | `false`  | How chess board colors black and white are displayed might depend on the background color of your terminal. Change, if black and white are mixed up. |
-| `max_plies_terminal` | `6`      | The number of half-moves (plies) that are displayed in analysis in terminal |
+| `max_plies_terminal` | `6`      | The number of half-moves (plies) that are displayed in analysis in terminal. If set to `0`, no move-preview is shown. That is helpful, if logs are required. |
 | `max_plies_board`    | `3`      | The number of half-moves that are indicated through blink led sequences on the Millennium chess board. Maximum (due to hardware protocol limitations) is `3`. If more than one UCI engine is used for analysis, the results of the first engine are shown.|
 | `ply_vis_delay`      | `80`     | The delay used went indicating move-sequences on the  Millennium chess board. Use a higher value (e.g. `160`) to slow down the speed of change. |
 | `import_chesslink_position` | `true` | On `true` the current position on the Millennium chess board  is imported at start of `mchess.py`. On `false`, always the start position is used. |
@@ -158,6 +158,7 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 | `computer_player2_name` | `""` | Name of optional second UCI engine, used for computer-computer games and as second, concurrent analysis engine. |
 | `human_name` | `human` | Name of human player displayed in terminal. This will change (support for second name) |
 | `active_agents` | `{ "human": ["chess_link", "terminal", "web"], "computer": ["stockfish", "lc0"]}` | Work in progress! A list of active agent modules. The agent-architecture is very flexible and allow adding arbitrary input and output hard- and software or interfaces to remote sites. |
+| `log_levels` | `{ "UciAgent_stockfish": "INFO", "ChessLinkBluePy": "DEBUG", "ChessLink": "WARNING", "chess.engine": "ERROR"}` | Example configuration to set log-levels for modules specifically. This should be used with `max_plies_terminal` set to `0` to prevent garbled debug output. |
 
 ### `chess_link_config.json`, configuration options for Millennium ChessLink hardware
 
