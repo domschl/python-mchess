@@ -1,6 +1,7 @@
 import logging
 import queue
 import time
+import copy
 
 import chess
 import chess_link as cl
@@ -57,18 +58,23 @@ class ChessLinkAgent:
     def get_fen(self):
         return self.cl_brd.position_to_fen(self.cl_brd.position)
 
-    def variant_to_positions(self, board, moves, plies):
+    def variant_to_positions(self, _board, moves, plies):
+        board=copy.deepcopy(_board)
         pos = []
         mvs = len(moves)
         if mvs > plies:
             mvs = plies
 
-        pos.append(self.cl_brd.fen_to_position(board.fen()))
-        for i in range(mvs):
-            board.push(moves[i])
+        try:
             pos.append(self.cl_brd.fen_to_position(board.fen()))
-        for i in range(mvs):
-            board.pop()
+            for i in range(mvs):
+                board.push(moves[i])  # XXX: this generates race conditions, inv board pos. (deepcopy / mutex?)
+                pos.append(self.cl_brd.fen_to_position(board.fen()))
+            for i in range(mvs):
+                board.pop()
+        except Exception as e:
+            self.log.warning(f"Data corruption in variant_to_positions: {e}")
+            return None
         return pos
 
     def color(self, col):
@@ -84,9 +90,12 @@ class ChessLinkAgent:
         if plies > 4:
             plies = 4
         pos = self.variant_to_positions(board, moves, plies)
-        self.cl_brd.show_deltas(pos, freq)
+        if pos is not None:
+            self.cl_brd.show_deltas(pos, freq)
 
-    def display_info(self, board, info):
+    def display_info(self, _board, info):
+        # XXX maybe deepcopy here?!
+        board=copy.deepcopy(_board)
         if info['actor'] == self.prefs['computer_player_name']:
             if 'multipv_ind' in info:
                 if info['multipv_ind'] == 1:  # Main variant only

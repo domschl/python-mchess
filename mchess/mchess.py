@@ -81,6 +81,11 @@ class Mchess:
                 "computer": ["stockfish", "lc0"]
             }
             changed_prefs = True
+        if 'log_levels' not in prefs:
+            prefs['log_levels'] ={
+                'chess.engine': 'ERROR'
+            }
+            changed_prefs = True
         if changed_prefs is True:
             self.write_preferences(prefs)
         return prefs
@@ -123,7 +128,7 @@ class Mchess:
             self.tk_agent = TkAgent(self.appque, self.prefs)
             self.agents_all += [self.tk_agent]
         else:
-            self.term_agent = None
+            self.tk_agent = None
 
 
         if 'web' in self.prefs['active_agents']['human']:
@@ -206,6 +211,21 @@ class Mchess:
             self.uci_agent.stop()
         if self.uci_agent2 is not None and self.uci_agent2.busy is True:
             self.uci_agent2.stop()
+        t0 = time.time()
+        if self.uci_agent is not None:   # XXX: This makes the whole thing synchronous. Maybe solve by state-machine?
+            while self.uci_agent.stopping is True:
+                time.sleep(0.1)
+                if time.time()-t0 > 5:
+                    t0=time.time()
+                    self.log.warning(f"Problems stopping {self.uci_agent.name}")
+        t0=time.time()
+        if self.uci_agent2 is not None:
+            while self.uci_agent2.stopping is True:
+                time.sleep(0.1)
+                if time.time()-t0 > 5:
+                    t0=time.time()
+                    self.log.warning(f"Problems stopping {self.uci_agent.name}")
+
 
     def set_mode(self, mode, silent=False):
         if mode == self.Mode.NONE:
@@ -303,6 +323,13 @@ class Mchess:
                 ags += '"'+p.name+'"'
         self.log.info("Agents {} initialized".format(ags))
 
+    def set_loglevels(self, prefs):
+        if 'log_levels' in prefs:
+            for module in prefs['log_levels']:
+                level = logging.getLevelName(prefs['log_levels'][module])
+                logger = logging.getLogger(module)
+                logger.setLevel(level)
+
     def __init__(self):
         self.log = logging.getLogger('mchess')
 
@@ -311,18 +338,21 @@ class Mchess:
         self.last_info = 0
         self.ponder_move = None
         self.analysis_active = False
-        self.analysis_debris = 0
         self.analysis_buffer_timeout = 3.0
 
         self.board.reset()
         self.undo_stack = []
 
         self.prefs = self.read_preferences()
+        self.set_loglevels(self.prefs)
         self.appque = queue.Queue()
 
         self.init_agents()
+    
         self.set_default_mode()
         self.init_board_agents()
+
+        self.term_agent.show_infos = False
 
         # self.update_display_board()
         self.state_machine_active = True
@@ -346,6 +376,7 @@ class Mchess:
         return False
 
     def update_display_board(self):
+        st_board = copy.deepcopy(self.board)
         for agent in self.agents_all:
             dispb = getattr(agent, "display_board", None)
             if callable(dispb):
@@ -355,7 +386,7 @@ class Mchess:
                            'black_name': self.player_b_name
                            }
                 agent.display_board(
-                    self.board, attribs=attribs)
+                   st_board, attribs=attribs)
 
     def update_display_move(self, msg):
         for agent in self.agents_all:
@@ -364,11 +395,13 @@ class Mchess:
                 agent.display_move(msg)
 
     def update_display_info(self, msg):
+        st_msg = copy.deepcopy(msg)
+        st_board = copy.deepcopy(self.board)
         for agent in self.agents_all:
             dinfo = getattr(agent, "display_info", None)
             if callable(dinfo):
                 agent.display_info(
-                    self.board, info=msg['curmove'])
+                    st_board, info=st_msg['curmove'])
 
     def quit(self):
         print("Quitting...")
@@ -396,19 +429,19 @@ class Mchess:
 
     def game_state_machine_NEH(self):
         while self.state_machine_active:
-            if self.state == self.State.IDLE:
+            if self.state == self.State.IDLE and self.appque.empty() is True:
                 self.log.info("IDLE")
                 # TODO: Investigate actual cause of corruption.
                 # FIXME: There's a corruption of self.board occuring during game-over check.
                 # This is either a bug in chess.Board.is_game_over() or [more likely]
                 # some nasty async thing.
-                board_bug_workaround_cache = copy.deepcopy(self.board)
+                # board_bug_workaround_cache = copy.deepcopy(self.board)
                 if self.board.is_game_over() is True:
                     self.log.info('Result: {}'.format(self.board.result()))
                     self.set_mode(self.Mode.NONE)
-                    active_player = []
-                    passive_player = []
-                self.board = board_bug_workaround_cache
+                  #   active_player = []
+                  #   passive_player = []
+                # self.board = board_bug_workaround_cache
 
                 if self.board.turn == chess.WHITE:
                     active_player = self.player_w
@@ -432,7 +465,7 @@ class Mchess:
 
                 val = self.valid_moves(self.board)
                 for agent in active_player:
-                    self.log.info(f"Eval agent {agent.name}")
+                    self.log.info(f"Eval active agent {agent.name}")
                     setm = getattr(agent, "set_valid_moves", None)
                     if callable(setm):
                         agent.set_valid_moves(self.board, val)
@@ -445,12 +478,21 @@ class Mchess:
                             # if history contains NULL moves (UCI: '0000'), do not use
                             # history, or UCI engine will explode.
                             brd_copy.clear_stack()
+                            self.board=copy.deepcopy(brd_copy)
                         # print("This is sent to UCI:")
                         # self.term_agent.display_board(brd_copy)
                         self.log.debug(f"Go {agent.name}")
-                        agent.go(brd_copy, self.prefs['think_ms'])
+                        agent.go(self.board, self.prefs['think_ms'])
                         self.log.debug(f"Done Go {agent.name}")
-                        break
+
+                if self.analysis_active:
+                    if self.uci_agent is not None:
+                        self.uci_agent.busy = True
+                        self.uci_agent.go(self.board,mtime=-1, analysis=True)
+                    if self.uci_agent2 is not None:
+                        self.uci_agent2.busy = True
+                        self.uci_agent2.go(self.board,mtime=-1, analysis=True)
+
                 self.state = self.State.BUSY
                 self.log.info("BUSY")
 
@@ -474,10 +516,10 @@ class Mchess:
                     else:
                         if msg['actor']==self.uci_agent.name:
                             if msg['agent-state']=='idle':
-                                self.uci_agent.busy = False
+                                self.uci_agent.busy = False   # XXX redundant?
                         if msg['actor']==self.uci_agent2.name:
                             if msg['agent-state']=='idle':
-                                self.uci_agent2.busy = False
+                                self.uci_agent2.busy = False   # XXX redundant?
                         for agent in self.agents_all:
                             if agent != msg['actor']:
                                 fstate = getattr(agent, "agent_states", None)
@@ -497,7 +539,6 @@ class Mchess:
                     self.update_display_board()
                     self.state = self.State.IDLE  # XXX: make async
                     if self.analysis_active is True:
-                        self.analysis_debris = time.time()
                         self.analysis_active = False
 
                 if 'position_fetch' in msg:
@@ -510,7 +551,6 @@ class Mchess:
                                     agent.name, msg['actor'], fen))
                                 self.stop(silent=True)
                                 if self.analysis_active is True:
-                                    self.analysis_debris = time.time()
                                     self.analysis_active = False
                                 self.board = chess.Board(fen)
                                 self.update_display_board()
@@ -520,7 +560,6 @@ class Mchess:
                 if 'fen_setup' in msg:
                     self.stop()
                     if self.analysis_active is True:
-                        self.analysis_debris = time.time()
                         self.analysis_active = False
                     try:
                         self.board = chess.Board(msg['fen_setup'])
@@ -533,26 +572,7 @@ class Mchess:
                             "Invalid FEN {} not imported: {}".format(msg['fen_setup'], e))
 
                 if 'move' in msg:
-                    if self.analysis_active or time.time()-self.analysis_debris < self.analysis_buffer_timeout:
-                        # Ignore engine moves when it's player's turn: they are from analysis
-                        skip = False
-                        if self.uci_agent is not None:
-                            if msg['move']['actor'] == self.uci_agent.name:
-                                skip = True
-                        if self.uci_agent2 is not None:
-                            if msg['move']['actor'] == self.uci_agent2.name:
-                                skip = True
-                        if skip is True:
-                            if self.analysis_active is False:
-                                self.log.debug(
-                                    "buffer_timeout skipper active!")
-                            continue
-                    # if self.uci_agent is not None and msg['move']['actor'] == self.uci_agent.name:
-                        # self.uci_agent.engine.isready()
-                    #     self.uci_agent.busy = False
-                    # if self.uci_agent2 is not None and msg['move']['actor'] == self.uci_agent2.name:
-                        # self.uci_agent2.engine.isready()
-                    #     self.uci_agent2.busy = False
+                    self.log.info(f"move: {msg['move']['uci']}, {msg}")
                     self.uci_stop_engines()
                     self.undo_stack = []
                     self.board.push(chess.Move.from_uci(msg['move']['uci']))
@@ -561,19 +581,6 @@ class Mchess:
                     if 'ponder' in msg['move']:
                         self.ponder_move = msg['move']['ponder']
                     self.state = self.State.IDLE  # XXX: make async
-                    if self.analysis_active:
-                        if self.uci_agent is not None:
-                            # self.uci_agent.engine.isready()
-                            # print("A1 {} start".format(self.uci_agent.name))
-                            # self.uci_agent.engine.position(self.board)
-                            self.uci_agent.busy = True
-                            self.uci_agent.go(self.board,mtime=-1)
-                        if self.uci_agent2 is not None:
-                            # self.uci_agent2.engine.isready()
-                            # print("A2 {} start".format(self.uci_agent2.name))
-                            # self.uci_agent2.engine.position(self.board)
-                            self.uci_agent2.busy = True
-                            self.uci_agent2.go(self.board,mtime=-1)
 
                 if 'back' in msg:
                     if len(self.board.move_stack) > 0:
@@ -616,11 +623,10 @@ class Mchess:
                     self.state = self.State.IDLE  # XXX: make async
 
                 if 'go' in msg:
+                    self.stop(new_mode=None)
                     if self.analysis_active is True:
                         self.log.debug("Aborting analysis...")
-                        self.analysis_debris = time.time()
                         self.analysis_active = False
-                    self.stop(new_mode=None)
                     if (self.board.turn == chess.WHITE and self.mode == self.Mode.ENGINE_PLAYER) or (self.board.turn == chess.BLACK and self.mode == self.Mode.PLAYER_ENGINE):
                         pass
                     else:
@@ -634,19 +640,16 @@ class Mchess:
                     self.stop()
                     self.set_mode(self.Mode.PLAYER_PLAYER)
                     self.analysis_active = True
-                    self.analysis_debris = 0
                     if self.uci_agent is not None:
                         self.log.info("Starting analysis with {}".format(
                             self.uci_agent.name))
-                        # self.uci_agent.engine.position(self.board)
-                        self.uci_agent.busy = True
-                        self.uci_agent.go(self.board,-1)
+                        # self.uci_agent.busy = True
+                        # self.uci_agent.go(self.board,-1, analysis=True)
                     if self.uci_agent2 is not None:
                         self.log.info("Starting analysis with {}".format(
                             self.uci_agent2.name))
-                        # self.uci_agent2.engine.position(self.board)
-                        self.uci_agent2.busy = True
-                        self.uci_agent2.go(self.board, -1)
+                        # self.uci_agent2.busy = True
+                        # self.uci_agent2.go(self.board, -1, analysis=True)
 
                 if 'turn' in msg:
                     if msg['turn'] == 'white':
@@ -702,12 +705,10 @@ class Mchess:
                     # self.analysis_active=False
                     if self.analysis_active is True:
                         self.log.debug("Aborting analysis...")
-                        self.analysis_debris = time.time()
                         self.analysis_active = False
                     self.stop(silent=False)
 
                 if 'curmove' in msg:
-                    # if time.time()-self.last_info > 0.04:  # throttle moved to event source
                     self.last_info = time.time()
                     msg['curmove']['appque'] = self.appque.qsize()
                     self.update_display_info(msg)
@@ -765,21 +766,7 @@ if __name__ == '__main__':
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(name)s %(message)s', level=log_level)
     logger = logging.getLogger('mchess')
+    logger.warning("STARTING")
     logger.setLevel(log_level)
-    # fh = logging.FileHandler('mchess.log')
-    # fh.setLevel(log_level)
-    # create console handler with a higher log level
-    # ch = logging.StreamHandler()
-    # ch.setLevel(log_level_e)
-    # create formatter and add it to the handlers
-    # formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s %(message)s')
-    # fh.setFormatter(formatter)
-    # ch.setFormatter(formatter)
-    # add the handlers to the logger
-    # logger.addHandler(fh)
-    # logger.addHandler(ch)
-    pc_engine_log = logging.getLogger('chess.engine')
-    pc_engine_log.setLevel(log_level_pce)
-
     mc = Mchess()
     mc.game_state_machine()

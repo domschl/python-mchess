@@ -110,8 +110,11 @@ class UciAgent:
         # self.ponder_board = None
         self.active = True
         self.busy = False
+        self.thinking = False
+        self.stopping = False
         self.cmd_que = queue.Queue()
         self.thinking = False
+        self.analysisresults = None
         # self.loop=asyncio.new_event_loop()
         self.worker = threading.Thread(target=self.async_agent_thread, args=())
         self.worker.setDaemon(True)
@@ -139,132 +142,6 @@ class UciAgent:
         stmsg={'agent-state': state, 'message': msg, 'name': self.version_name, 'authors': self.authors, 'class': 'engine', 'actor': self.name}
         self.que.put(stmsg)
         self.log.debug(f"Sent {stmsg}")
-
-    async def async_stop(self):
-        if self.thinking is True:
-            self.stopping=True
-
-    async def async_go(self, board, mtime, ponder=False):
-        if mtime!=-1:
-            mtime = mtime/1000.0
-        # _, self.engine = await chess.engine.popen_uci('/usr/local/bin/stockfish')
-        # self.log.info(f"{self.name} go, mtime={mtime}, board={board}")
-        pv=[]
-        last_info=[]
-        self.log.info(f"mtime: {mtime}")
-        if 'MultiPV' in self.engine_json['uci-options']:
-            mpv=self.engine_json['uci-options']['MultiPV']
-            for i in range(mpv):
-                pv.append([])
-                last_info.append(0)
-                res={'curmove' : {
-                    'multipv_ind': i+1,
-                    'variant': [],
-                    'actor': self.name,
-                    'score': ''
-                }}
-                self.que.put(res)  # reset old evals
-        else:
-            pv.append([])
-            mpv=1
-        self.log.info(f"pv0: {pv}")
-        if mtime==-1:
-            self.log.info("Infinite analysis")
-            lm=None
-            self.log.info("Infinite analysis")
-        else:
-            lm=chess.engine.Limit(time=mtime)
-        rep=None
-        skipped=False
-        self.send_agent_state('busy')
-        self.thinking = True
-        self.stopping=False
-        with await self.engine.analysis(board, lm, multipv=mpv, info=chess.engine.Info.ALL) as analysis:
-            # self.log.info(f"RESULT: {result}")
-            async for info in analysis:
-                if self.stopping is True:
-                    self.log.info(f"Analysis aborted.")
-                    self.stopping = False
-                    break
-                # self.log.info(info)
-                if 'pv' in info:
-                    if 'multipv' in info:
-                        ind=info['multipv']-1
-                    else:
-                        ind=0
-                    pv[ind]=info['pv']
-                    rep = {'curmove': {
-                        'multipv_ind': ind+1,
-                        'variant': info['pv'],
-                        'actor': self.name
-                    }}
-                    if 'score' in info:
-                        try:
-                            if info['score'].is_mate():
-                                sc=str(info['score']) # .Mate().score(0)
-                            else:
-                                cp=float(str(info['score']))/100.0
-                                sc='{:.2f}'.format(cp)  # XXX mate? transform pov, /100.0
-                        except:
-                            self.log.error(f"Score transform failed {info['score']}")
-                            sc='?'
-                        rep['curmove']['score']=sc
-                        self.log.info("stored")
-                    if 'depth' in info:
-                        rep['curmove']['depth']=info['depth']
-                    if 'seldepth' in info:
-                        rep['curmove']['seldepth']=info['seldepth']
-                    if 'nps' in info:
-                        rep['curmove']['nps']=info['nps']
-                    if 'tbhits' in info:
-                        rep['curmove']['tbhits']=info['tbhits']
-                    if time.time()-last_info[ind] > self.info_throttle:
-                        self.que.put(rep)
-                        last_info[ind]=time.time()
-                        skipped=False
-                    else:
-                        skipped=True
-
-        if skipped is True and rep is not None:
-            self.que.put(rep)
-        self.log.info(f"pv: {pv}")
-        if len(pv)>0 and len(pv[0])>0:
-            move=pv[0][0]
-            self.log.info("MOVE")
-            board.push(move)
-            rep = {'move': {
-                'uci': move.uci(),
-                'actor': self.name
-            }}
-
-            if 'score' in info:
-                try:
-                    if info['score'].is_mate():
-                        sc=str(info['score']) # .Mate().score(0)
-                    else:
-                        cp=float(str(info['score']))/100.0
-                        sc='{:.2f}'.format(cp)  # XXX mate? transform pov, /100.0
-                except:
-                    self.log.error(f"Score transform failed {info['score']}")
-                    sc='?'
-                rep['move']['score']=sc
-                self.log.info("stored")
-            if 'depth' in info:
-                rep['move']['depth']=info['depth']
-            if 'seldepth' in info:
-                rep['move']['seldepth']=info['seldepth']
-            if 'nps' in info:
-                rep['move']['nps']=info['nps']
-            if 'tbhits' in info:
-                rep['move']['tbhits']=info['tbhits']
-
-            self.log.info(f"Queing result: {rep}")
-            self.que.put(rep)
-        else:
-            self.log.error('Engine returned no move.')
-        self.thinking = False
-        self.send_agent_state('idle')
-
 
     async def uci_open_engine(self):
         try:
@@ -356,10 +233,156 @@ class UciAgent:
                 del def_opts[o]
 
         await self.engine.configure(def_opts)
-        self.log.info(f"Ping {self.name}")
+        self.log.debug(f"Ping {self.name}")
         await self.engine.ping()
-        self.log.info(f"Pong {self.name}")
+        self.log.debug(f"Pong {self.name}")
         self.send_agent_state('idle')
+        return True
+
+    async def async_stop(self):
+        if self.stopping is True:
+            self.log.warning('Stop aready in progress.')
+            return
+        if self.thinking is True:
+            # if self.analysis is not None:
+            #     try:
+            #         await self.analysis.stop()
+            #     except Exception as e:
+            #         self.log.error(f"sending stop to uci somehow failed: {e}")
+            self.stopping=True
+
+    async def async_go(self, board, mtime, ponder=False, analysis=False):
+        if mtime!=-1:
+            mtime = mtime/1000.0
+        # _, self.engine = await chess.engine.popen_uci('/usr/local/bin/stockfish')
+        # self.log.info(f"{self.name} go, mtime={mtime}, board={board}")
+        pv=[]
+        last_info=[]
+        self.log.debug(f"mtime: {mtime}")
+        if 'MultiPV' in self.engine_json['uci-options']:
+            mpv=self.engine_json['uci-options']['MultiPV']
+            for i in range(mpv):
+                pv.append([])
+                last_info.append(0)
+                res={'curmove' : {
+                    'multipv_ind': i+1,
+                    'variant': [],
+                    'actor': self.name,
+                    'score': ''
+                }}
+                self.que.put(res)  # reset old evals
+        else:
+            pv.append([])
+            mpv=1
+        if mtime==-1:
+            self.log.debug("Infinite analysis")
+            lm=None
+        else:
+            lm=chess.engine.Limit(time=mtime)
+        rep=None
+        skipped=False
+        self.send_agent_state('busy')
+        self.log.info(f"Starting UCI {self.name}")
+        with await self.engine.analysis(board, lm, multipv=mpv, info=chess.engine.Info.ALL) as self.analysisresults:
+            async for info in self.analysisresults:
+                if self.stopping is True:
+                    self.log.info(f"Stop: request, aborting calc.")
+                    break
+                self.log.debug(info)
+                if 'pv' in info:
+                    if 'multipv' in info:
+                        ind=info['multipv']-1
+                    else:
+                        ind=0
+                    pv[ind]=info['pv']
+                    rep = {'curmove': {
+                        'multipv_ind': ind+1,
+                        'variant': info['pv'],
+                        'actor': self.name
+                    }}
+                    if 'score' in info:
+                        try:
+                            if info['score'].is_mate():
+                                sc=str(info['score']) # .Mate().score(0)
+                            else:
+                                cp=float(str(info['score']))/100.0
+                                sc='{:.2f}'.format(cp)  # XXX mate? transform pov, /100.0
+                        except:
+                            self.log.error(f"Score transform failed {info['score']}")
+                            sc='?'
+                        rep['curmove']['score'] = sc
+                    if 'depth' in info:
+                        rep['curmove']['depth'] = info['depth']
+                    if 'seldepth' in info:
+                        rep['curmove']['seldepth'] = info['seldepth']
+                    if 'nps' in info:
+                        rep['curmove']['nps'] = info['nps']
+                    if 'tbhits' in info:
+                        rep['curmove']['tbhits'] = info['tbhits']
+                    if time.time()-last_info[ind] > self.info_throttle:
+                        self.que.put(rep)
+                        last_info[ind] = time.time()
+                        skipped = False
+                    else:
+                        skipped = True
+
+        self.analysisresults = None
+        self.log.debug("thinking comes to end")
+        if skipped is True and rep is not None:
+            self.que.put(rep)
+        rep = None
+        if len(pv) > 0 and len(pv[0]) > 0:
+            if analysis is False:
+                move = pv[0][0]
+                # board.push(move)   ## ???
+                rep = {'move': {
+                    'uci': move.uci(),
+                    'actor': self.name
+                }}
+
+                if 'score' in info:
+                    try:
+                        if info['score'].is_mate():
+                            sc = str(info['score']) # .Mate().score(0)
+                        else:
+                            cp = float(str(info['score']))/100.0
+                            sc = '{:.2f}'.format(cp)  # XXX mate? transform pov, /100.0
+                    except:
+                        self.log.error(f"Score transform failed {info['score']}")
+                        sc = '?'
+                    rep['move']['score'] = sc
+                if 'depth' in info:
+                    rep['move']['depth'] = info['depth']
+                if 'seldepth' in info:
+                    rep['move']['seldepth'] = info['seldepth']
+                if 'nps' in info:
+                    rep['move']['nps'] = info['nps']
+                if 'tbhits' in info:
+                    rep['move']['tbhits'] = info['tbhits']
+
+                self.log.debug(f"Queing result: {rep}")
+                self.que.put(rep)
+            self.log.info('Calc finished.')
+        else:
+            self.log.error('Engine returned no move.')
+        self.thinking = False
+        self.stopping = False
+        self.send_agent_state('idle')
+
+    def stop(self):
+        self.log.debug('stop received')
+        if self.thinking is False:
+            self.log.warning(f"No need to stop {self.name}, not running.")  # XXX should be downgraded to debug at some point.
+        asyncio.run(self.async_stop())
+
+    def go(self, board, mtime, ponder=False, analysis=False):
+        self.log.debug('go received')
+        if self.thinking is True:
+            self.log.error(f"Can't start engine {self.name}: it's already busy!")
+            return False
+        self.thinking = True
+        self.stopping = False
+        self.cmd_que.put({'board': board, 'mtime': mtime, 'ponder': ponder, 'analysis': analysis})
         return True
 
     async def uci_event_loop(self):
@@ -370,18 +393,11 @@ class UciAgent:
                 try:
                     cmd = self.cmd_que.get_nowait()
                     self.log.debug("Go!")
-                    await self.async_go(cmd['board'], cmd['mtime'], cmd['ponder'])
+                    await self.async_go(cmd['board'], cmd['mtime'], ponder=cmd['ponder'], analysis=cmd['analysis'])
                 except:
-                    await asyncio.sleep(0.2)  # XXX retest asyncio.queue
+                    await asyncio.sleep(0.05)  # XXX retest asyncio.queue
 
     def async_agent_thread(self):
         asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())
         asyncio.run(self.uci_event_loop())
 
-    def stop(self):
-        self.log.info('stop received')
-        asyncio.run(self.async_stop())
-
-    def go(self, board, mtime, ponder=False):
-        self.log.info('cmd_que put:')
-        self.cmd_que.put({'board': board, 'mtime': mtime, 'ponder': ponder})

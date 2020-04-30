@@ -24,6 +24,7 @@ class TerminalAgent:
         self.info_cache = ""
         self.info_provider = {}
         self.max_mpv = 1
+        self.show_infos = True
 
         self.kbd_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -261,6 +262,8 @@ class TerminalAgent:
             self.info_provider[ac] = {}
 
     def display_info(self, board, info):
+        if self.show_infos is False:
+            return
         mpv_ind = info['multipv_ind']  # index to multipv-line number 1..
         if mpv_ind > self.max_mpv:
             self.max_mpv = mpv_ind
