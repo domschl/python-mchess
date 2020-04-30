@@ -3,9 +3,10 @@
 ## Bugs and testing
 
 - [ ] Handle inline TODOs
-- [ ] ChessLink latency tests
+- [ ] ChessLink latency and general event-queue latency tests
 - [ ] Raspi event queue performance tests
 - [ ] General latency tests
+- [ ] Bluetooth LE sometimes fails to connect. Retry strategy does not work (other than restarting)
 
 ## Web
 
