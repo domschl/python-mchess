@@ -239,9 +239,10 @@ class UciAgent:
             self.log.warning('Stop aready in progress.')
             return
         if self.thinking is True:
+            self.log.info('Initiating async stop')
+            self.stopping = True
             if self.analysisresults is not None:
                 self.analysisresults.stop()
-            self.stopping = True
 
     async def async_go(self, board, mtime, ponder=False, analysis=False):
         if mtime != -1:
@@ -353,13 +354,13 @@ class UciAgent:
         self.send_agent_state('idle')
 
     def stop(self):
-        self.log.debug('stop received')
+        self.log.info('synchr stop received')
         if self.thinking is False:
-            self.log.warning(f"No need to stop {self.name}, not running.")
+            self.log.debug(f"No need to stop {self.name}, not running.")
         asyncio.run(self.async_stop())
 
     def go(self, board, mtime, ponder=False, analysis=False):
-        self.log.debug('go received')
+        self.log.info('go received')
         if self.thinking is True:
             self.log.error(f"Can't start engine {self.name}: it's already busy!")
             return False

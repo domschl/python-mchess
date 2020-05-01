@@ -205,8 +205,12 @@ class Mchess:
     def uci_stop_engines(self):
         if self.uci_agent is not None and self.uci_agent.busy is True:
             self.uci_agent.stop()
+        else:
+            self.log.info("not stopping uci")
         if self.uci_agent2 is not None and self.uci_agent2.busy is True:
             self.uci_agent2.stop()
+        else:
+            self.log.info("not stopping uci2")
         t0 = time.time()
         if self.uci_agent is not None:
             while self.uci_agent.stopping is True:
@@ -468,11 +472,12 @@ class Mchess:
                             # if history contains NULL moves (UCI: '0000'), do not use
                             # history, or UCI engine will explode.
                             brd_copy.clear_stack()
-                            self.board=copy.deepcopy(brd_copy)
+                            self.board = copy.deepcopy(brd_copy)
                         # print("This is sent to UCI:")
                         # self.term_agent.display_board(brd_copy)
                         self.log.debug(f"Go {agent.name}")
                         agent.go(self.board, self.prefs['think_ms'])
+                        self.uci_agent.busy = True
                         self.log.debug(f"Done Go {agent.name}")
 
                 if self.analysis_active:
