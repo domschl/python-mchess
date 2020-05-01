@@ -9,17 +9,13 @@ import time
 from enum import Enum
 import copy
 
-use_async = True
 import chess
 # import chess.uci
 # import chess.pgn
 
 from chess_link_agent import ChessLinkAgent
 from terminal_agent import TerminalAgent
-if use_async is True:
-    from async_uci_agent import UciAgent, UciEngines
-else:
-    from uci_agent import UciAgent, UciEngines
+from async_uci_agent import UciAgent, UciEngines
 from web_agent import WebAgent
 from tk_agent import TkAgent
 
