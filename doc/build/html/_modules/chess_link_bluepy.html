@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>chess_link_bluepy &#8212; mchess 0.2.0 documentation</title>
+    <title>chess_link_bluepy &#8212; mchess 0.2.1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -38,9 +38,11 @@
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">queue</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">import</span> <span class="nn">chess_link_protocol</span> <span class="k">as</span> <span class="nn">clp</span>
 <span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">bluepy</span>
     <span class="kn">from</span> <span class="nn">bluepy.btle</span> <span class="kn">import</span> <span class="n">Scanner</span><span class="p">,</span> <span class="n">DefaultDelegate</span><span class="p">,</span> <span class="n">Peripheral</span>
     <span class="n">bluepy_ble_support</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="k">except</span><span class="p">:</span>
@@ -78,7 +80,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">que</span> <span class="o">=</span> <span class="n">que</span>  <span class="c1"># asyncio.Queue()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;bluepy_ble init ok&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">protocol_debug</span> <span class="o">=</span> <span class="n">protocol_dbg</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">protocol_debug</span> <span class="o">=</span> <span class="n">protocol_dbg</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bp_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">bluepy</span><span class="o">.</span><span class="vm">__file__</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bp_helper</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bp_path</span><span class="p">,</span><span class="s1">&#39;bluepy-helper&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bp_helper</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unexpected: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bp_helper</span><span class="si">}</span><span class="s1"> does not exists!&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fix_cmd</span><span class="o">=</span><span class="s2">&quot;sudo setcap &#39;cap_net_raw,cap_net_admin+eip&#39; &quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">bp_helper</span></div>
+
 
 <div class="viewcode-block" id="Transport.quit"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_bluepy.Transport.quit">[docs]</a>    <span class="k">def</span> <span class="nf">quit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -86,7 +95,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">worker_thread_active</span> <span class="o">=</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="Transport.search_board"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_bluepy.Transport.search_board">[docs]</a>    <span class="k">def</span> <span class="nf">search_board</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iface</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="Transport.search_board"><a class="viewcode-back" href="../chess_link_transports.html#chess_link_bluepy.Transport.search_board">[docs]</a>    <span class="k">def</span> <span class="nf">search_board</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iface</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Search for ChessLink connections using Bluetooth LE.</span>
 
@@ -107,14 +116,14 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                         <span class="s2">&quot;Received new data from </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">addr</span><span class="p">))</span>
 
-        <span class="c1"># XXX make iface no configurable, it seems to change over linux releases...</span>
         <span class="n">scanner</span> <span class="o">=</span> <span class="n">Scanner</span><span class="p">(</span><span class="n">iface</span><span class="o">=</span><span class="n">iface</span><span class="p">)</span><span class="o">.</span><span class="n">withDelegate</span><span class="p">(</span><span class="n">ScanDelegate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">))</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">devices</span> <span class="o">=</span> <span class="n">scanner</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+            <span class="n">devices</span> <span class="o">=</span> <span class="n">scanner</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="mf">20.0</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="s2">&quot;BLE scanning failed. You might need to excecute the scan with root rights: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;BLE scanning failed. </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;excecute: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fix_cmd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;or (if that fails) start ONCE with: `sudo python mchess.py` (fix ownership of chess_link_config.json afterwards)&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="n">devs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">devices</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">rssi</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>

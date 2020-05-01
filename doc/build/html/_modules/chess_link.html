@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>chess_link &#8212; mchess 0.2.0 documentation</title>
+    <title>chess_link &#8212; mchess 0.2.1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -120,6 +120,7 @@
 <span class="sd">        :param appque: a Queue that receive chess board events</span>
 <span class="sd">        :param name: identifies this protocol</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="o">=</span><span class="s2">&quot;0.2.0&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">figrep</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;int&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">6</span><span class="p">],</span>
                        <span class="s2">&quot;ascii&quot;</span><span class="p">:</span> <span class="s2">&quot;PNBRQK.pnbrqk&quot;</span><span class="p">}</span>
@@ -175,7 +176,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;protocol_debug&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">write_configuration</span><span class="p">()</span>
                 <span class="k">if</span> <span class="s1">&#39;btle_iface&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;btle_iface&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;btle_iface&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">write_configuration</span><span class="p">()</span>
                 <span class="k">if</span> <span class="s1">&#39;transport&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span> <span class="ow">and</span> <span class="s1">&#39;address&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Checking default configuration for board via </span><span class="si">{}</span><span class="s1"> at </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -300,7 +301,7 @@
         <span class="k">if</span> <span class="s1">&#39;transport&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;orientation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span>
         <span class="k">if</span> <span class="s1">&#39;btle_iface&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;btle_iface&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;btle_iface&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="s1">&#39;autodetect&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mill_config</span><span class="p">[</span><span class="s1">&#39;autodetect&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">try</span><span class="p">:</span>
@@ -340,7 +341,7 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">error_condition</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">appque</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
-                        <span class="p">{</span><span class="s1">&#39;agent-state&#39;</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">emsg</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
+                        <span class="p">{</span><span class="s1">&#39;agent-state&#39;</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">emsg</span><span class="p">,</span> <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;board&#39;</span><span class="p">,</span> <span class="s1">&#39;actor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
                     <span class="k">continue</span>
 
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
