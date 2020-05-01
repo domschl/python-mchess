@@ -10,6 +10,7 @@ var mainBoard = null;
 var miniBoard1 = null;
 var miniBoard2 = null;
 var VariantInfo = null;
+var EngineStates = null;
 var FenRef = {};
 var StatHeader = {};
 
@@ -66,6 +67,13 @@ function wsConnect(address) {
             }));
             document.getElementById("m-ff").blur();
         }, false);
+        document.getElementById("m-analyse").addEventListener("click", function (event) {
+            mchessSocket.send(JSON.stringify({
+                'analysis': '',
+                actor: 'WebAgent'
+            }));
+            document.getElementById("m-analyse").blur();
+        }, false);
         document.getElementById("m-import").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
                 'position_fetch': 'ChessLinkAgent',
@@ -85,6 +93,9 @@ function wsConnect(address) {
         // Try to reconnect in 1 seconds
         document.getElementById("connect-state").style.color = "red";
         document.getElementById("connect-text").innerText = "disconnected";
+        document.getElementById("chesslink-state").style.color = "red";
+        document.getElementById("engine1-state").style.color = "red";
+        document.getElementById("engine2-state").style.color = "red";
         mchessSocket = null;
         setTimeout(function () {
             wsConnect(address)
@@ -103,19 +114,6 @@ function wsConnect(address) {
         if (msg.hasOwnProperty("fen") && msg.hasOwnProperty("attribs") && msg.hasOwnProperty("pgn")) {
             console.log("got board position.");
             console.log(msg.pgn)
-            /*
-            if (VariantInfo != null) {
-                for (var a in VariantInfo) {
-                    VariantInfo[a] = {}
-                    FenRef[a] = msg.fen;
-                }
-            }
-            StatHeader = {};
-            document.getElementById("miniinfo1").innerHTML = "";
-            document.getElementById("miniinfo2").innerHTML = "";
-            document.getElementById("ph21").innerHTML = "";
-            document.getElementById("ph31").innerHTML = "";
-            */
             var title = msg.attribs.white_name + " - " + msg.attribs.black_name;
             console.log(msg.fen)
             if (msg.fen==oldFen) {
@@ -279,6 +277,34 @@ function wsConnect(address) {
                     document.getElementById("chesslink-state").style.color = "#58A4B0";
                 } else {
                     document.getElementById("chesslink-state").style.color = "red";
+                }
+            }
+            if (msg['class']=='engine') {
+                if (EngineStates==null) EngineStates={};
+                if (!(msg['actor'] in EngineStates)) {
+                    id=Object.keys(EngineStates).length;
+                    EngineStates[msg['actor']]=id;
+                    console.log(id);
+                    if (id==0) document.getElementById("engine1-name").innerHTML = msg['name'];
+                    else document.getElementById("engine2-name").innerHTML = msg['name'];
+                }
+                id=EngineStates[msg['actor']]
+                if (id==0) {
+                    if (msg['agent-state']=='busy') {
+                        document.getElementById("engine1-state").style.color = "#D8DBE2";
+                        document.getElementById("mb1-a").style.backgroundColor = "#D8DBE2";
+                    } else { 
+                        document.getElementById("engine1-state").style.color = "#58A4B0";
+                        document.getElementById("mb1-a").style.backgroundColor = "#58A4B0";
+                    }
+                } else {
+                    if (msg['agent-state']=='busy') {
+                        document.getElementById("engine2-state").style.color = "#D8DBE2";
+                        document.getElementById("mb2-a").style.backgroundColor = "#D8DBE2";
+                    } else { 
+                        document.getElementById("engine2-state").style.color = "#58A4B0";
+                        document.getElementById("mb2-a").style.backgroundColor = "#58A4B0";
+                    }
                 }
             }
         }

@@ -1,7 +1,5 @@
 import logging
-import time
 import threading
-import queue
 import json
 import copy
 import socket
@@ -35,6 +33,7 @@ class WebAgent:
         self.move_cache = ""
         self.info_cache = ""
         self.info_provider = {}
+        self.agent_state_cache = {}
         self.max_mpv = 1
         self.last_board = None
         self.last_attribs = None
@@ -59,7 +58,7 @@ class WebAgent:
             slog.setLevel(logging.ERROR)
         self.app = Flask(__name__, static_folder='web')
         # self.app.config['ENV'] = "MChess_Agent"
-        self.app.config['SECRET_KEY'] = 'somesecret'  # TODO: Investigate
+        self.app.config['SECRET_KEY'] = 'secretsauce'
         self.app.debug = False
         self.app.use_reloader = False
 
@@ -74,8 +73,8 @@ class WebAgent:
                               'script', self.mchess_script)
         self.app.add_url_rule('/styles/mchess.css',
                               'style', self.mchess_style)
-        self.app.add_url_rule('/images/turquoise.png',
-                              'logo', self.mchess_logo)
+        self.app.add_url_rule('/images/<path:path>',
+                              'images', self.images)
         self.active = True
 
         self.sockets.add_url_rule('/ws', 'ws', self.ws_sockets)
@@ -113,6 +112,12 @@ class WebAgent:
                 self.log.warning(
                     "Sending to WebSocket client {} failed with {}".format(handle, e))
                 return
+            for actor in self.agent_state_cache:
+                msg=self.agent_state_cache[actor]
+                try:
+                    ws.send(json.dumps(msg))
+                except Exception as e:
+                    self.log.warning(f"Failed to update agents states to new web-socket client: {e}")
         self.ws_clients[handle] = ws
         while not ws.closed:
             message = ws.receive()
@@ -125,8 +130,8 @@ class WebAgent:
     def mchess_style(self):
         return self.app.send_static_file('styles/mchess.css')
 
-    def mchess_logo(self):
-        return self.app.send_static_file('images/turquoise.png')
+    def images(self, path):
+        return send_from_directory('web/images', path)
 
 #    def sock_connect(self):
 #        print("CONNECT")
@@ -214,6 +219,7 @@ class WebAgent:
                     "Sending to WebSocket client {} failed with {}".format(w, e))
 
     def agent_states(self, msg):
+        self.agent_state_cache[msg['actor']] = msg
         for w in self.ws_clients:
             try:
                 self.ws_clients[w].send(json.dumps(msg))

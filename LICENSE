@@ -1,3 +1,11 @@
+This project includes third party modules that are subject to their
+own license.
+
+* Chess pieces (SVG) by [Cburnett](https://en.wikipedia.org/wiki/User:Cburnett)
+  Licensed as: GFDL & BSD & GPL
+
+My own code:
+
 MIT License
 
 Copyright (c) 2018 Dominik Schlösser

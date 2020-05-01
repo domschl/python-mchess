@@ -17,7 +17,12 @@ class TerminalAgent:
         self.appque = appque
         self.orientation = True
         self.active = False
+        self.show_infos = True
         self.max_plies = 6
+        if 'max_plies_terminal' in prefs:
+            self.max_plies = prefs['max_plies_terminal']
+            if self.max_plies<=0:
+                self.show_infos = False
         self.display_cache = ""
         self.last_cursor_up = 0
         self.move_cache = ""
@@ -34,7 +39,7 @@ class TerminalAgent:
         self.chesssym = {"unic": ["-", "×", "†", "‡", "½"],
                          "ascii": ["-", "x", "+", "#", "1/2"]}
 
-        # TODO: this seems to set windows terminal to Unicode. There should be a better way.
+        # this seems to set windows terminal to Unicode. There should be a better way.
         if platform.system().lower() == 'windows':
             from ctypes import windll, c_int, byref
             stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
@@ -141,7 +146,7 @@ class TerminalAgent:
                     # TODO: cleanup fig-code generation
                     try:
                         fig = chess.Piece(chess.PAWN, board.piece_at(
-                            mv.from_square).color).unicode_symbol(invert_color=True)
+                            mv.from_square).color).unicode_symbol(invert_color=not invert)
                     except Exception as e:
                         self.log.error(
                             "Move contains empty origin: {}".format(e))
@@ -149,7 +154,7 @@ class TerminalAgent:
                     if use_unicode_chess_figures is True:
                         try:
                             pro = chess.Piece(mv.promotion, board.piece_at(
-                                mv.from_square).color).unicode_symbol(invert_color=True)
+                                mv.from_square).color).unicode_symbol(invert_color=not invert)
                         except Exception as e:
                             self.log.error(
                                 "Move contains empty origin: {}".format(e))
@@ -205,6 +210,7 @@ class TerminalAgent:
     def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
         txa = self.position_to_text(
             board, use_unicode_chess_figures=attribs['unicode'], invert=attribs['invert'])
+        
         ams = self.moves_to_text(board, lines=len(
             txa), use_unicode_chess_figures=attribs['unicode'], invert=attribs['invert'])
         header = '                                {:>10.10s} - {:10.10s}'.format(
@@ -244,6 +250,9 @@ class TerminalAgent:
         if 'ponder' in move_msg['move']:
             new_move += '\nPonder: {}'.format(move_msg['move']['ponder'])
 
+        if 'result' in move_msg['move'] and move_msg['move']['result']!='':
+            new_move += f" ({move_msg['move']['result']})"
+
         if new_move != self.move_cache:
             for _ in range(self.last_cursor_up):
                 print()
@@ -261,6 +270,8 @@ class TerminalAgent:
             self.info_provider[ac] = {}
 
     def display_info(self, board, info):
+        if self.show_infos is False:
+            return
         mpv_ind = info['multipv_ind']  # index to multipv-line number 1..
         if mpv_ind > self.max_mpv:
             self.max_mpv = mpv_ind

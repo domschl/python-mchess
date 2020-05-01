@@ -5,9 +5,11 @@ import logging
 import threading
 import queue
 import time
+import os
 
 import chess_link_protocol as clp
 try:
+    import bluepy
     from bluepy.btle import Scanner, DefaultDelegate, Peripheral
     bluepy_ble_support = True
 except:
@@ -47,13 +49,20 @@ class Transport():
         self.log.debug("bluepy_ble init ok")
         self.protocol_debug = protocol_dbg
 
+        self.bp_path=os.path.dirname(os.path.abspath(bluepy.__file__))
+        self.bp_helper=os.path.join(self.bp_path,'bluepy-helper')
+        if not os.path.exists(self.bp_helper):
+            self.log.warning(f'Unexpected: {self.bp_helper} does not exists!')
+        self.fix_cmd="sudo setcap 'cap_net_raw,cap_net_admin+eip' "+self.bp_helper
+
+
     def quit(self):
         """
         Initiate worker-thread stop
         """
         self.worker_thread_active = False
 
-    def search_board(self, iface=1):
+    def search_board(self, iface=0):
         """
         Search for ChessLink connections using Bluetooth LE.
 
@@ -74,14 +83,14 @@ class Transport():
                     self.log.debug(
                         "Received new data from {}".format(dev.addr))
 
-        # XXX make iface no configurable, it seems to change over linux releases...
         scanner = Scanner(iface=iface).withDelegate(ScanDelegate(self.log))
 
         try:
-            devices = scanner.scan(10.0)
+            devices = scanner.scan(20.0)
         except Exception as e:
-            self.log.error(
-                "BLE scanning failed. You might need to excecute the scan with root rights: {}".format(e))
+            self.log.error(f"BLE scanning failed. {e}")
+            self.log.error(f"excecute: {self.fix_cmd}")
+            self.log.error(f"or (if that fails) start ONCE with: `sudo python mchess.py` (fix ownership of chess_link_config.json afterwards)")
             return None
 
         devs = sorted(devices, key=lambda x: x.rssi, reverse=True)

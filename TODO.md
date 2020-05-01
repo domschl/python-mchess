@@ -2,13 +2,7 @@
 
 ## Bugs and testing
 
-- [ ] Clear analysis of engines on new game or new pos
-- [ ] Analyse python-chess corruptions (thread race-conditions?)
-- [ ] Filter duplicate UCI depth messages (esp. lc0)
 - [ ] Handle inline TODOs
-- [ ] ChessLink latency tests
-- [ ] Raspi event queue performance tests
-- [ ] General latency tests
 
 ## Web
 
@@ -25,10 +19,20 @@
 - [ ] Turn eboard
 - [ ] proper PWA boiler plate ('progressive web app')
 
+## GUI
+
+- [ ] TkInter tests
+
 ## Agents and main
 
 - [ ] PGN-Libraries and ECO handling
 - [ ] Data import module
+
+## Performance
+
+- [ ] General latency tests
+- [ ] ChessLink latency and general event-queue latency tests
+- [ ] Raspi event queue performance tests
 
 ## Game mode handling (and Web GUI)
 
@@ -64,3 +68,8 @@
 - [x] Verify consistent mutex usage
 
 - [x] Current UCI API of python-chess is deprecated. Change to ASYNC engine api.
+- [x] Clear analysis of engines on new game or new pos
+- [x] Analyse python-chess corruptions (thread race-conditions?)
+- [x] Filter duplicate UCI depth messages (esp. lc0)
+- [x] Bluetooth LE sometimes fails to connect. Retry strategy does not work (other than restarting)
+- [x] Better handling of display of check mate situations with Millennium Board (led king animation?)

@@ -87,6 +87,7 @@ class ChessLink:
         :param appque: a Queue that receive chess board events
         :param name: identifies this protocol
         """
+        self.version="0.2.0"
         self.name = name
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "ascii": "PNBRQK.pnbrqk"}
@@ -142,7 +143,7 @@ class ChessLink:
                     self.mill_config['protocol_debug'] = False
                     self.write_configuration()
                 if 'btle_iface' not in self.mill_config:
-                    self.mill_config['btle_iface'] = 1
+                    self.mill_config['btle_iface'] = 0
                     self.write_configuration()
                 if 'transport' in self.mill_config and 'address' in self.mill_config:
                     self.log.debug('Checking default configuration for board via {} at {}'.format(
@@ -267,7 +268,7 @@ class ChessLink:
         if 'transport' in self.mill_config:
             self.mill_config['orientation'] = self.orientation
         if 'btle_iface' not in self.mill_config:
-            self.mill_config['btle_iface'] = 1
+            self.mill_config['btle_iface'] = 0
         if 'autodetect' not in self.mill_config:
             self.mill_config['autodetect'] = True
         try:
@@ -307,7 +308,7 @@ class ChessLink:
                     else:
                         self.error_condition = False
                     self.appque.put(
-                        {'agent-state': state, 'message': emsg, 'actor': self.name})
+                        {'agent-state': state, 'message': emsg, 'version': self.version, 'class': 'board', 'actor': self.name})
                     continue
 
                 if len(msg) > 0:

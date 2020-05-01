@@ -1,5 +1,15 @@
 /* Mchess.css */
 
+/* reset everything we need, obsoletes normalize.css */
+html, body, div, span, iframe {
+    margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font:  Arial, Helvetica, sans-serif;
+	vertical-align: baseline;
+}
+
 :root {
     --color-light: #D8DBE2;
     /*Gainsboro */
@@ -68,6 +78,11 @@ body {
     font-size: 7pt;
 }
 
+.engine-light {
+    vertical-align: 1pt;
+    font-size: 7pt;
+}
+
 .white {
     font-size:12pt;
     vertical-align: -12pt;
@@ -83,6 +98,9 @@ body {
 .version {
     font-size: 7pt;
     color: var(--color-turquoise);
+    padding-top: 6px;
+    line-height:0.4;
+    vertical-align: -12pt;
 }
 
 .panel-header {
@@ -113,13 +131,10 @@ body {
     grid-gap: 0.4em;
 }
 
+/*
 .mainboard {
-    /*
-    grid-column: 1/2;
-    grid-row: 1/3;
-    */
-    /*background: #999; */
 }
+*/
 
 .maintext {
     font-size: 8pt;
@@ -222,8 +237,8 @@ div.board {
 }
 
 .button {
-    background: var(--color-dark);
-    color: var(--color-dlight);
+    background: var(--color-dlight);
+    color: var(--color-ddark);
     border: none;
     padding: 4px;
     text-align: center;
@@ -235,8 +250,8 @@ div.board {
 }
 
 .sbutton {
-    background: var(--color-dark);
-    color: var(--color-dlight);
+    background: var(--color-dlight);
+    color: var(--color-ddark);
     border: none;
     padding: 2px;
     vertical-align: top;
@@ -247,6 +262,21 @@ div.board {
     margin: 4px 2px 2px 2px;
     border-radius: 2px;
 }
+
+.sbuttona {
+    background: var(--color-light);
+    color: var(--color-ddark);
+    border: none;
+    padding: 2px;
+    vertical-align: top;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 7px;
+    margin: 4px 2px 2px 2px;
+    border-radius: 2px;
+}
+
 
 .label {
     font-size: 10px;

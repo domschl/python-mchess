@@ -25,7 +25,7 @@ This project is under heavy development, and basically everything described belo
 ### Dependencies
 
 `python-mchess` is written for Python >= 3.7. 
-If UCI-engine support (python-chess dependecy) is not used, any Python 3.x works. (python-mchess makes use of latest async features of Python 3.7 and later)
+If UCI-engine support (python-chess dependency) is not used, any Python 3.x works. (python-mchess makes use of latest async features of Python 3.7 and later)
 
 `python-mchess` board driver for Chess Link depends on `PySerial` and (Linux/Raspberry Pi only) `BluePy`
 
@@ -69,6 +69,10 @@ Note: Windows users need to use paths with `\\` or `/` for proper json encoding.
 
 The web agent requires python modules `Flask`, `Flask-Sockets` and `gevent`.
 
+```bash
+pip3 install flask flask-sockets gevent
+```
+
 Node JS packet manager `npm` is needed to install the javascript dependencies:
 
 ```bash
@@ -76,7 +80,7 @@ cd mchess/web
 npm install
 ```
 
-This installs the dependencies `Normalize.css` and `cm-chessboard`.
+This installs the dependency `cm-chessboard`.
 
 ### Start
 
@@ -97,26 +101,34 @@ _Early alpha preview of web client "Turquoise"_
 
 Note: Bluetooth LE hardware detection either requires admin privileges for the one-time intial bluetooth scan, or the `setcap` command below.
 
-*TBD*
+#### Bluetooth LE board search without `sudo`
 
-or (without sudo using): 
 ```bash
 sudo setcap 'cap_net_raw,cap_net_admin+eip' PATH/TO/LIB/python3._x_/site-packages/bluepy/bluepy-helper
-```
-After this, bluetooth scanning should work without `sudo`.
 
-If that fails, try to scan once with `sudo`:
+# The simply start mchess, scanning is started automatically:
+python3 mchess.py
+```
+
+#### Bluetooth LE board search with `sudo`
+
+If the above fails, try to scan once with `sudo`:
+
 ```bash
 sudo python3 mchess.py
 ```
+
+If `mchess.py` has been started with `sudo`, it is advisible to change the ownership of `chess_link_config.json` to the user account that is used for games, otherwise `mchess.py` cannot update the configuration (e.g. orientation changes) automatically.
+
 Restart the program, once the board has connected (the connection address is saved in `chess_link_config.json`)
 
-Do NOT use `sudo` on subsequent starts, or the communication might fail. If scan was executed with sude, then you might want to set ownership for `chess_link_config.json` to your user-account, since the file will be rewritten, if the detected board orientation is changed.
+Do NOT use `sudo` on subsequent starts, or the communication might fail. If scan was executed with `sudo`, then you might want to set ownership for `chess_link_config.json` to your user-account, since the file will be rewritten, if the detected board orientation is changed. (`chown your-username chess_link_config.json`)
 
 All engine descriptions in directory 'engines' will now contain the default-UCI options for each engine. Those can be edited e.g. to enable tablebases or other UCI options.
 
+
 ![Console mchess](https://raw.github.com/domschl/python-mchess/master/images/MchessAlpha.png)
-_Console output of python module, allows terminal interactions: enter 'help' for overview_
+_Console output of python module, allows terminal interactions: enter 'help' for an overview of console commands_
 
 ## Usage
 
@@ -138,7 +150,7 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 | `think_ms`           | `500`    | Number of milli seconds, computer calculates for a move. Better level configuration will be added at a later point. |
 | `use_unicode_figures`| `true`   | Most terminals can display Unicode chess figures, if that doesn't work, set to `false`, and letters are used for chess pieces instead.|
 | `invert_term_color`  | `false`  | How chess board colors black and white are displayed might depend on the background color of your terminal. Change, if black and white are mixed up. |
-| `max_plies_terminal` | `6`      | The number of half-moves (plies) that are displayed in analysis in terminal |
+| `max_plies_terminal` | `6`      | The number of half-moves (plies) that are displayed in analysis in terminal. If set to `0`, no move-preview is shown. That is helpful, if logs are required. |
 | `max_plies_board`    | `3`      | The number of half-moves that are indicated through blink led sequences on the Millennium chess board. Maximum (due to hardware protocol limitations) is `3`. If more than one UCI engine is used for analysis, the results of the first engine are shown.|
 | `ply_vis_delay`      | `80`     | The delay used went indicating move-sequences on the  Millennium chess board. Use a higher value (e.g. `160`) to slow down the speed of change. |
 | `import_chesslink_position` | `true` | On `true` the current position on the Millennium chess board  is imported at start of `mchess.py`. On `false`, always the start position is used. |
@@ -146,16 +158,12 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 | `computer_player2_name` | `""` | Name of optional second UCI engine, used for computer-computer games and as second, concurrent analysis engine. |
 | `human_name` | `human` | Name of human player displayed in terminal. This will change (support for second name) |
 | `active_agents` | `{ "human": ["chess_link", "terminal", "web"], "computer": ["stockfish", "lc0"]}` | Work in progress! A list of active agent modules. The agent-architecture is very flexible and allow adding arbitrary input and output hard- and software or interfaces to remote sites. |
+| `log_levels` | `{ "UciAgent_stockfish": "INFO", "ChessLinkBluePy": "DEBUG", "ChessLink": "WARNING", "chess.engine": "ERROR"}` | Example configuration to set log-levels for modules specifically. This should be used with `max_plies_terminal` set to `0` to prevent garbled debug output. |
 
 ### `chess_link_config.json`, configuration options for Millennium ChessLink hardware
 
 This file configures the  Millennium chess board ChessLink hardware connection. This file is created during automatic hardware
 detection at start of `mchess.py`.
-
-A few caveats:
-
-* Automatic Bluetooth-LE hardware detection (Linux only) requires root, `sudo python3 mchess.py`. After successful hardware-detection, `mchess.py` should be restarted _without_ `sudo`.
-* If `mchess.py` has been started with `sudo`, it is advisible to change the ownership of `chess_link_config.json` to the user account that is used for games, otherwise `mchess.py` cannot update the configuration (e.g. orientation changes) automatically. This will be simplified in the future.
 
 | Field                | Default  | Description                                             |
 | -------------------- | -------- | --------------------------------------------------------|
@@ -163,6 +171,8 @@ A few caveats:
 | `address` | `""` | Bluetooth address or USB port name. |
 | `orientation` | true | Orientation of the Millennium chess board. The orientation is detected and saved automatically as soon as the start position is setup on the Millennium board.
 | `autodetect` | `true` | On `true`, automatic hardware detection of Millennium ChessLink is tried on each start of `mchess.py`, if the default connection does not work. Setting to `false` disables automatic hardware detection (e.g. if no board hardware is available) |
+| `protocol_debug` | `false` | On `true` extensive logging of the hardware communication with the Millennium board is enabled for debugging purposes. |
+| `btle_iface` | `0` | Linux Bluetooth LE interface number. If scanning continues to fail (with `17, error: Invalid Index`), it might help to use values from 0..2 for alternative tests. Not used for USB connections. |
 
 ### Json files in `mchess/engines`
 
@@ -182,7 +192,7 @@ Once the UCI engine is started for the first time, the UCI-options of the engine
 | -------------------- | -------- | --------------------------------------------------------|
 | `Threads`            | `1`      | Number of threads used for the engine, increase for higher engine performance. |
 | `Hash` | `""` | Size of hash table, usually in MB. Increase for better performance |
-| `MultiPV` | `1` | Increasing this shows more concurrent lines during analysis both on terminal and web client. A maximum of `4` is recommended, so not enforced. |
+| `MultiPV` | `1` | Increasing this shows more concurrent lines during analysis both on terminal and web client. A maximum of `4` is recommended, but not enforced. |
 | `SyzygyPath` | `""` | Path to tablebase endgame databases. `mchess` outputs the number of tablebase references (TB) |
 
 Warning: all customizations are reset, if an engine-update changes the available UCI-options. If a new engine version introduces
@@ -247,6 +257,7 @@ like so:
 "protocol_debug": true,
 "transport": "chess_link_bluepy",
 "address": "xx:xx:xx:xx:xx:xx",
+"btle_iface": 0,
 "orientation": true,
 "autodetect": true
 }
@@ -266,6 +277,7 @@ This will show bit-level communication with the ChessLink board.
 * [python-chess](https://python-chess.readthedocs.io/en/latest/): a pure Python chess library
 * [cm-chessboard](https://github.com/shaack/cm-chessboard): a chessboard rendered in SVG, coded in ES6. Views FEN, handles move input, animated, responsive, mobile friendly.
 * [bluepy](https://github.com/IanHarvey/bluepy): Python interface to Bluetooth LE on Linux
+* Chess pieces by [Cburnett](https://en.wikipedia.org/wiki/User:Cburnett)
 * TBD
 
 ## Acknowledgements

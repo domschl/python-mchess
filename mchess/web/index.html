@@ -14,8 +14,6 @@
     <link rel="stylesheet" type="text/css" href="./node_modules/cm-chessboard/styles/page.css" />
     <link rel="stylesheet" type="text/css" href="./node_modules/cm-chessboard/styles/cm-chessboard.css" />
 
-    <link rel="stylesheet" type="text/css" href="./node_modules/normalize.css/normalize.css">
-
     <link rel="stylesheet" type="text/css" href="./styles/mchess.css">
     <script type="module" type="text/xml" src="./scripts/mchess.js"></script>
 </head>
@@ -24,9 +22,9 @@
     <div class="header">
         <div class="logo">
             <img src="images/turquoise.png" width="40px" alt="Turquoise"></div>
-        <div class="title"><span class="turq">Turquoise</span><span class="white"> chess</span></div>
+        <div class="title"><span class="turq">Turquoise</span><span class="white"> chess</span> <span id="version" class="version">v0.2.1</span></div>
         <div class="subtitle"><span id="connect-state" class="state-light">●</span> <span class="subtitle" id="connect-text">connected</span>
-            | <span id="chesslink-state" class="state-light">●</span> ChessLink | <span id="version" class="version">v0.2.0</span></div>
+            | <span id="chesslink-state" class="state-light">●</span> ChessLink | <span id="engine1-state" class="engine-light">●</span> <span id="engine1-name"></span> | <span id="engine2-state" class="engine-light">●</span> <span id="engine2-name"></span></div>
     </div>
 
     <main>
@@ -41,12 +39,13 @@
                         <div class="maintext" id="mainmoves" style="grid-column: 2/3; grid-row: 2/3"></div>
                     </div>
                     <div class="controls">
-                        <button type="button" class="button" id="m-new" style="margin-left: 40px;">New</button>
-                        <button class="button" id="m-bb">❙◀&nbsp; </button>
-                        <button class="button" id="m-bw"> &nbsp;◀&nbsp; </button>
-                        <button class="button" id="m-st"> &nbsp;◼&nbsp; </button>
-                        <button class="button" id="m-fw"> &nbsp;▶&nbsp; </button>
-                        <button class="button" id="m-ff"> &nbsp;▶❙ </button>
+                        <button type="button" class="button" id="m-new" title="new game" style="margin-left: 40px;">New</button>
+                        <button class="button" id="m-bb" title="start position"><img src="images/bb.png" width="10px" alt="start position"></button>
+                        <button class="button" id="m-bw" title="move back"><img src="images/b.png" width="10px" alt="move back"></button>
+                        <button class="button" id="m-st" title="stop"><img src="images/stop.png" width="10px" alt="stop"></button>
+                        <button class="button" id="m-fw" title="next move (go)"><img src="images/f.png" width="10px" alt="next move (go)"></button>
+                        <button class="button" id="m-ff" title="last move of variant"><img src="images/ff.png" width="10px" alt="last move"></button>
+                        <button class="button" id="m-analyse" title="analyse position"><img src="images/tree.png" width="10px" alt="analyse"></button>
                     </div>
                     <div class="controls">
                         <span class="label">FEN:</span>
@@ -55,7 +54,7 @@
                     </div>
                     <div class="controls" id="chess-link-controls">
                         <span class="label">ChessLink board:</span>
-                        <span class="button" id="m-import">Import position</span>
+                        <button class="button" id="m-import" title="import position from Millennium board">Import position</button>
                     </div>
                 </div>
             </div>
@@ -69,11 +68,13 @@
                         <div class="maintext" id="miniinfo1" style="grid-column: 2/3; grid-row: 2/3"></div>
                     </div>
                     <div class="controls">
+                        <!--
                         <button class="sbutton" style="margin-left: 4px;">❙◀&nbsp; </button>
                         <button class="sbutton"> &nbsp;◀&nbsp; </button>
-                        <button class="sbutton"> &nbsp;◼&nbsp; </button>
                         <button class="sbutton"> &nbsp;▶&nbsp; </button>
                         <button class="sbutton"> &nbsp;▶❙ </button>
+                        -->
+                        <button id="mb1-a" class="sbutton" title="not yet implemented"><img src="images/tree.png" width="6px" alt="analysis"></button>
                     </div>
                 </div>
                 <div style="padding-bottom: 0.4em"></div>
@@ -86,11 +87,13 @@
                         <div class="maintext" id="miniinfo2" style="grid-column: 2/3; grid-row: 2/3"></div>
                     </div>
                     <div class="controls">
+                        <!--
                         <button class="sbutton" style="margin-left: 4px;">❙◀&nbsp; </button>
                         <button class="sbutton"> &nbsp;◀&nbsp; </button>
-                        <button class="sbutton"> &nbsp;◼&nbsp; </button>
                         <button class="sbutton"> &nbsp;▶&nbsp; </button>
                         <button class="sbutton"> &nbsp;▶❙ </button>
+                        -->
+                        <button id="mb2-a" class="sbutton" title="not yet implemented"><img src="images/tree.png" width="6px" alt="analysis"></button>
                     </div>
                 </div>
             </div>
