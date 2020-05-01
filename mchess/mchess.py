@@ -150,7 +150,7 @@ class Mchess:
         if len(self.uci_engines.engines) > 0:
 
             if self.prefs['computer_player_name'] in self.uci_engines.engines:
-                self.log.info(
+                self.log.debug(
                     f"{self.prefs['computer_player_name']} | {self.uci_engines.engines[self.prefs['computer_player_name']]['params']} | {self.prefs}")
                 name=self.prefs['computer_player_name']
                 ejs=self.uci_engines.engines[name]['params']

@@ -172,7 +172,7 @@ detection at start of `mchess.py`.
 | `orientation` | true | Orientation of the Millennium chess board. The orientation is detected and saved automatically as soon as the start position is setup on the Millennium board.
 | `autodetect` | `true` | On `true`, automatic hardware detection of Millennium ChessLink is tried on each start of `mchess.py`, if the default connection does not work. Setting to `false` disables automatic hardware detection (e.g. if no board hardware is available) |
 | `protocol_debug` | `false` | On `true` extensive logging of the hardware communication with the Millennium board is enabled for debugging purposes. |
-| `btle_iface` | 1 | Linux Bluetooth LE interface number. If scanning continues to fail, it might help to use values from 0..2 for alternative tests. Not used for USB connections. |
+| `btle_iface` | 0 | Linux Bluetooth LE interface number. If scanning continues to fail (with `17, error: Invalid Index`), it might help to use values from 0..2 for alternative tests. Not used for USB connections. |
 
 ### Json files in `mchess/engines`
 

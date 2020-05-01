@@ -143,7 +143,7 @@ class ChessLink:
                     self.mill_config['protocol_debug'] = False
                     self.write_configuration()
                 if 'btle_iface' not in self.mill_config:
-                    self.mill_config['btle_iface'] = 1
+                    self.mill_config['btle_iface'] = 0
                     self.write_configuration()
                 if 'transport' in self.mill_config and 'address' in self.mill_config:
                     self.log.debug('Checking default configuration for board via {} at {}'.format(
@@ -268,7 +268,7 @@ class ChessLink:
         if 'transport' in self.mill_config:
             self.mill_config['orientation'] = self.orientation
         if 'btle_iface' not in self.mill_config:
-            self.mill_config['btle_iface'] = 1
+            self.mill_config['btle_iface'] = 0
         if 'autodetect' not in self.mill_config:
             self.mill_config['autodetect'] = True
         try:

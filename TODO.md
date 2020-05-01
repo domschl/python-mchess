@@ -3,10 +3,6 @@
 ## Bugs and testing
 
 - [ ] Handle inline TODOs
-- [ ] ChessLink latency and general event-queue latency tests
-- [ ] Raspi event queue performance tests
-- [ ] General latency tests
-- [ ] Bluetooth LE sometimes fails to connect. Retry strategy does not work (other than restarting)
 - [ ] Better handling of display of check mate situations with Millennium Board (led king animation?)
 
 ## Web
@@ -32,6 +28,12 @@
 
 - [ ] PGN-Libraries and ECO handling
 - [ ] Data import module
+
+## Performance
+
+- [ ] General latency tests
+- [ ] ChessLink latency and general event-queue latency tests
+- [ ] Raspi event queue performance tests
 
 ## Game mode handling (and Web GUI)
 
@@ -70,3 +72,4 @@
 - [x] Clear analysis of engines on new game or new pos
 - [x] Analyse python-chess corruptions (thread race-conditions?)
 - [x] Filter duplicate UCI depth messages (esp. lc0)
+- [x] Bluetooth LE sometimes fails to connect. Retry strategy does not work (other than restarting)
