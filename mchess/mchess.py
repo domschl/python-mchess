@@ -512,10 +512,10 @@ class Mchess:
                         self.log.error(
                             'Invalid <agent-state> message: {}'.format(msg))
                     else:
-                        if msg['actor']==self.uci_agent.name:
+                        if self.uci_agent is not None and msg['actor']==self.uci_agent.name:
                             if msg['agent-state']=='idle':
                                 self.uci_agent.busy = False   # XXX redundant?
-                        if msg['actor']==self.uci_agent2.name:
+                        if self.uci_agent2 is not None and msg['actor']==self.uci_agent2.name:
                             if msg['agent-state']=='idle':
                                 self.uci_agent2.busy = False   # XXX redundant?
                         for agent in self.agents_all:
