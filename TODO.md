@@ -3,7 +3,6 @@
 ## Bugs and testing
 
 - [ ] Handle inline TODOs
-- [ ] Better handling of display of check mate situations with Millennium Board (led king animation?)
 
 ## Web
 
@@ -73,3 +72,4 @@
 - [x] Analyse python-chess corruptions (thread race-conditions?)
 - [x] Filter duplicate UCI depth messages (esp. lc0)
 - [x] Bluetooth LE sometimes fails to connect. Retry strategy does not work (other than restarting)
+- [x] Better handling of display of check mate situations with Millennium Board (led king animation?)

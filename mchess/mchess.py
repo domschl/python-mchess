@@ -425,9 +425,6 @@ class Mchess:
         while self.state_machine_active:
             if self.state == self.State.IDLE and self.appque.empty() is True:
                 self.log.info("IDLE")
-                if self.board.is_game_over() is True:
-                    self.log.info('Result: {}'.format(self.board.result()))
-                    self.set_mode(self.Mode.NONE)
 
                 if self.board.turn == chess.WHITE:
                     active_player = self.player_w
@@ -443,6 +440,13 @@ class Mchess:
                     setm = getattr(agent, "set_valid_moves", None)
                     if callable(setm):
                         agent.set_valid_moves(self.board, [])
+
+                if self.board.is_game_over() is True:
+                    self.update_display_board()
+                    self.log.info('Result: {}'.format(self.board.result()))
+                    self.set_mode(self.Mode.NONE)
+
+                for agent in passive_player:
                     if self.ponder_move != None:
                         setp = getattr(agent, "set_ponder", None)
                         if callable(setp):
@@ -563,6 +567,10 @@ class Mchess:
                     self.uci_stop_engines()
                     self.undo_stack = []
                     self.board.push(chess.Move.from_uci(msg['move']['uci']))
+                    if self.board.is_game_over() is True:
+                        msg['move']['result']=self.board.result()
+                    else:
+                        msg['move']['result']=''
                     self.update_display_move(msg)
                     self.update_display_board()
                     if 'ponder' in msg['move']:

@@ -210,6 +210,7 @@ class TerminalAgent:
     def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
         txa = self.position_to_text(
             board, use_unicode_chess_figures=attribs['unicode'], invert=attribs['invert'])
+        
         ams = self.moves_to_text(board, lines=len(
             txa), use_unicode_chess_figures=attribs['unicode'], invert=attribs['invert'])
         header = '                                {:>10.10s} - {:10.10s}'.format(
@@ -248,6 +249,9 @@ class TerminalAgent:
                 move_msg['move']['uci'], move_msg['move']['actor'])
         if 'ponder' in move_msg['move']:
             new_move += '\nPonder: {}'.format(move_msg['move']['ponder'])
+
+        if 'result' in move_msg['move'] and move_msg['move']['result']!='':
+            new_move += f" ({move_msg['move']['result']})"
 
         if new_move != self.move_cache:
             for _ in range(self.last_cursor_up):

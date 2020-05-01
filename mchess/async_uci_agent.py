@@ -239,6 +239,8 @@ class UciAgent:
             self.log.warning('Stop aready in progress.')
             return
         if self.thinking is True:
+            if self.analysisresults is not None:
+                self.analysisresults.stop()
             self.stopping = True
 
     async def async_go(self, board, mtime, ponder=False, analysis=False):
@@ -272,6 +274,7 @@ class UciAgent:
         self.send_agent_state('busy')
         self.log.info(f"Starting UCI {self.name}")
         info = None
+        best_score = None
         with await self.engine.analysis(board, lm, multipv=mpv, info=chess.engine.Info.ALL) as self.analysisresults:
             async for info in self.analysisresults:
                 if self.stopping is True:
@@ -300,6 +303,8 @@ class UciAgent:
                             self.log.error(f"Score transform failed {info['score']}: {e}")
                             sc = '?'
                         rep['curmove']['score'] = sc
+                        if ind==0:
+                            best_score = sc
                     if 'depth' in info:
                         rep['curmove']['depth'] = info['depth']
                     if 'seldepth' in info:
@@ -327,18 +332,8 @@ class UciAgent:
                     'uci': move.uci(),
                     'actor': self.name
                 }}
-
-                if 'score' in info:
-                    try:
-                        if info['score'].is_mate():
-                            sc = str(info['score'])
-                        else:
-                            cp = float(str(info['score']))/100.0
-                            sc = '{:.2f}'.format(cp)
-                    except Exception as e:
-                        self.log.error(f"Score transform failed {info['score']}: {e}")
-                        sc = '?'
-                    rep['move']['score'] = sc
+                if best_score is not None:
+                    rep['move']['score'] = best_score
                 if 'depth' in info:
                     rep['move']['depth'] = info['depth']
                 if 'seldepth' in info:
