@@ -19,7 +19,7 @@ from async_uci_agent import UciAgent, UciEngines
 from web_agent import WebAgent
 from tk_agent import TkAgent
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 
 class Mchess:
