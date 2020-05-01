@@ -68,7 +68,7 @@ class ChessLinkAgent:
         try:
             pos.append(self.cl_brd.fen_to_position(board.fen()))
             for i in range(mvs):
-                board.push(moves[i])  # XXX: this generates race conditions, inv board pos. (deepcopy / mutex?)
+                board.push(moves[i])
                 pos.append(self.cl_brd.fen_to_position(board.fen()))
             for i in range(mvs):
                 board.pop()
@@ -94,7 +94,6 @@ class ChessLinkAgent:
             self.cl_brd.show_deltas(pos, freq)
 
     def display_info(self, _board, info):
-        # XXX maybe deepcopy here?!
         board=copy.deepcopy(_board)
         if info['actor'] == self.prefs['computer_player_name']:
             if 'multipv_ind' in info:

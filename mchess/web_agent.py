@@ -58,7 +58,7 @@ class WebAgent:
             slog.setLevel(logging.ERROR)
         self.app = Flask(__name__, static_folder='web')
         # self.app.config['ENV'] = "MChess_Agent"
-        self.app.config['SECRET_KEY'] = 'somesecret'  # TODO: Investigate
+        self.app.config['SECRET_KEY'] = 'secretsauce'
         self.app.debug = False
         self.app.use_reloader = False
 

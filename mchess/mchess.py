@@ -212,7 +212,7 @@ class Mchess:
         if self.uci_agent2 is not None and self.uci_agent2.busy is True:
             self.uci_agent2.stop()
         t0 = time.time()
-        if self.uci_agent is not None:   # XXX: This makes the whole thing synchronous. Maybe solve by state-machine?
+        if self.uci_agent is not None:
             while self.uci_agent.stopping is True:
                 time.sleep(0.1)
                 if time.time()-t0 > 5:
@@ -362,7 +362,7 @@ class Mchess:
             self.set_mode(new_mode, silent=silent)
         if silent is False:
             self.update_display_board()
-        self.state = self.State.IDLE  # XXX: make async
+        self.state = self.State.IDLE 
 
     def is_player_move(self):
         if self.mode == self.Mode.PLAYER_PLAYER:
@@ -429,17 +429,9 @@ class Mchess:
         while self.state_machine_active:
             if self.state == self.State.IDLE and self.appque.empty() is True:
                 self.log.info("IDLE")
-                # TODO: Investigate actual cause of corruption.
-                # FIXME: There's a corruption of self.board occuring during game-over check.
-                # This is either a bug in chess.Board.is_game_over() or [more likely]
-                # some nasty async thing.
-                # board_bug_workaround_cache = copy.deepcopy(self.board)
                 if self.board.is_game_over() is True:
                     self.log.info('Result: {}'.format(self.board.result()))
                     self.set_mode(self.Mode.NONE)
-                  #   active_player = []
-                  #   passive_player = []
-                # self.board = board_bug_workaround_cache
 
                 if self.board.turn == chess.WHITE:
                     active_player = self.player_w
@@ -459,7 +451,7 @@ class Mchess:
                         setp = getattr(agent, "set_ponder", None)
                         if callable(setp):
                             pass
-                            # TODO: agent.set_ponder(self.board, self.ponder_move)
+                            # agent.set_ponder(self.board, self.ponder_move)
 
                 val = self.valid_moves(self.board)
                 for agent in active_player:
@@ -502,7 +494,8 @@ class Mchess:
                     self.log.warning("None message received.")
                     continue
                 self.log.debug("App received msg: {}".format(msg))
-                # TODO: remove 'error' element after all transports are updated.
+
+                # remove 'error' element after all transports are updated.
                 if 'error' in msg:
                     self.log.error(
                         'OBSOLETE PROTOCOL ELEMENT! Error condition: {}'.format(msg['error']))
@@ -514,10 +507,10 @@ class Mchess:
                     else:
                         if self.uci_agent is not None and msg['actor']==self.uci_agent.name:
                             if msg['agent-state']=='idle':
-                                self.uci_agent.busy = False   # XXX redundant?
+                                self.uci_agent.busy = False
                         if self.uci_agent2 is not None and msg['actor']==self.uci_agent2.name:
                             if msg['agent-state']=='idle':
-                                self.uci_agent2.busy = False   # XXX redundant?
+                                self.uci_agent2.busy = False
                         for agent in self.agents_all:
                             if agent != msg['actor']:
                                 fstate = getattr(agent, "agent_states", None)
@@ -535,7 +528,7 @@ class Mchess:
                     self.board.reset()
                     self.undo_stack = []
                     self.update_display_board()
-                    self.state = self.State.IDLE  # XXX: make async
+                    self.state = self.State.IDLE
                     if self.analysis_active is True:
                         self.analysis_active = False
 
@@ -552,7 +545,7 @@ class Mchess:
                                     self.analysis_active = False
                                 self.board = chess.Board(fen)
                                 self.update_display_board()
-                                self.state = self.State.IDLE  # XXX: make async
+                                self.state = self.State.IDLE
                                 break
 
                 if 'fen_setup' in msg:
@@ -562,7 +555,7 @@ class Mchess:
                     try:
                         self.board = chess.Board(msg['fen_setup'])
                         self.update_display_board()
-                        self.state = self.State.IDLE  # XXX: make async
+                        self.state = self.State.IDLE
                     except Exception as e:
                         if 'fen_setup' not in msg:
                             msg['fen_setup'] = 'None'
@@ -578,7 +571,7 @@ class Mchess:
                     self.update_display_board()
                     if 'ponder' in msg['move']:
                         self.ponder_move = msg['move']['ponder']
-                    self.state = self.State.IDLE  # XXX: make async
+                    self.state = self.State.IDLE
 
                 if 'back' in msg:
                     if len(self.board.move_stack) > 0:
@@ -586,7 +579,7 @@ class Mchess:
                         move = self.board.pop()
                         self.undo_stack.append(move)
                         self.update_display_board()
-                        self.state = self.State.IDLE  # XXX: make async
+                        self.state = self.State.IDLE
                     else:
                         self.log.debug(
                             'Cannot take back move, if none has occured.')
@@ -597,7 +590,7 @@ class Mchess:
                         move = self.board.pop()
                         self.undo_stack.append(move)
                     self.update_display_board()
-                    self.state = self.State.IDLE  # XXX: make async
+                    self.state = self.State.IDLE
 
                 if 'forward' in msg:
                     if len(self.undo_stack) > 0:
@@ -605,7 +598,7 @@ class Mchess:
                         move = self.undo_stack.pop()
                         self.board.push(move)
                         self.update_display_board()
-                        self.state = self.State.IDLE  # XXX: make async
+                        self.state = self.State.IDLE
                     else:
                         self.log.debug(
                             'Cannot move forward, nothing taken back.')
@@ -618,7 +611,7 @@ class Mchess:
                         move = self.undo_stack.pop()
                         self.board.push(move)
                     self.update_display_board()
-                    self.state = self.State.IDLE  # XXX: make async
+                    self.state = self.State.IDLE
 
                 if 'go' in msg:
                     self.stop(new_mode=None)
@@ -655,7 +648,7 @@ class Mchess:
                             self.stop()
                             # self.board.turn=chess.WHITE
                             self.board.push(chess.Move.from_uci('0000'))
-                            self.state = self.State.IDLE  # XXX: make async
+                            self.state = self.State.IDLE
                             self.update_display_board()
                             if self.board.turn == chess.WHITE:
                                 self.log.info("It's now white's turn.")
@@ -668,7 +661,7 @@ class Mchess:
                             self.stop()
                             # self.board.turn=chess.BLACK
                             self.board.push(chess.Move.from_uci('0000'))
-                            self.state = self.State.IDLE  # XXX: make async
+                            self.state = self.State.IDLE
                             self.update_display_board()
                             if self.board.turn == chess.BLACK:
                                 self.log.info("It's now black's turn.")

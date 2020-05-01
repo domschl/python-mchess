@@ -39,7 +39,7 @@ class TerminalAgent:
         self.chesssym = {"unic": ["-", "×", "†", "‡", "½"],
                          "ascii": ["-", "x", "+", "#", "1/2"]}
 
-        # TODO: this seems to set windows terminal to Unicode. There should be a better way.
+        # this seems to set windows terminal to Unicode. There should be a better way.
         if platform.system().lower() == 'windows':
             from ctypes import windll, c_int, byref
             stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))

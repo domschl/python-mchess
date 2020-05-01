@@ -292,10 +292,10 @@ class UciAgent:
                     if 'score' in info:
                         try:
                             if info['score'].is_mate():
-                                sc = str(info['score']) # .Mate().score(0)
+                                sc = str(info['score'])
                             else:
                                 cp = float(str(info['score']))/100.0
-                                sc = '{:.2f}'.format(cp)  # XXX mate? transform pov, /100.0
+                                sc = '{:.2f}'.format(cp)
                         except Exception as e:
                             self.log.error(f"Score transform failed {info['score']}: {e}")
                             sc = '?'
@@ -331,10 +331,10 @@ class UciAgent:
                 if 'score' in info:
                     try:
                         if info['score'].is_mate():
-                            sc = str(info['score']) # .Mate().score(0)
+                            sc = str(info['score'])
                         else:
                             cp = float(str(info['score']))/100.0
-                            sc = '{:.2f}'.format(cp)  # XXX mate? transform pov, /100.0
+                            sc = '{:.2f}'.format(cp)
                     except Exception as e:
                         self.log.error(f"Score transform failed {info['score']}: {e}")
                         sc = '?'
@@ -360,7 +360,7 @@ class UciAgent:
     def stop(self):
         self.log.debug('stop received')
         if self.thinking is False:
-            self.log.warning(f"No need to stop {self.name}, not running.")  # XXX should be downgraded to debug at some point.
+            self.log.warning(f"No need to stop {self.name}, not running.")
         asyncio.run(self.async_stop())
 
     def go(self, board, mtime, ponder=False, analysis=False):

@@ -74,7 +74,6 @@ class Transport():
                     self.log.debug(
                         "Received new data from {}".format(dev.addr))
 
-        # XXX make iface no configurable, it seems to change over linux releases...
         scanner = Scanner(iface=iface).withDelegate(ScanDelegate(self.log))
 
         try:

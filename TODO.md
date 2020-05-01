@@ -7,6 +7,7 @@
 - [ ] Raspi event queue performance tests
 - [ ] General latency tests
 - [ ] Bluetooth LE sometimes fails to connect. Retry strategy does not work (other than restarting)
+- [ ] Better handling of display of check mate situations with Millennium Board (led king animation?)
 
 ## Web
 
