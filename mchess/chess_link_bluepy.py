@@ -48,6 +48,7 @@ class Transport():
         self.init = True
         self.log.debug("bluepy_ble init ok")
         self.protocol_debug = protocol_dbg
+        self.scan_timeout = 10
 
         self.bp_path=os.path.dirname(os.path.abspath(bluepy.__file__))
         self.bp_helper=os.path.join(self.bp_path,'bluepy-helper')
@@ -86,7 +87,7 @@ class Transport():
         scanner = Scanner(iface=iface).withDelegate(ScanDelegate(self.log))
 
         try:
-            devices = scanner.scan(20.0)
+            devices = scanner.scan(self.scan_timeout)
         except Exception as e:
             self.log.error(f"BLE scanning failed. {e}")
             self.log.error(f"excecute: {self.fix_cmd}")
