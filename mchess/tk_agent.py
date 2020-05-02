@@ -18,7 +18,7 @@ from PIL import ImageTk,Image,ImageOps
 # convert -background none -density 128 -resize 128x Chess_bdt45.svg cbd.gif
 
 class GameBoard(Frame):
-    def __init__(self, parent,size=64, color1="white", color2="gray"):
+    def __init__(self, parent, size=64, r=0, c=0, color1="white", color2="gray"):
         '''size is the size of a square, in pixels'''
 
         self.rows = 8
@@ -43,9 +43,11 @@ class GameBoard(Frame):
         canvas_height = self.rows * size
 
         Frame.__init__(self, parent)
-        self.canvas = Canvas(self, borderwidth=0, highlightthickness=0,
+        self.canvas = Canvas(parent, borderwidth=0, highlightthickness=0,
                                 width=canvas_width, height=canvas_height, background="white")
-        self.canvas.pack(fill="both", expand=True, padx=0, pady=0)
+        self.canvas.grid(row=r,column=c,sticky=S+W+E+N)
+        # self.canvas.grid_columnconfigure(0, weight=1)
+        # self.canvas.grid_rowconfigure(0, weight=1)
         self.load_figures(size)
         self.canvas.bind("<Configure>", self.refresh)
 
@@ -118,6 +120,7 @@ class TkAgent:
         self.tk_board2 = None
         self.title = None
         self.movelist = None
+        self.analist = None
         self.gui_init = False
 
         self.tkapp_thread_active = True
@@ -180,8 +183,9 @@ class TkAgent:
         pass
 
     def display_info(self, board, info, max_board_preview_hmoves=6):
-        if info['multipv_ind'] != 1:
-            return
+        # if info['multipv_ind'] != 1:
+        #     return
+        mpv_ind = info['multipv_ind']
         ninfo = copy.deepcopy(info)
         nboard = copy.deepcopy(board)
         nboard_cut = copy.deepcopy(nboard)
@@ -221,12 +225,11 @@ class TkAgent:
                 ml.append(mv)
                 mv = ""
             ninfo['variant'] = ml
-        self.log.info(f"Movelist: {ml}")
-        self.movelist.delete("1.0",END)
-        self.movelist.insert("1.0", ml)
-        self.tk_board2.position = self.board2pos(nboard_cut)
-        self.tk_board2.refresh()
-        # msg = {'fenref': nboard_cut.fen(), 'info': ninfo}
+        self.analist.delete(f"{mpv_ind}.0",f"{mpv_ind+1}.0")
+        self.analist.insert(f"{mpv_ind}.0", f"[{mpv_ind}]: "+ str(ml) + "\n")
+        if mpv_ind == 1:
+            self.tk_board2.position = self.board2pos(nboard_cut)
+            self.tk_board2.refresh()
 
     def agent_states(self, msg):
         self.agent_state_cache[msg['actor']] = msg
@@ -239,18 +242,31 @@ class TkAgent:
 
     def tkapp_worker_thread(self, appque, log):
         root = Tk()
-        self.tk_board = GameBoard(root)
-        self.movelist = Text(root, height=10, width=40)
-        self.tk_board2 = GameBoard(root)
+        
+        # self.frame = Frame(root)
+        for i in range(3):
+            Grid.columnconfigure(root, i, weight=1)
+            if i>0:
+                Grid.rowconfigure(root, i, weight=1)
+        # for i in range(3):
+        #     Grid.columnconfigure(self.frame, i, weight=1)
+        #     Grid.rowconfigure(self.frame, i, weight=1)
+        # self.frame.grid(sticky=N+S+W+E)
+        self.tk_board = GameBoard(root,r=1,c=0)
+        self.tk_board2 = GameBoard(root,r=1,c=2)
+        self.movelist = Text(root)
+        self.analist = Text(root, height=20)
         self.title_text = StringVar()
-        self.title = Label(textvariable=self.title_text)
-        self.title.pack()
-        self.tk_board.pack(side="left", fill="both", expand="false", padx=2, pady=2)
-        self.tk_board2.pack(side="right", fill="both", expand="false", padx=2, pady=2)
-        self.movelist.pack(side="bottom")
+        self.title = Label(root, textvariable=self.title_text)
+
+        self.title.grid(row=0, column=0, sticky=E+W)
+        self.tk_board.grid(row=1, column=0, sticky=N+E+S+W)
+        self.movelist.grid(row=1, column=1, sticky=N+S+W+E)
+        self.tk_board2.grid(row=1, column=2, sticky=N+E+S+W)
+        self.analist.grid(row=2, column=2, sticky=E+W)
     
-        menubar = Menu(self.tk_board.master)
-        self.tk_board.master.config(menu=menubar)
+        menubar = Menu(root)
+        root.config(menu=menubar)
 
         fileMenu = Menu(menubar)
         fileMenu.add_command(label="New Game", command=self.onNew)
