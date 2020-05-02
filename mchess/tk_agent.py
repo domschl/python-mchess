@@ -58,12 +58,12 @@ class GameBoard(Frame):
             self.png60s.append(ImageTk.PhotoImage(img))
 
     def refresh(self, event=None):
-        redraw_fields=False
+        redraw_fields = False
         if event is not None:
             if self.height != event.height or self.width != event.width:
-                redraw_fields=True
-                self.width=event.width
-                self.height=event.height
+                redraw_fields = True
+                self.width = event.width
+                self.height = event.height
                 '''Redraw the board, possibly in response to window being resized'''
                 xsize = int((self.width-1) / self.columns)
                 ysize = int((self.height-1) / self.rows)
@@ -117,6 +117,7 @@ class TkAgent:
         self.tk_board = None
         self.tk_board2 = None
         self.title = None
+        self.movelist = None
         self.gui_init = False
 
         self.tkapp_thread_active = True
@@ -148,8 +149,7 @@ class TkAgent:
     def board2pos(self, board):
         pos=[]
         for y in reversed(range(8)):
-            ti = "{} |".format(y+1)
-            row=[]
+            row = []
             for x in range(8):
                 fig = board.piece_at(chess.square(x, y))
                 if fig is not None:
@@ -180,6 +180,8 @@ class TkAgent:
         pass
 
     def display_info(self, board, info, max_board_preview_hmoves=6):
+        if info['multipv_ind'] != 1:
+            return
         ninfo = copy.deepcopy(info)
         nboard = copy.deepcopy(board)
         nboard_cut = copy.deepcopy(nboard)
@@ -219,6 +221,9 @@ class TkAgent:
                 ml.append(mv)
                 mv = ""
             ninfo['variant'] = ml
+        self.log.info(f"Movelist: {ml}")
+        self.movelist.delete("1.0",END)
+        self.movelist.insert("1.0", ml)
         self.tk_board2.position = self.board2pos(nboard_cut)
         self.tk_board2.refresh()
         # msg = {'fenref': nboard_cut.fen(), 'info': ninfo}
@@ -235,12 +240,14 @@ class TkAgent:
     def tkapp_worker_thread(self, appque, log):
         root = Tk()
         self.tk_board = GameBoard(root)
+        self.movelist = Text(root, height=10, width=40)
         self.tk_board2 = GameBoard(root)
         self.title_text = StringVar()
         self.title = Label(textvariable=self.title_text)
         self.title.pack()
         self.tk_board.pack(side="left", fill="both", expand="false", padx=2, pady=2)
         self.tk_board2.pack(side="right", fill="both", expand="false", padx=2, pady=2)
+        self.movelist.pack(side="bottom")
     
         menubar = Menu(self.tk_board.master)
         self.tk_board.master.config(menu=menubar)
