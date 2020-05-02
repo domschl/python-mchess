@@ -59,15 +59,18 @@ class GameBoard(Frame):
         self.canvas.bind("<Configure>", self.refresh)
 
     def refresh(self, event=None):
+        redraw_fields=False
         if event is not None:
             if self.height != event.height or self.width != event.width:
+                redraw_fields=True
                 self.width=event.width
                 self.height=event.height
                 '''Redraw the board, possibly in response to window being resized'''
                 xsize = int((self.width-1) / self.columns)
                 ysize = int((self.height-1) / self.rows)
                 self.size = min(xsize, ysize)
-        self.canvas.delete("square")
+        if redraw_fields is True:
+            self.canvas.delete("square")
         self.canvas.delete("piece")
         color = self.color2
         for row in range(self.rows):
@@ -77,7 +80,8 @@ class GameBoard(Frame):
                 y1 = (row * self.size)
                 x2 = x1 + self.size
                 y2 = y1 + self.size
-                self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color, tags="square")
+                if redraw_fields is True:
+                    self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color, tags="square")
                 color = self.color1 if color == self.color2 else self.color2
                 img_ind=self.position[row][col]
                 if img_ind != -1:
@@ -139,9 +143,7 @@ class TkAgent:
     def quit(self):
         self.tkapp_thread_active = False
 
-    def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
-        self.log.info("display_board")
-        # self.title.text=attribs["white_name"] + " - " + attribs["black_name"]
+    def board2pos(self, board):
         pos=[]
         for y in reversed(range(8)):
             ti = "{} |".format(y+1)
@@ -162,10 +164,13 @@ class TkAgent:
                 else:
                     row.append(-1)
             pos.append(row)
-        self.tk_board.position=pos
-        self.log.info("display_board, refreshing...")
+        return pos
+
+    def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
+        self.log.info("display_board")
+        self.title_text.set(attribs["white_name"] + " - " + attribs["black_name"])
+        self.tk_board.position = self.board2pos(board)
         self.tk_board.refresh()
-        self.log.info("display_board, refreshed.")
 
     def display_move(self, move_msg):
         pass
@@ -210,8 +215,9 @@ class TkAgent:
                 ml.append(mv)
                 mv = ""
             ninfo['variant'] = ml
-
-        msg = {'fenref': nboard_cut.fen(), 'info': ninfo}
+        self.tk_board2.position = self.board2pos(nboard_cut)
+        self.tk_board2.refresh()
+        # msg = {'fenref': nboard_cut.fen(), 'info': ninfo}
 
     def agent_states(self, msg):
         self.agent_state_cache[msg['actor']] = msg
@@ -226,7 +232,8 @@ class TkAgent:
         root = Tk()
         self.tk_board = GameBoard(root)
         self.tk_board2 = GameBoard(root)
-        self.title=Label(text="mChess tk/inter")
+        self.title_text = StringVar()
+        self.title = Label(textvariable=self.title_text)
         self.title.pack()
         self.tk_board.pack(side="left", fill="both", expand="false", padx=2, pady=2)
         self.tk_board2.pack(side="right", fill="both", expand="false", padx=2, pady=2)
