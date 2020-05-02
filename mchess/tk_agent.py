@@ -1,8 +1,6 @@
 import logging
 import time
 import threading
-import queue
-import json
 import copy
 import os
 
@@ -10,7 +8,7 @@ import chess
 import chess.pgn
 
 from tkinter import *
-# from tkinter.ttk import *
+from tkinter.ttk import *
 
 import PIL
 from PIL import ImageTk,Image,ImageOps
@@ -48,15 +46,16 @@ class GameBoard(Frame):
         self.canvas = Canvas(self, borderwidth=0, highlightthickness=0,
                                 width=canvas_width, height=canvas_height, background="white")
         self.canvas.pack(fill="both", expand=True, padx=0, pady=0)
+        self.load_figures(size)
+        self.canvas.bind("<Configure>", self.refresh)
 
+    def load_figures(self, size):
         self.png60s = []
+        img_size = size-4
         for fn in self.figrep['png60']:
             fp = os.path.join('resources/pieces', fn)
-            img = Image.open(fp).convert('RGBA') # /home/dsc/git/PScratch/chesstests/Chess_klt60.png")
-            # img = Image.open("some.png").resize((event.width, event.height), Image.ANTIALIAS)
+            img = Image.open(fp).convert('RGBA').resize((img_size, img_size), Image.ANTIALIAS)
             self.png60s.append(ImageTk.PhotoImage(img))
-
-        self.canvas.bind("<Configure>", self.refresh)
 
     def refresh(self, event=None):
         redraw_fields=False
@@ -69,6 +68,8 @@ class GameBoard(Frame):
                 xsize = int((self.width-1) / self.columns)
                 ysize = int((self.height-1) / self.rows)
                 self.size = min(xsize, ysize)
+                self.load_figures(self.size)
+
         if redraw_fields is True:
             self.canvas.delete("square")
         self.canvas.delete("piece")
@@ -83,7 +84,7 @@ class GameBoard(Frame):
                 if redraw_fields is True:
                     self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color, tags="square")
                 color = self.color1 if color == self.color2 else self.color2
-                img_ind=self.position[row][col]
+                img_ind = self.position[row][col]
                 if img_ind != -1:
                     self.canvas.create_image(x1, y1, image=self.png60s[img_ind], tags=("piece"), anchor="nw")
         self.canvas.tag_raise("piece")
@@ -111,6 +112,7 @@ class TkAgent:
         self.agent_state_cache = {}
         self.tk_moves = []
         self.png60s = None
+        self.title_text = None
 
         self.tk_board = None
         self.tk_board2 = None
@@ -168,6 +170,8 @@ class TkAgent:
 
     def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
         self.log.info("display_board")
+        if self.gui_init is False:
+            return
         self.title_text.set(attribs["white_name"] + " - " + attribs["black_name"])
         self.tk_board.position = self.board2pos(board)
         self.tk_board.refresh()
@@ -244,6 +248,7 @@ class TkAgent:
         fileMenu = Menu(menubar)
         fileMenu.add_command(label="New Game", command=self.onNew)
         fileMenu.add_command(label="Go", command=self.onGo)
+        fileMenu.add_command(label="Back", command=self.onBack)
         fileMenu.add_command(label="Stop", command=self.onStop)
         fileMenu.add_command(label="Analyse", command=self.onAnalyse)
         fileMenu.add_command(label="Exit", command=self.onExit)
@@ -258,6 +263,9 @@ class TkAgent:
 
     def onGo(self):
         self.appque.put({'go': 'current', 'actor': self.name})
+
+    def onBack(self):
+        self.appque.put({'back': '', 'actor': self.name})
 
     def onStop(self):
         self.appque.put({'stop': '', 'actor': self.name})
