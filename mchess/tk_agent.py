@@ -4,6 +4,7 @@ import threading
 import queue
 import json
 import copy
+import os
 
 import chess
 import chess.pgn
@@ -13,9 +14,8 @@ from tkinter import *
 
 import PIL
 from PIL import ImageTk,Image,ImageOps
+
 # By en:User:Cburnett - File:Chess klt45.svg, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=20363779
-# https://stackoverflow.com/questions/4954395/create-board-game-like-grid-in-python
-# https://commons.wikimedia.org/wiki/File:Chess_bdt45.svg
 # https://commons.wikimedia.org/wiki/Template:SVG_chess_pieces
 # convert -background none -density 128 -resize 128x Chess_bdt45.svg cbd.gif
 
@@ -23,20 +23,23 @@ class GameBoard(Frame):
     def __init__(self, parent,size=64, color1="white", color2="gray"):
         '''size is the size of a square, in pixels'''
 
-        self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
-                       "pythc": [(chess.PAWN, chess.WHITE), (chess.KNIGHT, chess.WHITE), (chess.BISHOP, chess.WHITE), (chess.ROOK, chess.WHITE), (chess.QUEEN, chess.WHITE), (chess.KING, chess.WHITE),
-                                 (chess.PAWN, chess.BLACK), (chess.KNIGHT, chess.BLACK), (chess.BISHOP, chess.BLACK), (chess.ROOK, chess.BLACK), (chess.QUEEN, chess.BLACK), (chess.KING, chess.BLACK)],
-                       "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
-                       "ascii": "PNBRQK.pnbrqk"}
-        self.chesssym = {"unic": ["-", "×", "†", "‡", "½"],
-                         "ascii": ["-", "x", "+", "#", "1/2"]}
-
         self.rows = 8
         self.columns = 8
         self.size = size
         self.color1 = color1
         self.color2 = color2
+        self.height = None
+        self.width = None
         self.pieces = {}
+        self.figrep = {"png60": ["wp60.png", "wn60.png", "wb60.png", "wr60.png", "wq60.png", "wk60.png",
+                                 "bp60.png", "bn60.png", "bb60.png", "br60.png", "bq60.png", "bk60.png"]}
+        self.position = []
+
+        for x in range(8):
+            row=[]
+            for y in range(9):
+                row.append(-1)
+            self.position.append(row)
 
         canvas_width = self.columns * size
         canvas_height = self.rows * size
@@ -44,30 +47,28 @@ class GameBoard(Frame):
         Frame.__init__(self, parent)
         self.canvas = Canvas(self, borderwidth=0, highlightthickness=0,
                                 width=canvas_width, height=canvas_height, background="white")
-        self.canvas.pack(fill="both", expand=False, padx=0, pady=0)
+        self.canvas.pack(fill="both", expand=True, padx=0, pady=0)
 
-        # this binding will cause a refresh if the user interactively
-        # changes the window size
+        self.png60s = []
+        for fn in self.figrep['png60']:
+            fp = os.path.join('resources/pieces', fn)
+            img = Image.open(fp).convert('RGBA') # /home/dsc/git/PScratch/chesstests/Chess_klt60.png")
+            # img = Image.open("some.png").resize((event.width, event.height), Image.ANTIALIAS)
+            self.png60s.append(ImageTk.PhotoImage(img))
+
         self.canvas.bind("<Configure>", self.refresh)
 
-    def addpiece(self, name, image, row=0, column=0):
-        '''Add a piece to the playing board'''
-        self.canvas.create_image(0, 0, image=image, tags=(name, "piece"), anchor="c")
-        self.placepiece(name, row, column)
-
-    def placepiece(self, name, row, column):
-        '''Place a piece at the given row/column'''
-        self.pieces[name] = (row, column)
-        x0 = (column * self.size) + int(self.size/2)
-        y0 = (row * self.size) + int(self.size/2)
-        self.canvas.coords(name, x0, y0)
-
-    def refresh(self, event):
-        '''Redraw the board, possibly in response to window being resized'''
-        xsize = int((event.width-1) / self.columns)
-        ysize = int((event.height-1) / self.rows)
-        self.size = min(xsize, ysize)
+    def refresh(self, event=None):
+        if event is not None:
+            if self.height != event.height or self.width != event.width:
+                self.width=event.width
+                self.height=event.height
+                '''Redraw the board, possibly in response to window being resized'''
+                xsize = int((self.width-1) / self.columns)
+                ysize = int((self.height-1) / self.rows)
+                self.size = min(xsize, ysize)
         self.canvas.delete("square")
+        self.canvas.delete("piece")
         color = self.color2
         for row in range(self.rows):
             color = self.color1 if color == self.color2 else self.color2
@@ -78,22 +79,39 @@ class GameBoard(Frame):
                 y2 = y1 + self.size
                 self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color, tags="square")
                 color = self.color1 if color == self.color2 else self.color2
-        for name in self.pieces:
-            self.placepiece(name, self.pieces[name][0], self.pieces[name][1])
+                img_ind=self.position[row][col]
+                if img_ind != -1:
+                    self.canvas.create_image(x1, y1, image=self.png60s[img_ind], tags=("piece"), anchor="nw")
         self.canvas.tag_raise("piece")
         self.canvas.tag_lower("square")
 
 
 class TkAgent:
     def __init__(self, appque, prefs):
+        self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
+                       "pythc": [(chess.PAWN, chess.WHITE), (chess.KNIGHT, chess.WHITE), (chess.BISHOP, chess.WHITE), (chess.ROOK, chess.WHITE), (chess.QUEEN, chess.WHITE), (chess.KING, chess.WHITE),
+                                 (chess.PAWN, chess.BLACK), (chess.KNIGHT, chess.BLACK), (chess.BISHOP, chess.BLACK), (chess.ROOK, chess.BLACK), (chess.QUEEN, chess.BLACK), (chess.KING, chess.BLACK)],
+                       "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
+                       "png60": ["wp60.png", "wn60.png", "wb60.png", "wr60.png", "wq60.png", "wk60.png",
+                                 "bp60.png", "bn60.png", "bb60.png", "br60.png", "bq60.png", "bk60.png"],
+                       "ascii": "PNBRQK.pnbrqk"}
+        self.chesssym = {"unic": ["-", "×", "†", "‡", "½"],
+                         "ascii": ["-", "x", "+", "#", "1/2"]}
+
         self.name = 'TkAgent'
         self.prefs = prefs
         self.log = logging.getLogger("TkAgent")
         self.appque = appque
         self.orientation = True
         self.active = False
-        self.agent_state_cache={}
+        self.agent_state_cache = {}
+        self.tk_moves = []
+        self.png60s = None
 
+        self.tk_board = None
+        self.tk_board2 = None
+        self.title = None
+        self.gui_init = False
 
         self.tkapp_thread_active = True
 
@@ -102,6 +120,16 @@ class TkAgent:
         self.tkapp_thread.setDaemon(True)
         self.tkapp_thread.start()
 
+        t0 = time.time()
+        warned = False
+        while self.gui_init is False:
+            time.sleep(0.1)
+            if time.time()-t0 > 2 and warned is False:
+                warned = True
+                self.log.error("Tk GUI is not responding in time!")
+            if time.time()-t0 > 5:
+                return
+        self.log.info("GUI online.")
         self.active = True
 
 
@@ -112,20 +140,32 @@ class TkAgent:
         self.tkapp_thread_active = False
 
     def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
-        self.last_board = board
-        self.last_attribs = attribs
-        try:
-            game = chess.pgn.Game().from_board(board)
-            game.headers["White"] = attribs["white_name"]
-            game.headers["Black"] = attribs["black_name"]
-            pgntxt = str(game)
-        except Exception as e:
-            self.log.error("Invalid PGN position, {}".format(e))
-            return
-        self.last_pgn = pgntxt
-        # print("pgn: {}".format(pgntxt))
-        msg = {'fen': board.fen(), 'pgn': pgntxt, 'attribs': attribs}
-        self.log.debug(msg)
+        self.log.info("display_board")
+        # self.title.text=attribs["white_name"] + " - " + attribs["black_name"]
+        pos=[]
+        for y in reversed(range(8)):
+            ti = "{} |".format(y+1)
+            row=[]
+            for x in range(8):
+                fig = board.piece_at(chess.square(x, y))
+                if fig is not None:
+                    ind=0
+                    for f0 in self.figrep['pythc']:
+                        if fig.piece_type == f0[0] and fig.color == f0[1]:
+                            break
+                        ind += 1
+                    if ind < len(self.figrep['pythc']):
+                        row.append(ind)
+                    else:
+                        row.append(-1)
+                        self.log.error(f'Figure conversion error at {x}{y}')
+                else:
+                    row.append(-1)
+            pos.append(row)
+        self.tk_board.position=pos
+        self.log.info("display_board, refreshing...")
+        self.tk_board.refresh()
+        self.log.info("display_board, refreshed.")
 
     def display_move(self, move_msg):
         pass
@@ -177,36 +217,47 @@ class TkAgent:
         self.agent_state_cache[msg['actor']] = msg
 
     def set_valid_moves(self, board, vals):
-        self.socket_moves = []
+        self.tk_moves = []
         if vals != None:
             for v in vals:
-                self.socket_moves.append(vals[v])
+                self.tk_moves.append(vals[v])
 
     def tkapp_worker_thread(self, appque, log):
         root = Tk()
-        board = GameBoard(root)
-        board2 = GameBoard(root)
-        title=Label(text="mChess tk/inter")
-        title.pack()
-        board.pack(side="left", fill="both", expand="false", padx=2, pady=2)
-        board2.pack(side="right", fill="both", expand="false", padx=2, pady=2)
-        img=Image.open("resources/pieces/wk60.png").convert('RGBA') # /home/dsc/git/PScratch/chesstests/Chess_klt60.png")
-        player1 = ImageTk.PhotoImage(img)
-        img=Image.open("resources/pieces/bb60.png").convert('RGBA')
-        player2 = ImageTk.PhotoImage(img)
-        board.addpiece("player1", player1, 7, 4)
-        # board.addpiece("player1", player1, 0, 4)
-        board.addpiece("player2", player2, 0, 3)
-        board2.addpiece("player3", player2, 0, 2)
-
-        menubar = Menu(board.master)
-        board.master.config(menu=menubar)
+        self.tk_board = GameBoard(root)
+        self.tk_board2 = GameBoard(root)
+        self.title=Label(text="mChess tk/inter")
+        self.title.pack()
+        self.tk_board.pack(side="left", fill="both", expand="false", padx=2, pady=2)
+        self.tk_board2.pack(side="right", fill="both", expand="false", padx=2, pady=2)
+    
+        menubar = Menu(self.tk_board.master)
+        self.tk_board.master.config(menu=menubar)
 
         fileMenu = Menu(menubar)
+        fileMenu.add_command(label="New Game", command=self.onNew)
+        fileMenu.add_command(label="Go", command=self.onGo)
+        fileMenu.add_command(label="Stop", command=self.onStop)
+        fileMenu.add_command(label="Analyse", command=self.onAnalyse)
         fileMenu.add_command(label="Exit", command=self.onExit)
+
         menubar.add_cascade(label="File", menu=fileMenu)
 
+        self.gui_init = True
         root.mainloop()
 
+    def onNew(self):
+        self.appque.put({'new game': '', 'actor': self.name})
+
+    def onGo(self):
+        self.appque.put({'go': 'current', 'actor': self.name})
+
+    def onStop(self):
+        self.appque.put({'stop': '', 'actor': self.name})
+
+    def onAnalyse(self):
+        self.appque.put({'analysis': '', 'actor': self.name})
+
     def onExit(self):
-        pass
+        self.appque.put({'quit': '', 'actor': self.name})
+
