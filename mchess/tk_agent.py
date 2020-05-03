@@ -339,16 +339,28 @@ class TkAgent:
         file_menu = Menu(menubar, tearoff=0)
         file_menu.add_command(label="New Game", command=self.on_new, underline=0, accelerator="Ctrl+n")
         root.bind_all("<Control-n>", self.on_new)
+        file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.on_exit, underline=1, accelerator="Ctrl+x")
         root.bind_all("<Control-x>", self.on_exit)
 
+
         game_menu = Menu(menubar, tearoff=0)
+
+        submenu = Menu(game_menu)
+        submenu.add_command(label="Player - Player", command=self.on_mode_pp)
+        submenu.add_command(label="Player - Engine", command=self.on_mode_pe)
+        submenu.add_command(label="Engine - Player", command=self.on_mode_ep)
+        submenu.add_command(label="Engline - Engine", command=self.on_mode_ee)
+        game_menu.add_cascade(label="Game mode", menu=submenu, underline=6)
+
+        game_menu.add_separator()
         game_menu.add_command(label="Go", command=self.on_go, underline=0, accelerator="Ctrl+g")
         root.bind_all("<Control-g>", self.on_go)
         game_menu.add_command(label="Back", command=self.on_back, underline=0, accelerator="Ctrl+b")
         root.bind_all("<Control-b>", self.on_back)
         game_menu.add_command(label="Stop", command=self.on_stop, underline=0, accelerator="Ctrl+s")
         root.bind_all("<Control-s>", self.on_stop)
+        game_menu.add_separator()
         game_menu.add_command(label="Analyse", command=self.on_analyse, underline=0, accelerator="Ctrl+a")
         root.bind_all("<Control-a>", self.on_analyse)
 
@@ -376,3 +388,15 @@ class TkAgent:
     def on_exit(self, event=None):
         self.appque.put({'quit': '', 'actor': self.name})
 
+    def on_mode_pp(self, event=None):
+        self.appque.put({'game_mode': 'PLAYER_PLAYER'})
+
+    def on_mode_pe(self, event=None):
+        self.appque.put({'game_mode': 'PLAYER_ENGINE'})
+
+    def on_mode_ep(self, event=None):
+        self.appque.put({'game_mode': 'ENGINE_PLAYER'})
+
+    def on_mode_ee(self, event=None):
+        self.appque.put({'game_mode': 'ENGINE_ENGINE'})
+     
