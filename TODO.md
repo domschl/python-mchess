@@ -50,7 +50,7 @@
 - [ ] MQTT agent
 - [ ] Mac/Windows bluetooth support for ChessLink
 - [ ] Elo calc
-- [ ] (PGN-)Library agent
+- [ ] (PGN-)Library agent ['https://www.pgnmentor.com/files.html', 'http://caissabase.co.uk/' (scid), https://theweekinchess.com/index.php?q=twic]
 - [ ] Lichess eval (e.g. https://github.com/cyanfish/python-lichess)
 - [ ] Checkout PyInstaller <https://pyinstaller.readthedocs.io/en/stable/operating-mode.html>
 - [ ] Define proper agent JSON protocol (Net/JSON-UCI)
