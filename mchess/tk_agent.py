@@ -17,8 +17,10 @@ from PIL import ImageTk,Image,ImageOps
 # https://commons.wikimedia.org/wiki/Template:SVG_chess_pieces
 # convert -background none -density 128 -resize 128x Chess_bdt45.svg cbd.gif
 
+
+
 class GameBoard(Frame):
-    def __init__(self, parent, size=64, r=0, c=0, color1="white", color2="gray"):
+    def __init__(self, parent, size=64, r=0, c=0, color1="white", color2="gray", bg_color="black", ol_color="black"):
         '''size is the size of a square, in pixels'''
 
         self.rows = 8
@@ -26,6 +28,8 @@ class GameBoard(Frame):
         self.size = size
         self.color1 = color1
         self.color2 = color2
+        self.bg_color = bg_color
+        self.ol_color = ol_color
         self.height = None
         self.width = None
         self.pieces = {}
@@ -44,7 +48,7 @@ class GameBoard(Frame):
 
         Frame.__init__(self, parent)
         self.canvas = Canvas(parent, borderwidth=0, highlightthickness=0,
-                                width=canvas_width, height=canvas_height, background="white")
+                                width=canvas_width, height=canvas_height, background=bg_color)
         self.canvas.grid(row=r,column=c,sticky=S+W+E+N)
         # self.canvas.grid_columnconfigure(0, weight=1)
         # self.canvas.grid_rowconfigure(0, weight=1)
@@ -84,7 +88,7 @@ class GameBoard(Frame):
                 x2 = x1 + self.size
                 y2 = y1 + self.size
                 if redraw_fields is True:
-                    self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color, tags="square")
+                    self.canvas.create_rectangle(x1, y1, x2, y2, outline=self.ol_color, fill=color, tags="square")
                 color = self.color1 if color == self.color2 else self.color2
                 img_ind = self.position[row][col]
                 if img_ind != -1:
@@ -102,6 +106,18 @@ class TkAgent:
                        "png60": ["wp60.png", "wn60.png", "wb60.png", "wr60.png", "wq60.png", "wk60.png",
                                  "bp60.png", "bn60.png", "bb60.png", "br60.png", "bq60.png", "bk60.png"],
                        "ascii": "PNBRQK.pnbrqk"}
+        self.turquoise = {
+            "light": "#D8DBE2",  # Gainsboro
+            "dlight": "#A9BCC0",  # Pastel Blue
+            "turquoise": "#58A4B0",  # Cadet Blue
+            "silver": "#C0C0C0",  # Silver
+            "darkgray": "#A9A9A9", # Darkgray
+            "ldark": "#373F41",  # Charcoil
+            "dark": "#2E3532",  # Jet
+            "ddark": "#282A32",  # Charleston Green
+            "dddark": "#1B1B1E",  # Eerie Black
+            "xdddark": "#202022",  # X Black
+        }
         self.chesssym = {"unic": ["-", "×", "†", "‡", "½"],
                          "ascii": ["-", "x", "+", "#", "1/2"]}
 
@@ -252,8 +268,8 @@ class TkAgent:
         #     Grid.columnconfigure(self.frame, i, weight=1)
         #     Grid.rowconfigure(self.frame, i, weight=1)
         # self.frame.grid(sticky=N+S+W+E)
-        self.tk_board = GameBoard(root,r=1,c=0)
-        self.tk_board2 = GameBoard(root,r=1,c=2)
+        self.tk_board = GameBoard(root,r=1,c=0,color1=self.turquoise['dlight'],color2=self.turquoise['turquoise'],bg_color=self.turquoise['ldark'], ol_color=self.turquoise['darkgray'])
+        self.tk_board2 = GameBoard(root,r=1,c=2,color1=self.turquoise['dlight'],color2=self.turquoise['turquoise'],bg_color=self.turquoise['ldark'], ol_color=self.turquoise['darkgray'])
         self.movelist = Text(root)
         self.analist = Text(root, height=20)
         self.title_text = StringVar()
@@ -268,34 +284,43 @@ class TkAgent:
         menubar = Menu(root)
         root.config(menu=menubar)
 
-        fileMenu = Menu(menubar)
-        fileMenu.add_command(label="New Game", command=self.onNew)
-        fileMenu.add_command(label="Go", command=self.onGo)
-        fileMenu.add_command(label="Back", command=self.onBack)
-        fileMenu.add_command(label="Stop", command=self.onStop)
-        fileMenu.add_command(label="Analyse", command=self.onAnalyse)
-        fileMenu.add_command(label="Exit", command=self.onExit)
+        file_menu = Menu(menubar, tearoff=0)
+        file_menu.add_command(label="New Game", command=self.on_new, underline=0, accelerator="Ctrl+n")
+        root.bind_all("<Control-n>", self.on_new)
+        file_menu.add_command(label="Exit", command=self.on_exit, underline=1, accelerator="Ctrl+x")
+        root.bind_all("<Control-x>", self.on_exit)
 
-        menubar.add_cascade(label="File", menu=fileMenu)
+        game_menu = Menu(menubar, tearoff=0)
+        game_menu.add_command(label="Go", command=self.on_go, underline=0, accelerator="Ctrl+g")
+        root.bind_all("<Control-g>", self.on_go)
+        game_menu.add_command(label="Back", command=self.on_back, underline=0, accelerator="Ctrl+b")
+        root.bind_all("<Control-b>", self.on_back)
+        game_menu.add_command(label="Stop", command=self.on_stop, underline=0, accelerator="Ctrl+s")
+        root.bind_all("<Control-s>", self.on_stop)
+        game_menu.add_command(label="Analyse", command=self.on_analyse, underline=0, accelerator="Ctrl+a")
+        root.bind_all("<Control-a>", self.on_analyse)
+
+        menubar.add_cascade(label="File", menu=file_menu, underline=0)
+        menubar.add_cascade(label="Game", menu=game_menu, underline=0)
 
         self.gui_init = True
         root.mainloop()
 
-    def onNew(self):
+    def on_new(self, event=None):
         self.appque.put({'new game': '', 'actor': self.name})
 
-    def onGo(self):
+    def on_go(self, event=None):
         self.appque.put({'go': 'current', 'actor': self.name})
 
-    def onBack(self):
+    def on_back(self, event=None):
         self.appque.put({'back': '', 'actor': self.name})
 
-    def onStop(self):
+    def on_stop(self, event=None):
         self.appque.put({'stop': '', 'actor': self.name})
 
-    def onAnalyse(self):
+    def on_analyse(self, event=None):
         self.appque.put({'analysis': '', 'actor': self.name})
 
-    def onExit(self):
+    def on_exit(self, event=None):
         self.appque.put({'quit': '', 'actor': self.name})
 
