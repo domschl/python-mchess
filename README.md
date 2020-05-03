@@ -32,10 +32,10 @@ If UCI-engine support (python-chess dependency) is not used, any Python 3.x work
 
 #### Optional UCI engine support
 
-In order to use UCI engines with mchess, additionally `python-chess` is used.
+In order to use UCI engines with mchess, additionally `python-chess` is used, the Tkinter-GUI prototype uses `Pillow`.
 
 ```bash
-pip3 install pyserial [bluepy] [python-chess]
+pip3 install pyserial [bluepy] [python-chess] [Pillow]
 ```
 
 Then clone the repository
