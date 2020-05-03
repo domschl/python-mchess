@@ -345,6 +345,25 @@ class TkAgent:
         self.movelist.grid(row=1, column=1, sticky=N+S+W+E)
         self.tk_board2.grid(row=1, column=2, sticky=N+E+S+W)
         self.analist.grid(row=2, column=2, sticky=E+W)
+
+        self.bfr=Frame(root)
+        self.bfr.grid(row=2,column=0)
+        img = Image.open('web/images/b.png').convert('RGBA')
+        backimg = ImageTk.PhotoImage(img)
+        self.button_back = Button(self.bfr, image = backimg, command=self.on_back)
+        self.button_back.grid(row=0,column=1, sticky=E+W)
+        img = Image.open('web/images/f.png').convert('RGBA')
+        forimg = ImageTk.PhotoImage(img)
+        self.button_back = Button(self.bfr, image = forimg, command=self.on_forward)
+        self.button_back.grid(row=0,column=2, sticky=E+W)
+        img = Image.open('web/images/bb.png').convert('RGBA')
+        bbackimg = ImageTk.PhotoImage(img)
+        self.button_back = Button(self.bfr, image = bbackimg, command=self.on_fast_back)
+        self.button_back.grid(row=0,column=0, sticky=E+W)
+        img = Image.open('web/images/ff.png').convert('RGBA')
+        fforimg = ImageTk.PhotoImage(img)
+        self.button_back = Button(self.bfr, image = fforimg, command=self.on_fast_forward)
+        self.button_back.grid(row=0,column=3, sticky=E+W)
     
         menubar = Menu(root)
         root.config(menu=menubar)
@@ -374,8 +393,13 @@ class TkAgent:
         game_menu.add_separator()
         game_menu.add_command(label="Go", command=self.on_go, underline=0, accelerator="Ctrl+g")
         root.bind_all("<Control-g>", self.on_go)
+        game_menu.add_command(label="Beginning", command=self.on_fast_back, underline=0)
         game_menu.add_command(label="Back", command=self.on_back, underline=0, accelerator="Ctrl+b")
         root.bind_all("<Control-b>", self.on_back)
+        game_menu.add_command(label="Forward", command=self.on_forward, underline=0, accelerator="Ctrl+f")
+        root.bind_all("<Control-f>", self.on_forward)
+        game_menu.add_command(label="End", command=self.on_fast_forward, underline=0)
+        game_menu.add_separator()
         game_menu.add_command(label="Stop", command=self.on_stop, underline=1, accelerator="Ctrl+t")
         root.bind_all("<Control-t>", self.on_stop)
         game_menu.add_separator()
@@ -396,6 +420,12 @@ class TkAgent:
 
     def on_back(self, event=None):
         self.appque.put({'back': '', 'actor': self.name})
+    def on_fast_back(self, event=None):
+        self.appque.put({'fast-back': '', 'actor': self.name})
+    def on_forward(self, event=None):
+        self.appque.put({'forward': '', 'actor': self.name})
+    def on_fast_forward(self, event=None):
+        self.appque.put({'fast-forward': '', 'actor': self.name})
 
     def on_stop(self, event=None):
         self.appque.put({'stop': '', 'actor': self.name})
