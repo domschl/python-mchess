@@ -9,6 +9,7 @@ import chess.pgn
 
 from tkinter import *
 from tkinter.ttk import *
+from tkinter import filedialog
 
 import PIL
 from PIL import ImageTk,Image,ImageOps
@@ -352,6 +353,11 @@ class TkAgent:
         file_menu.add_command(label="New Game", command=self.on_new, underline=0, accelerator="Ctrl+n")
         root.bind_all("<Control-n>", self.on_new)
         file_menu.add_separator()
+        file_menu.add_command(label="Open PGN file...", command=self.on_pgn_open, underline=0, accelerator="Ctrl+o")
+        root.bind_all("<Control-o>", self.on_pgn_open)
+        file_menu.add_command(label="Save PGN file...", command=self.on_pgn_save, underline=0, accelerator="Ctrl+s")
+        root.bind_all("<Control-s>", self.on_pgn_save)
+        file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.on_exit, underline=1, accelerator="Ctrl+x")
         root.bind_all("<Control-x>", self.on_exit)
 
@@ -370,8 +376,8 @@ class TkAgent:
         root.bind_all("<Control-g>", self.on_go)
         game_menu.add_command(label="Back", command=self.on_back, underline=0, accelerator="Ctrl+b")
         root.bind_all("<Control-b>", self.on_back)
-        game_menu.add_command(label="Stop", command=self.on_stop, underline=0, accelerator="Ctrl+s")
-        root.bind_all("<Control-s>", self.on_stop)
+        game_menu.add_command(label="Stop", command=self.on_stop, underline=1, accelerator="Ctrl+t")
+        root.bind_all("<Control-t>", self.on_stop)
         game_menu.add_separator()
         game_menu.add_command(label="Analyse", command=self.on_analyse, underline=0, accelerator="Ctrl+a")
         root.bind_all("<Control-a>", self.on_analyse)
@@ -411,4 +417,36 @@ class TkAgent:
 
     def on_mode_ee(self, event=None):
         self.appque.put({'game_mode': 'ENGINE_ENGINE'})
-     
+
+    def load_pgns(self, fn):
+        try:
+            with open(fn,'r') as f:
+                d=f.read()
+        except Exception as e:
+            print(f"Failed to read {fn}: {e}")
+            return None
+        pt=d.split('\n\n')
+        if len(pt)%2!=0:
+            print("Bad structure or incomplete!")
+            return None
+        if len(pt)==0:
+            print("Empty")
+            return None
+        games=[]
+        for i in range(0,len(pt),2):
+            gi=pt[i]+"\n\n"+pt[i+1]
+            games.append(gi)
+        return games
+
+    def on_pgn_open(self, event=None):
+        filename =  filedialog.askopenfilename(initialdir = ".",title = "Select PGN file",filetypes = (("pgn files","*.pgn"),("all files","*.*")))
+        games = self.load_pgns(filename)
+        if len(games)>1:
+            self.log.warning(f'File contained {len(games)}, only first game read.')
+        if games is not None:
+            self.appque.put({'pgn_game': {'pgn_data': games[0]}})
+
+    def on_pgn_save(self, event=None):
+        filename =  filedialog.asksaveasfilename(initialdir = ".",title = "Select PGN file",filetypes = (("pgn files","*.pgn"),("all files","*.*")))
+        print(filename)
+    

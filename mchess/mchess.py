@@ -8,10 +8,11 @@ import queue
 import time
 from enum import Enum
 import copy
+import io
 
 import chess
 # import chess.uci
-# import chess.pgn
+import chess.pgn
 
 from chess_link_agent import ChessLinkAgent
 from terminal_agent import TerminalAgent
@@ -570,6 +571,32 @@ class Mchess:
                             msg['fen_setup'] = 'None'
                         self.log.warning(
                             "Invalid FEN {} not imported: {}".format(msg['fen_setup'], e))
+
+                if 'pgn_game' in msg:
+                    self.stop()
+                    if self.analysis_active is True:
+                        self.analysis_active = False
+                    try:
+                        pgnd = msg['pgn_game']['pgn_data']
+                        pgndata = io.StringIO(pgnd)
+                        game = chess.pgn.read_game(pgndata)
+                    except Exception as e:
+                        self.log.error(f"Failed to import PGN data {pgnd}: {e}")
+                        continue
+                    # set metadata
+                    try:
+                        self.player_w_name=game.headers["White"]
+                    except:
+                        self.player_w_name='unknown'
+                    try:
+                        self.player_b_name=game.headers["Black"]
+                    except:
+                        self.player_b_name='unknown'
+                    self.board = game.board()
+                    for move in game.mainline_moves():
+                        self.board.push(move)
+                    self.update_display_board()
+                    self.state = self.State.IDLE
 
                 if 'move' in msg:
                     self.log.info(f"move: {msg['move']['uci']}, {msg}")
