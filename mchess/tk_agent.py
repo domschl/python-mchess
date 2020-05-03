@@ -8,7 +8,7 @@ import chess
 import chess.pgn
 
 from tkinter import *
-from tkinter.ttk import *
+# from tkinter.ttk import *
 from tkinter import filedialog
 
 import PIL
@@ -339,25 +339,29 @@ class TkAgent:
         self.tk_board = GameBoard(self.bof,log=self.log, r=1,c=0,color1=self.turquoise['dlight'],color2=self.turquoise['turquoise'],bg_color=self.turquoise['ldark'], ol_color=self.turquoise['darkgray'])
         self.tk_board.grid(row=0, column=0, sticky=N+E+S+W)
 
-        s=16
+        s=20
         self.bfr = Frame(self.bof)
         self.bfr.grid(row=2,column=0)
-        img = Image.open('web/images/b.png').convert('RGBA').resize((s,s), Image.ANTIALIAS)
-        backimg = ImageTk.PhotoImage(img)
-        self.button_back = Button(self.bfr, image = backimg, command=self.on_back)
-        self.button_back.grid(row=0,column=1, sticky=E+W)
-        img = Image.open('web/images/f.png').convert('RGBA').resize((s,s), Image.ANTIALIAS)
-        forimg = ImageTk.PhotoImage(img)
-        self.button_back = Button(self.bfr, image = forimg, command=self.on_forward)
-        self.button_back.grid(row=0,column=2, sticky=E+W)
         img = Image.open('web/images/bb.png').convert('RGBA').resize((s,s), Image.ANTIALIAS)
         bbackimg = ImageTk.PhotoImage(img)
-        self.button_back = Button(self.bfr, image = bbackimg, command=self.on_fast_back)
-        self.button_back.grid(row=0,column=0, sticky=E+W)
+        self.button_bback = Button(self.bfr, image = bbackimg, command=self.on_fast_back, background=self.turquoise['dlight'], relief=FLAT)
+        self.button_bback.grid(row=0,column=0, sticky=E+W,padx=(5,5),pady=(7,7))
+        img = Image.open('web/images/b.png').convert('RGBA').resize((s,s), Image.ANTIALIAS)
+        backimg = ImageTk.PhotoImage(img)
+        self.button_back = Button(self.bfr, image = backimg, command=self.on_back, background=self.turquoise['dlight'], relief=FLAT)
+        self.button_back.grid(row=0,column=1, sticky=E+W,padx=(5,5),pady=(7,7))
+        img = Image.open('web/images/stop.png').convert('RGBA').resize((s,s), Image.ANTIALIAS)
+        stopimg = ImageTk.PhotoImage(img)
+        self.button_stop = Button(self.bfr, image = stopimg, command=self.on_stop, background=self.turquoise['dlight'], relief=FLAT)
+        self.button_stop.grid(row=0,column=2, sticky=E+W,padx=(8,8),pady=(7,7))
+        img = Image.open('web/images/f.png').convert('RGBA').resize((s,s), Image.ANTIALIAS)
+        forimg = ImageTk.PhotoImage(img)        
+        self.button_forward = Button(self.bfr, image = forimg, command=self.on_forward, background=self.turquoise['dlight'], relief=FLAT)
+        self.button_forward.grid(row=0,column=3, sticky=E+W,padx=(5,5),pady=(7,7))
         img = Image.open('web/images/ff.png').convert('RGBA').resize((s,s), Image.ANTIALIAS)
         fforimg = ImageTk.PhotoImage(img)
-        self.button_back = Button(self.bfr, image = fforimg, command=self.on_fast_forward)
-        self.button_back.grid(row=0,column=3, sticky=E+W)
+        self.button_fforward = Button(self.bfr, image = fforimg, command=self.on_fast_forward, background=self.turquoise['dlight'], relief=FLAT)
+        self.button_fforward.grid(row=0,column=4, sticky=E+W,padx=(5,5),pady=(7,7))
     
         self.tk_board2 = GameBoard(root,log=self.log, r=1,c=2,color1=self.turquoise['dlight'],color2=self.turquoise['turquoise'],bg_color=self.turquoise['ldark'], ol_color=self.turquoise['darkgray'])
         self.movelist = Text(root)
