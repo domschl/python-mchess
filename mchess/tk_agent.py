@@ -242,6 +242,18 @@ class TkAgent:
         self.tk_board.position = self.board2pos(board)
         self.tk_board.refresh()
 
+        try:
+            game = chess.pgn.Game().from_board(board)
+            game.headers["White"] = attribs["white_name"]
+            game.headers["Black"] = attribs["black_name"]
+            pgntxt = str(game)
+            pgntxt = ''.join(pgntxt.splitlines()[8:])
+        except Exception as e:
+            self.log.error("Invalid PGN position, {}".format(e))
+            return
+        self.movelist.delete("1.0",END)
+        self.movelist.insert("1.0",pgntxt)
+
     def display_move(self, move_msg):
         pass
 
