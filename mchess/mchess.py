@@ -73,7 +73,7 @@ class Mchess:
             changed_prefs = True
         if 'active_agents' not in prefs:
             prefs['active_agents'] = {
-                "human": ["chess_link", "terminal", "web"],
+                "human": ["chess_link", "terminal", "web", "tk"],
                 "computer": ["stockfish", "lc0"]
             }
             changed_prefs = True
@@ -188,6 +188,10 @@ class Mchess:
             agents += [self.term_agent]
         if self.chess_link_agent and self.chess_link_agent.agent_ready() is True:
             agents += [self.chess_link_agent]
+        if self.tk_agent and self.tk_agent.agent_ready() is True:
+            agents += [self.tk_agent]
+        if self.web_agent and self.web_agent.agent_ready() is True:
+            agents += [self.web_agent]
         return agents
 
     def get_uci_agent(self):

@@ -20,10 +20,11 @@ from PIL import ImageTk,Image,ImageOps
 
 
 class GameBoard(Frame):
-    def __init__(self, parent, size=64, r=0, c=0, color1="white", color2="gray", bg_color="black", ol_color="black"):
+    def __init__(self, parent, size=64, r=0, c=0, color1="white", color2="gray", bg_color="black", ol_color="black", log=None):
         '''size is the size of a square, in pixels'''
 
         self.rows = 8
+        self.log=log
         self.columns = 8
         self.size = size
         self.color1 = color1
@@ -36,6 +37,9 @@ class GameBoard(Frame):
         self.figrep = {"png60": ["wp60.png", "wn60.png", "wb60.png", "wr60.png", "wq60.png", "wk60.png",
                                  "bp60.png", "bn60.png", "bb60.png", "br60.png", "bq60.png", "bk60.png"]}
         self.position = []
+        self.valid_move_list=[]
+        self.move_part=0
+        self.cur_move=""
 
         for x in range(8):
             row=[]
@@ -54,6 +58,7 @@ class GameBoard(Frame):
         # self.canvas.grid_rowconfigure(0, weight=1)
         self.load_figures(size)
         self.canvas.bind("<Configure>", self.refresh)
+        self.canvas.bind("<Button-1>", self.mouse_click)
 
     def load_figures(self, size):
         self.png60s = []
@@ -62,6 +67,47 @@ class GameBoard(Frame):
             fp = os.path.join('resources/pieces', fn)
             img = Image.open(fp).convert('RGBA').resize((img_size, img_size), Image.ANTIALIAS)
             self.png60s.append(ImageTk.PhotoImage(img))
+
+    def mouse_click(self, event):
+        x=chr(event.x//self.size+ord('a'))
+        y=chr(7-(event.y//self.size)+ord('1'))
+        if self.move_part==0:
+            cc=f"{x}{y}"
+            self.cur_move=""
+        else:
+            cc=f"{self.cur_move}{x}{y}"
+        if len(self.valid_move_list)>0:
+            f=[]
+            for mv in self.valid_move_list:
+                if mv[0:self.move_part*2+2]==cc:
+                    f.append(mv)
+            if len(f)>0:
+                if self.move_part==0:
+                    self.cur_move=cc
+                    self.move_part += 1
+                    return
+                else:
+                    if len(f)>1 and self.log is not None:
+                        self.log.error("This is non-implemented situation")  # XXX: select pawn upgrade GUI
+                    self.move_actor(f[0])
+            else:
+                if self.log is not None:
+                    self.log.warning("Invalid entry!")
+                self.move_part=0
+                self.cur_move=""
+        else:
+            if self.log is not None:
+                self.log.warning("You are not allowed to click on the board at this time!")
+            self.move_part=0
+            self.cur_move=0
+
+        print(f"Click at {cc}")
+
+    def register_moves(self, move_list, move_actor=None):
+        print(move_list)
+        self.move_actor = move_actor
+        self.move_part = 0
+        self.valid_move_list = move_list
 
     def refresh(self, event=None):
         redraw_fields = False
@@ -132,6 +178,7 @@ class TkAgent:
         self.png60s = None
         self.title_text = None
 
+        self.board=None
         self.tk_board = None
         self.tk_board2 = None
         self.title = None
@@ -250,11 +297,16 @@ class TkAgent:
     def agent_states(self, msg):
         self.agent_state_cache[msg['actor']] = msg
 
+    def do_move(self, move):
+        self.appque.put({'move': {'uci': move, 'actor': self.name}})
+
     def set_valid_moves(self, board, vals):
-        self.tk_moves = []
+        tk_moves = []
+        self.board=board
         if vals != None:
             for v in vals:
-                self.tk_moves.append(vals[v])
+                tk_moves.append(vals[v])
+        self.tk_board.register_moves(tk_moves, self.do_move)
 
     def tkapp_worker_thread(self, appque, log):
         root = Tk()
@@ -268,8 +320,8 @@ class TkAgent:
         #     Grid.columnconfigure(self.frame, i, weight=1)
         #     Grid.rowconfigure(self.frame, i, weight=1)
         # self.frame.grid(sticky=N+S+W+E)
-        self.tk_board = GameBoard(root,r=1,c=0,color1=self.turquoise['dlight'],color2=self.turquoise['turquoise'],bg_color=self.turquoise['ldark'], ol_color=self.turquoise['darkgray'])
-        self.tk_board2 = GameBoard(root,r=1,c=2,color1=self.turquoise['dlight'],color2=self.turquoise['turquoise'],bg_color=self.turquoise['ldark'], ol_color=self.turquoise['darkgray'])
+        self.tk_board = GameBoard(root,log=self.log, r=1,c=0,color1=self.turquoise['dlight'],color2=self.turquoise['turquoise'],bg_color=self.turquoise['ldark'], ol_color=self.turquoise['darkgray'])
+        self.tk_board2 = GameBoard(root,log=self.log, r=1,c=2,color1=self.turquoise['dlight'],color2=self.turquoise['turquoise'],bg_color=self.turquoise['ldark'], ol_color=self.turquoise['darkgray'])
         self.movelist = Text(root)
         self.analist = Text(root, height=20)
         self.title_text = StringVar()
