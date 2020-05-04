@@ -332,8 +332,8 @@ class Mchess:
         if 'log_levels' in prefs:
             for module in prefs['log_levels']:
                 level = logging.getLevelName(prefs['log_levels'][module])
-                logger = logging.getLogger(module)
-                logger.setLevel(level)
+                logi = logging.getLogger(module)
+                logi.setLevel(level)
 
     def __init__(self):
         self.log = logging.getLogger('mchess')
@@ -529,7 +529,8 @@ class Mchess:
 
                 if 'new game' in msg:
                     # if self.board.fen() == chess.STARTING_FEN:
-                    #     self.log.debug("New game request initiated by {} ignored, already at starting position.".format(msg['actor']))
+                    #     self.log.debug("New game request initiated by {} ignored,
+                    #          already at starting position.".format(msg['actor']))
                     #     self.state = self.State.IDLE
                     # else:
                     self.stop(new_mode=None, silent=True)
@@ -585,13 +586,13 @@ class Mchess:
                         continue
                     # set metadata
                     try:
-                        self.player_w_name=game.headers["White"]
+                        self.player_w_name = game.headers["White"]
                     except:
-                        self.player_w_name='unknown'
+                        self.player_w_name = 'unknown'
                     try:
-                        self.player_b_name=game.headers["Black"]
+                        self.player_b_name = game.headers["Black"]
                     except:
-                        self.player_b_name='unknown'
+                        self.player_b_name = 'unknown'
                     self.board = game.board()
                     for move in game.mainline_moves():
                         self.board.push(move)
