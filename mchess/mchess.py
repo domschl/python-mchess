@@ -1,7 +1,8 @@
+''' MChess Turquoise application '''
 import argparse
 import logging
 import sys
-import signal
+# import signal
 # import threading
 import json
 import queue
@@ -38,6 +39,40 @@ __version__ = "0.2.1"
 
 
 class Mchess:
+    ''' Main application with event state machine '''
+    def __init__(self):
+        self.log = logging.getLogger('mchess')
+
+        self.board = chess.Board()
+        self.state = self.State.IDLE
+        self.last_info = 0
+        self.ponder_move = None
+        self.analysis_active = False
+        self.analysis_buffer_timeout = 3.0
+
+        self.player_w = None
+        self.player_b = None
+        self.player_watch = None
+        self.player_w_name = None
+        self.player_b_name = None
+        self.player_watch_name = None
+
+        self.board.reset()
+        self.undo_stack = []
+
+        self.mode = None
+        self.prefs = self.read_preferences()
+        self.set_loglevels(self.prefs)
+        self.appque = queue.Queue()
+
+        self.init_agents()
+
+        self.set_default_mode()
+        self.init_board_agents()
+
+        # self.update_display_board()
+        self.state_machine_active = True
+
     def write_preferences(self, pref):
         try:
             with open("preferences.json", "w") as fp:
@@ -91,7 +126,7 @@ class Mchess:
             }
             changed_prefs = True
         if 'log_levels' not in prefs:
-            prefs['log_levels'] ={
+            prefs['log_levels'] = {
                 'chess.engine': 'ERROR'
             }
             changed_prefs = True
@@ -159,19 +194,18 @@ class Mchess:
             self.log.info(f'Available UCI engines: {avail_engines}')
             if len(self.uci_engines.engines) > 0:
                 if self.prefs['computer_player_name'] in self.uci_engines.engines:
-                    self.log.debug(
-                        f"{self.prefs['computer_player_name']} | {self.uci_engines.engines[self.prefs['computer_player_name']]['params']} | {self.prefs}")
-                    name=self.prefs['computer_player_name']
-                    ejs=self.uci_engines.engines[name]['params']
+                    name = self.prefs['computer_player_name']
+                    ejs = self.uci_engines.engines[name]['params']
                     self.uci_agent = UciAgent(self.appque, ejs, self.prefs)
                 else:
                     uci_names = list(self.uci_engines.engines.keys())
-                    ejs=self.uci_engines.engines[uci_names[0]]['params']
+                    ejs = self.uci_engines.engines[uci_names[0]]['params']
                     self.uci_agent = UciAgent(self.appque, ejs, self.prefs)
                 self.agents_all += [self.uci_agent]
-                if self.prefs['computer_player2_name'] in self.uci_engines.engines and self.prefs['computer_player2_name'] != '':
-                    name=self.prefs['computer_player2_name']
-                    ejs=self.uci_engines.engines[name]['params']
+                if self.prefs['computer_player2_name'] in self.uci_engines.engines and \
+                   self.prefs['computer_player2_name'] != '':
+                    name = self.prefs['computer_player2_name']
+                    ejs = self.uci_engines.engines[name]['params']
                     self.uci_agent2 = UciAgent(self.appque, ejs, self.prefs)
                     self.agents_all += [self.uci_agent2]
                 else:
@@ -181,6 +215,7 @@ class Mchess:
                 self.uci_agent2 = None
 
     class Mode(Enum):
+        ''' state machine play mode '''
         NONE = 0
         ANALYSIS = 1
         SETUP = 2
@@ -233,14 +268,14 @@ class Mchess:
             while self.uci_agent.stopping is True:
                 time.sleep(0.1)
                 if time.time()-t0 > 5:
-                    t0=time.time()
+                    t0 = time.time()
                     self.log.warning(f"Problems stopping {self.uci_agent.name}")
-        t0=time.time()
+        t0 = time.time()
         if self.uci_agent2 is not None:
             while self.uci_agent2.stopping is True:
                 time.sleep(0.1)
                 if time.time()-t0 > 5:
-                    t0=time.time()
+                    t0 = time.time()
                     self.log.warning(f"Problems stopping {self.uci_agent.name}")
 
 
@@ -317,6 +352,7 @@ class Mchess:
         return True
 
     class State(Enum):
+        ''' State machine states '''
         IDLE = 0
         BUSY = 1
 
@@ -327,7 +363,8 @@ class Mchess:
         # self.state = self.State.BUSY  # Check?
 
     def init_board_agents(self):
-        if self.chess_link_agent and self.chess_link_agent.agent_ready() and self.prefs['import_chesslink_position'] is True:
+        if self.chess_link_agent and self.chess_link_agent.agent_ready() and \
+           self.prefs['import_chesslink_position'] is True:
             self.import_chesslink_position()
 
         ags = ""
@@ -347,31 +384,6 @@ class Mchess:
                 logi = logging.getLogger(module)
                 logi.setLevel(level)
 
-    def __init__(self):
-        self.log = logging.getLogger('mchess')
-
-        self.board = chess.Board()
-        self.state = self.State.IDLE
-        self.last_info = 0
-        self.ponder_move = None
-        self.analysis_active = False
-        self.analysis_buffer_timeout = 3.0
-
-        self.board.reset()
-        self.undo_stack = []
-
-        self.prefs = self.read_preferences()
-        self.set_loglevels(self.prefs)
-        self.appque = queue.Queue()
-
-        self.init_agents()
-    
-        self.set_default_mode()
-        self.init_board_agents()
-
-        # self.update_display_board()
-        self.state_machine_active = True
-
     def stop(self, new_mode=Mode.PLAYER_PLAYER, silent=False):
         self.uci_stop_engines()
         self.log.debug("Stop command.")
@@ -379,7 +391,7 @@ class Mchess:
             self.set_mode(new_mode, silent=silent)
         if silent is False:
             self.update_display_board()
-        self.state = self.State.IDLE 
+        self.state = self.State.IDLE
 
     def is_player_move(self):
         if self.mode == self.Mode.PLAYER_PLAYER:
@@ -400,8 +412,7 @@ class Mchess:
                            'white_name': self.player_w_name,
                            'black_name': self.player_b_name
                            }
-                agent.display_board(
-                   st_board, attribs=attribs)
+                agent.display_board(st_board, attribs=attribs)
 
     def update_display_move(self, mesg):
         for agent in self.agents_all:
@@ -432,6 +443,7 @@ class Mchess:
         sys.exit(0)
 
     def quit_signal(self, sig, frame):
+        self.log.debug(f"sig: {sig} frame: {frame}")
         self.quit()
 
     def game_state_machine(self):
@@ -468,7 +480,7 @@ class Mchess:
                     self.set_mode(self.Mode.NONE)
 
                 for agent in passive_player:
-                    if self.ponder_move != None:
+                    if self.ponder_move is not None:
                         setp = getattr(agent, "set_ponder", None)
                         if callable(setp):
                             pass
@@ -499,10 +511,10 @@ class Mchess:
                 if self.analysis_active:
                     if self.uci_agent is not None:
                         self.uci_agent.busy = True
-                        self.uci_agent.go(self.board,mtime=-1, analysis=True)
+                        self.uci_agent.go(self.board, mtime=-1, analysis=True)
                     if self.uci_agent2 is not None:
                         self.uci_agent2.busy = True
-                        self.uci_agent2.go(self.board,mtime=-1, analysis=True)
+                        self.uci_agent2.go(self.board, mtime=-1, analysis=True)
 
                 self.state = self.State.BUSY
                 self.log.info("BUSY")
@@ -511,7 +523,7 @@ class Mchess:
                 # print(self.appque.qsize())
                 msg = self.appque.get()
                 self.appque.task_done()
-                if msg == None:
+                if msg is None:
                     self.log.warning("None message received.")
                     continue
                 self.log.debug(f"App received msg: {msg}")
@@ -524,11 +536,11 @@ class Mchess:
                     if 'message' not in msg or 'actor' not in msg:
                         self.log.error(f'Invalid <agent-state> message: {msg}')
                     else:
-                        if self.uci_agent is not None and msg['actor']==self.uci_agent.name:
-                            if msg['agent-state']=='idle':
+                        if self.uci_agent is not None and msg['actor'] == self.uci_agent.name:
+                            if msg['agent-state'] == 'idle':
                                 self.uci_agent.busy = False
-                        if self.uci_agent2 is not None and msg['actor']==self.uci_agent2.name:
-                            if msg['agent-state']=='idle':
+                        if self.uci_agent2 is not None and msg['actor'] == self.uci_agent2.name:
+                            if msg['agent-state'] == 'idle':
                                 self.uci_agent2.busy = False
                         for agent in self.agents_all:
                             if agent != msg['actor']:
@@ -557,7 +569,8 @@ class Mchess:
                             fen = agent.get_fen()
                             # Only treat as setup, if it's not the start position
                             if self.short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
-                                self.log.debug(f"Importing position from {agent.name}, initiated by {msg['actor']}, FEN: {fen}")
+                                self.log.debug(f"Importing position from {agent.name}, by" \
+                                                " {msg['actor']}, FEN: {fen}")
                                 self.stop(silent=True)
                                 if self.analysis_active is True:
                                     self.analysis_active = False
@@ -593,11 +606,13 @@ class Mchess:
                     # set metadata
                     try:
                         self.player_w_name = game.headers["White"]
-                    except:
+                    except Exception as e:
+                        self.log.warning(f'PGN misses White-name-field: {e}')
                         self.player_w_name = 'unknown'
                     try:
                         self.player_b_name = game.headers["Black"]
-                    except:
+                    except Exception as e:
+                        self.log.warning(f'PGN misses Black-name-field: {e}')
                         self.player_b_name = 'unknown'
                     self.board = game.board()
                     for move in game.mainline_moves():
@@ -611,9 +626,9 @@ class Mchess:
                     self.undo_stack = []
                     self.board.push(chess.Move.from_uci(msg['move']['uci']))
                     if self.board.is_game_over() is True:
-                        msg['move']['result']=self.board.result()
+                        msg['move']['result'] = self.board.result()
                     else:
-                        msg['move']['result']=''
+                        msg['move']['result'] = ''
                     self.update_display_move(msg)
                     self.update_display_board()
                     if 'ponder' in msg['move']:
@@ -665,7 +680,8 @@ class Mchess:
                     if self.analysis_active is True:
                         self.log.debug("Aborting analysis...")
                         self.analysis_active = False
-                    if (self.board.turn == chess.WHITE and self.mode == self.Mode.ENGINE_PLAYER) or (self.board.turn == chess.BLACK and self.mode == self.Mode.PLAYER_ENGINE):
+                    if (self.board.turn == chess.WHITE and self.mode == self.Mode.ENGINE_PLAYER) or\
+                       (self.board.turn == chess.BLACK and self.mode == self.Mode.PLAYER_ENGINE):
                         pass
                     else:
                         if self.board.turn == chess.WHITE:

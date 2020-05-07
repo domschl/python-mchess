@@ -1,3 +1,4 @@
+''' implementation framework for additional bluetooth module, not functional '''
 import logging
 
 import chess_link_protocol as clp
@@ -6,6 +7,7 @@ import chess_link_protocol as clp
 
 
 class Transport():
+    ''' non-functional frame '''
     def __init__(self, que):
         self.log = logging.getLogger("ChessLinkPyBlue")
         self.que = que  # asyncio.Queue()
@@ -22,7 +24,7 @@ class Transport():
         return None
 
     def open_mt(self, address):
-        self.log.debug("open_mt {}".format(address))
+        self.log.debug(f"open_mt {address}")
         return False
 
     def write_mt(self, msg):

@@ -1,5 +1,5 @@
+''' Agent for Millennium chess board Chess Genius Exclusive '''
 import logging
-import queue
 import time
 import copy
 
@@ -8,6 +8,7 @@ import chess_link as cl
 
 
 class ChessLinkAgent:
+    ''' Hardware board agent implementation '''
     def __init__(self, appque, prefs, timeout=30):
         self.name = 'ChessLinkAgent'
         self.appque = appque
@@ -46,8 +47,7 @@ class ChessLinkAgent:
         if self.init_position is True:
             self.log.debug("board position received, init ok.")
         else:
-            self.log.error(
-                "no board position received within timeout {}".format(timeout))
+            self.log.error(f"no board position received within timeout {timeout}")
 
     def quit(self):
         self.cl_brd.quit()
@@ -59,7 +59,7 @@ class ChessLinkAgent:
         return self.cl_brd.position_to_fen(self.cl_brd.position)
 
     def variant_to_positions(self, _board, moves, plies):
-        board=copy.deepcopy(_board)
+        board = copy.deepcopy(_board)
         pos = []
         mvs = len(moves)
         if mvs > plies:
@@ -94,7 +94,7 @@ class ChessLinkAgent:
             self.cl_brd.show_deltas(pos, freq)
 
     def display_info(self, _board, info):
-        board=copy.deepcopy(_board)
+        board = copy.deepcopy(_board)
         if info['actor'] == self.prefs['computer_player_name']:
             if 'multipv_ind' in info:
                 if info['multipv_ind'] == 1:  # Main variant only

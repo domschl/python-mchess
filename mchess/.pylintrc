@@ -1,0 +1,5 @@
+[MASTER]
+extension-pkg-whitelist=PyQt5
+logging-format-style=fstr
+
+disable=not-callable,global-statement,broad-except,redefined-outer-name,import-outside-toplevel,invalid-name,missing-function-docstring

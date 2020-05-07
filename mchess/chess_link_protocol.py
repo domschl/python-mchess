@@ -1,12 +1,13 @@
 
 """
-Helper functions for the Chess Link protocol for character-based odd-parity and 
+Helper functions for the Chess Link protocol for character-based odd-parity and
 message-block-parity.
 
 The chess link protocol sends ASCII messages. Each ASCII character gets an additional
 odd-parity-bit. Each block of ASCII+odd-parity bytes gets an additional block parity.
 
-Details of the Chess Link protocol are documented in `magic-board.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
+Details of the Chess Link protocol are documented in
+`magic-board.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
 """
 
 import logging
@@ -49,10 +50,11 @@ def hexd(digit):
 
 def hex2(num):
     """
-    Convert integer to 2-digit hex string. Most numeric parameters and the block CRC are encoded as such 2-digit hex-string.
+    Convert integer to 2-digit hex string. Most numeric parameters and the block CRC
+    are encoded as such 2-digit hex-string.
 
     :param num: uint_8 integer 0..255
-    :returns: Returns a 2-digit hex code '00'..'FF' 
+    :returns: Returns a 2-digit hex code '00'..'FF'
     """
     d1 = num//16
     d2 = num % 16
@@ -74,20 +76,19 @@ def check_block_crc(msg):
         for b in msg[:-2]:
             gpar = gpar ^ ord(b)
         if msg[-2]+msg[-1] != hex2(gpar):
-            logging.warning("CRC error rep={} CRCs: {}!={}".format(msg,
-                                                                   ord(msg[-2]), hex2(gpar)))
+            logging.warning(f"CRC error rep={msg} CRCs: {ord(msg[-2])}!={hex2(gpar)}")
             return False
         else:
             return True
     else:
-        logging.warning("Message {} too short for CRC check".format(msg))
+        logging.warning(f"Message {msg} too short for CRC check")
         return False
 
 
 def add_block_crc(msg):
     """Add block parity at the end of the message
 
-    :param msg: a message byte array (each byte must have already been encoded with odd parity). 
+    :param msg: a message byte array (each byte must have already been encoded with odd parity).
                 This function adds two bytes of block CRC at the end of the message.
     :param msg: byte array with a message (incl. odd-parity bits set already)
     :return: two byte longer message that includes 2 CRC bytes.

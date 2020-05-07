@@ -3,7 +3,6 @@ ChessLink transport implementation for USB connections.
 """
 import logging
 import threading
-import queue
 import time
 
 import chess_link_protocol as clp
@@ -12,7 +11,7 @@ try:
     import serial
     import serial.tools.list_ports
     usb_support = True
-except:
+except ImportError:
     usb_support = False
 
 

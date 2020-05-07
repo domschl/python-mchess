@@ -1,3 +1,4 @@
+''' Chess UCI Engine agent using python-chess's async interface '''
 import logging
 import time
 import queue
@@ -27,11 +28,12 @@ class UciEngines:
         for engine_name in COMMON_ENGINES:
             engine_json_path = os.path.join('engines', engine_name+'.json')
             if os.path.exists(engine_json_path):
-                inv=False
+                inv = False
                 try:
                     with open(engine_json_path) as f:
                         engine_json = json.load(f)
-                    if 'version' in engine_json and engine_json['version'] == self.ENGINE_JSON_VERSION:
+                    if 'version' in engine_json and \
+                       engine_json['version'] == self.ENGINE_JSON_VERSION:
                         inv = False
                     else:
                         self.log.warning(f"Wrong version information in {engine_json_path}")
@@ -44,15 +46,15 @@ class UciEngines:
             engine_path = find_executable(engine_name)
             if engine_path is not None:
                 engine_json = {'name': engine_name,
-                                'path': engine_path, 
-                                'active': True,
-                                'version': self.ENGINE_JSON_VERSION}
+                               'path': engine_path,
+                               'active': True,
+                               'version': self.ENGINE_JSON_VERSION}
                 with open(engine_json_path, 'w') as f:
                     try:
                         json.dump(engine_json, f, indent=4)
-                    except:
+                    except Exception as e:
                         self.log.error(
-                            f'Failed to write no engine description {engine_json_path}')
+                            f'Failed to write no engine description {engine_json_path}: {e}')
                         continue
                 self.log.info(f'Found new/updated UCI engine {engine_name}')
         self.engine_json_list = glob.glob('engines/*.json')
@@ -66,26 +68,25 @@ class UciEngines:
             try:
                 with open(engine_json_path, 'r') as f:
                     engine_json = json.load(f)
-            except:
-                self.log.error(
-                    f'Failed to read UCI engine description {engine_json_path}')
+            except Exception as  e:
+                self.log.error(f'Failed to read UCI engine description {engine_json_path}: {e}')
                 continue
             if 'name' not in engine_json:
-                self.log.error(
-                    f"Mandatory parameter 'name' is not in UCI description {engine_json_path}, ignoring this engine.")
+                self.log.error(f"Mandatory parameter 'name' is not in UCI description " \
+                               "{engine_json_path}, ignoring this engine.")
                 continue
             if 'path' not in engine_json:
-                self.log.error(
-                    f"Mandatory parameter 'path' is not in UCI description {engine_json_path}, ignoring this engine.")
+                self.log.error(f"Mandatory parameter 'path' is not in UCI description " \
+                               "{engine_json_path}, ignoring this engine.")
                 continue
             if os.path.exists(engine_json['path']) is False:
-                self.log.error(
-                    f"Invalid path {engine_json['path']} in UCI description {engine_json_path}, ignoring this engine.")
+                self.log.error(f"Invalid path {engine_json['path']} in UCI description " \
+                               "{engine_json_path}, ignoring this engine.")
                 continue
 
             if 'active' not in engine_json or engine_json['active'] is False:
-                self.log.debug(
-                    f"UCI engine at {engine_json_path} has not property 'active': true, ignoring this engine.")
+                self.log.debug(f"UCI engine at {engine_json_path} has not property " \
+                               "'active': true, ignoring this engine.")
                 continue
 
             base_name, _ = os.path.splitext(engine_json_path)
@@ -123,6 +124,9 @@ class UciAgent:
         self.info_throttle = 0.5
         self.version_name = self.name+" 1.0"
         self.authors = ""
+        self.engine = None
+        self.transport = None
+        self.loop_active = False
 
     async def async_quit(self):
         await self.engine.quit()
@@ -137,7 +141,7 @@ class UciAgent:
         return self.active
 
     def send_agent_state(self, state, msg=""):
-        stmsg = {'agent-state': state, 'message': msg, 'name': self.version_name, 
+        stmsg = {'agent-state': state, 'message': msg, 'name': self.version_name,
                  'authors': self.authors, 'class': 'engine', 'actor': self.name}
         self.que.put(stmsg)
         self.log.debug(f"Sent {stmsg}")
@@ -157,9 +161,9 @@ class UciAgent:
             except Exception as e:
                 self.log.error(f"Failed to get engine-id-info {self.engine.id}: {e}")
             self.log.debug(f"Engine id: {self.engine.id}")
-        except:
-            self.log.error(
-                f"Failed to popen UCI engine {self.name} at {self.engine_json['path']}, ignoring this engine.")
+        except Exception as e:
+            self.log.error(f"Failed to popen UCI engine {self.name} at " \
+                           "{self.engine_json['path']}, ignoring: {e}")
             self.engine = None
             self.transport = None
             return False
@@ -170,7 +174,8 @@ class UciAgent:
         if os.path.exists(self.engine_json['json_path']) is False:
             rewrite_json = True
             self.engine_json['uci-options'] = {}
-        if 'version' not in self.engine_json or self.engine_json['version'] < UciEngines.ENGINE_JSON_VERSION:
+        if 'version' not in self.engine_json or \
+           self.engine_json['version'] < UciEngines.ENGINE_JSON_VERSION:
             self.log.error(f"{self.engine_json['json_path']} is outdated. Resetting content")
             rewrite_json = True
             self.engine_json['version'] = UciEngines.ENGINE_JSON_VERSION
@@ -183,13 +188,11 @@ class UciAgent:
                     entries = self.engine.options[opt]
                     # Ignore buttons
                     if entries.type != 'button':
-                        self.log.warning(
-                            'New UCI option {} for {}, resetting to defaults'.format(opt, self.name))
+                        self.log.warning(f'New UCI opt {opt} for {self.name}, reset to defaults')
                         rewrite_json = True
 
         if rewrite_json is True:
-            self.log.info("Writing defaults for {} to {}".format(
-                self.name, self.engine_json['json_path']))
+            self.log.info(f"Writing defaults for {self.name} to {self.engine_json['json_path']}")
             for opt in self.engine.options:
                 entries = self.engine.options[opt]
                 optvs = {}
@@ -200,7 +203,8 @@ class UciAgent:
                 optvs['max'] = entries.max
                 optvs['var'] = entries.var
                 optsh[opt] = optvs
-                # TODO: setting buttons to their default causes python_chess uci to crash (komodo 9), see above
+                # TODO: setting buttons to their default causes python_chess uci
+                # to crash (komodo 9), see above
                 if entries.type != 'button':
                     opts[opt] = entries.default
             self.engine_json['uci-options'] = opts
@@ -247,6 +251,8 @@ class UciAgent:
     async def async_go(self, board, mtime, ponder=False, analysis=False):
         if mtime != -1:
             mtime = mtime/1000.0
+        if ponder is True:
+            self.log.warning("Ponder not implemented!")
         pv = []
         last_info = []
         self.log.debug(f"mtime: {mtime}")
@@ -255,12 +261,11 @@ class UciAgent:
             for i in range(mpv):
                 pv.append([])
                 last_info.append(0)
-                res = {'curmove' : {
-                       'multipv_ind': i+1,
-                       'variant': [],
-                       'actor': self.name,
-                       'score': ''
-                }}
+                res = {'curmove' : {'multipv_ind': i+1,
+                                    'variant': [],
+                                    'actor': self.name,
+                                    'score': ''}
+                      }
                 self.que.put(res)  # reset old evals
         else:
             pv.append([])
@@ -276,7 +281,8 @@ class UciAgent:
         self.log.info(f"Starting UCI {self.name}")
         info = None
         best_score = None
-        with await self.engine.analysis(board, lm, multipv=mpv, info=chess.engine.Info.ALL) as self.analysisresults:
+        with await self.engine.analysis(board, lm, multipv=mpv, info=chess.engine.Info.ALL) \
+            as self.analysisresults:
             async for info in self.analysisresults:
                 if self.stopping is True:
                     self.log.info(f"Stop: request, aborting calc.")
@@ -304,7 +310,7 @@ class UciAgent:
                             self.log.error(f"Score transform failed {info['score']}: {e}")
                             sc = '?'
                         rep['curmove']['score'] = sc
-                        if ind==0:
+                        if ind == 0:
                             best_score = sc
                     if 'depth' in info:
                         rep['curmove']['depth'] = info['depth']
@@ -366,7 +372,7 @@ class UciAgent:
             return False
         self.thinking = True
         self.stopping = False
-        cmd={'board': board, 'mtime': mtime, 'ponder': ponder, 'analysis': analysis}
+        cmd = {'board': board, 'mtime': mtime, 'ponder': ponder, 'analysis': analysis}
         self.cmd_que.put(cmd)
         return True
 
@@ -378,12 +384,14 @@ class UciAgent:
                 try:
                     cmd = self.cmd_que.get_nowait()
                     self.log.debug("Go!")
-                    await self.async_go(cmd['board'], cmd['mtime'], ponder=cmd['ponder'], analysis=cmd['analysis'])
-                    self.cmd_que.done()
-                except:
+                    await self.async_go(cmd['board'], cmd['mtime'], ponder=cmd['ponder'],\
+                                        analysis=cmd['analysis'])
+                    self.cmd_que.task_done()
+                except queue.Empty:
                     await asyncio.sleep(0.05)
+                except Exception as e:
+                    self.log.warning(f"Failed to get que: {e}")
 
     def async_agent_thread(self):
         asyncio.set_event_loop_policy(chess.engine.EventLoopPolicy())
         asyncio.run(self.uci_event_loop())
-

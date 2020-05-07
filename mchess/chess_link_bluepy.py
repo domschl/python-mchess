@@ -12,7 +12,7 @@ try:
     import bluepy
     from bluepy.btle import Scanner, DefaultDelegate, Peripheral
     bluepy_ble_support = True
-except:
+except ImportError:
     bluepy_ble_support = False
 
 
@@ -26,20 +26,20 @@ class Transport():
     This transport uses an asynchronous background thread for hardware communcation.
     All replies are written to the python queue `que` given during initialization.
 
-    For the details of the Chess Link protocol, please refer to: 
+    For the details of the Chess Link protocol, please refer to:
     `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
     """
 
     def __init__(self, que, protocol_dbg=False):
         """
         Initialize with python queue for event handling.
-        Events are strings conforming to the ChessLink protocol as documented in 
+        Events are strings conforming to the ChessLink protocol as documented in
         `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
 
         :param que: Python queue that will eceive events from chess board.
         :param protocol_dbg: True: byte-level ChessLink protocol debug messages
         """
-        if bluepy_ble_support == False:
+        if bluepy_ble_support is False:
             self.init = False
             return
         self.wrque = queue.Queue()
@@ -49,12 +49,15 @@ class Transport():
         self.log.debug("bluepy_ble init ok")
         self.protocol_debug = protocol_dbg
         self.scan_timeout = 10
+        self.worker_thread_active = False
+        self.worker_threader = None
+        self.conn_state = None
 
-        self.bp_path=os.path.dirname(os.path.abspath(bluepy.__file__))
-        self.bp_helper=os.path.join(self.bp_path,'bluepy-helper')
+        self.bp_path = os.path.dirname(os.path.abspath(bluepy.__file__))
+        self.bp_helper = os.path.join(self.bp_path, 'bluepy-helper')
         if not os.path.exists(self.bp_helper):
             self.log.warning(f'Unexpected: {self.bp_helper} does not exists!')
-        self.fix_cmd="sudo setcap 'cap_net_raw,cap_net_admin+eip' "+self.bp_helper
+        self.fix_cmd = "sudo setcap 'cap_net_raw,cap_net_admin+eip' " + self.bp_helper
 
 
     def quit(self):
@@ -73,16 +76,17 @@ class Transport():
         self.log.debug("bluepy_ble: searching for boards")
 
         class ScanDelegate(DefaultDelegate):
+            ''' scanner class '''
             def __init__(self, log):
                 self.log = log
                 DefaultDelegate.__init__(self)
 
-            def handleDiscovery(self, dev, isNewDev, isNewData):
+            def handleDiscovery(self, scanEntry, isNewDev, isNewData):
                 if isNewDev:
-                    self.log.debug("Discovered device {}".format(dev.addr))
+                    self.log.debug("Discovered device {}".format(scanEntry.addr))
                 elif isNewData:
                     self.log.debug(
-                        "Received new data from {}".format(dev.addr))
+                        "Received new data from {}".format(scanEntry.addr))
 
         scanner = Scanner(iface=iface).withDelegate(ScanDelegate(self.log))
 
@@ -91,24 +95,24 @@ class Transport():
         except Exception as e:
             self.log.error(f"BLE scanning failed. {e}")
             self.log.error(f"excecute: {self.fix_cmd}")
-            self.log.error(f"or (if that fails) start ONCE with: `sudo python mchess.py` (fix ownership of chess_link_config.json afterwards)")
+            self.log.error(f"or (if that fails) start ONCE with: `sudo python mchess.py`" \
+                           "(fix ownership of chess_link_config.json afterwards)")
             return None
 
         devs = sorted(devices, key=lambda x: x.rssi, reverse=True)
         print("Sorted:")
         for b in devs:
-            self.log.debug('sorted by rssi {} {}'.format(b.addr, b.rssi))
+            self.log.debug(f'sorted by rssi {b.addr} {b.rssi}')
 
         for bledev in devs:
-            self.log.debug("Device {} ({}), RSSI={} dB".format(
-                bledev.addr, bledev.addrType, bledev.rssi))
+            self.log.debug(f"Device {bledev.addr} ({bledev.addrType}), RSSI={bledev.rssi} dB")
             for (adtype, desc, value) in bledev.getScanData():
-                self.log.debug("  {} ({}) = {}".format(desc, adtype, value))
+                self.log.debug(f"  {desc} ({adtype}) = {value}")
                 if desc == "Complete Local Name":
                     if "MILLENNIUM CHESS" in value:
-                        self.log.info(
-                            "Autodetected Millennium Chess Link board at Bluetooth LE address: {}, signal strength (rssi): {}".format(
-                                bledev.addr, bledev.rssi))
+                        self.log.info(f"Autodetected Millennium Chess Link board at "\
+                                      "Bluetooth LE address: {bledev.addr}, "\
+                                      "signal strength (rssi): {bledev.rssi}")
                         return bledev.addr
         return None
 
@@ -118,6 +122,7 @@ class Transport():
 
         :returns: Version string "1.0" always.
         """
+        self.log.debug(f"test_board address {address} not implemented.")
         # self.open_mt(address)
         return "1.0"
 
@@ -149,7 +154,7 @@ class Transport():
         :param msg: Message string. Parity will be added, and block CRC appended.
         """
         if self.protocol_debug is True:
-            self.log.debug('write-que-entry {}'.format(msg))
+            self.log.debug(f'write-que-entry {msg}')
         self.wrque.put(msg)
 
     def get_name(self):
@@ -174,8 +179,10 @@ class Transport():
     def mil_open(self, address, mil, que, log):
 
         class PeriDelegate(DefaultDelegate):
+            ''' peripheral delegate class '''
             def __init__(self, log, que):
                 self.log = log
+                self.que = que
                 self.log.debug("Init delegate for peri")
                 self.chunks = ""
                 DefaultDelegate.__init__(self)
@@ -230,16 +237,14 @@ class Transport():
                     tx = chri
                     # txh = chri.getHandle()
                 if chri.supportsRead():
-                    log.debug("  {} UUID={} {} -> {}".format(chri, chri.uuid,
-                                                             chri.propertiesToString(), chri.read()))
+                    log.debug(f"  {chri} UUID={chri.uuid} {chri.propertiesToString()} -> "\
+                              "{chri.read()}")
                 else:
-                    log.debug("  {} UUID={}{}".format(
-                        chri, chri.uuid, chri.propertiesToString()))
+                    log.debug(f"  {chri} UUID={chri.uuid}{chri.propertiesToString()}")
 
         try:
             log.debug('Installing peripheral delegate')
             delegate = PeriDelegate(log, que)
-            delegate.que = que
             mil.withDelegate(delegate)
         except Exception as e:
             emsg = 'Bluetooth LE: Failed to install peripheral delegate! {}'.format(
@@ -252,7 +257,7 @@ class Transport():
 
     def worker_thread(self, log, address, wrque, que):
         """
-        Background thread that handles bluetooth sending and forwards data received via 
+        Background thread that handles bluetooth sending and forwards data received via
         bluetooth to the queue `que`.
         """
         mil = None
@@ -295,13 +300,11 @@ class Transport():
                     mil.connect(address)
                 except Exception as e:
                     if rep_err is False:
-                        self.log.warning(
-                            "Reconnect failed: {} [Local bluetooth problem?]".format(e))
+                        self.log.warning("Reconnect failed: {e} [Local bluetooth problem?]")
                         rep_err = True
                     bt_error = True
                 if bt_error is False:
-                    self.log.info(
-                        "Bluetooth reconnected to {}".format(address))
+                    self.log.info(f"Bluetooth reconnected to {address}")
                     rx, tx = self.mil_open(address, mil, que, log)
                     time_last_out = time.time()+0.2
                     self.init = True
@@ -325,11 +328,10 @@ class Transport():
                     tx.write(btsx, withResponse=True)
                     time_last_out = time.time()
                 except Exception as e:
-                    log.error(
-                        "bluepy_ble: failed to write {}: {}".format(msg, e))
+                    log.error(f"bluepy_ble: failed to write {msg}: {e}")
                     bt_error = True
                     self.agent_state(
-                        que, 'offline', 'Connected to Bluetooth peripheral lost: {}'.format(e))
+                        que, 'offline', f'Connected to Bluetooth peripheral lost: {e}')
                 wrque.task_done()
 
             try:
@@ -337,10 +339,9 @@ class Transport():
                 mil.waitForNotifications(0.05)
                 # time.sleep(0.1)
             except Exception as e:
-                self.log.warning("Bluetooth error {}".format(e))
+                self.log.warning(f"Bluetooth error {e}")
                 bt_error = True
-                self.agent_state(
-                    que, 'offline', 'Connected to Bluetooth peripheral lost: {}'.format(e))
+                self.agent_state(que, 'offline', f'Connected to Bluetooth peripheral lost: {e}')
                 continue
 
         log.debug('wt-end')
