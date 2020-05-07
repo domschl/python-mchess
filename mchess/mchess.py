@@ -14,11 +14,25 @@ import chess
 # import chess.uci
 import chess.pgn
 
-from chess_link_agent import ChessLinkAgent
-from terminal_agent import TerminalAgent
-from async_uci_agent import UciAgent, UciEngines
-from web_agent import WebAgent
-from tk_agent import TkAgent
+ChessLinkAgent = None
+TerminalAgent = None
+TkAgent = None
+WebAgent = None
+UciEngines = None
+UciAgent = None
+
+def conditional_imports(prefs):
+    global ChessLinkAgent, TerminalAgent, TkAgent, WebAgent, UciAgent, UciEngines
+    if 'chess_link' in prefs['active_agents']['human']:
+        from chess_link_agent import ChessLinkAgent
+    if 'terminal' in prefs['active_agents']['human']:
+        from terminal_agent import TerminalAgent
+    if 'tk' in prefs['active_agents']['human']:
+        from tk_agent import TkAgent
+    if 'web' in prefs['active_agents']['human']:
+        from web_agent import WebAgent
+    if len(prefs['active_agents']['computer']) > 0:
+        from async_uci_agent import UciAgent, UciEngines
 
 __version__ = "0.2.1"
 
@@ -39,9 +53,7 @@ class Mchess:
                 prefs = json.load(f)
         except Exception as e:
             changed_prefs = True
-            self.log.warning(
-                'Failed to read preferences.json, initializing defaults: {}'.format(e))
-
+            self.log.warning(f'Failed to read preferences.json, initializing defaults: {e}')
         if 'think_ms' not in prefs:
             prefs['think_ms'] = 500
             changed_prefs = True
@@ -90,8 +102,7 @@ class Mchess:
     def short_fen(self, fen):
         i = fen.find(' ')
         if i == -1:
-            self.log.error(
-                'Invalid fen position <{}> in short_fen'.format(fen))
+            self.log.error(f'Invalid fen position <{fen}> in short_fen')
             return None
         else:
             return fen[:i]
@@ -106,6 +117,8 @@ class Mchess:
 
     def init_agents(self):
         self.agents_all = []
+
+        conditional_imports(self.prefs)
 
         if 'chess_link' in self.prefs['active_agents']['human']:
             self.chess_link_agent = ChessLinkAgent(self.appque, self.prefs)
@@ -134,39 +147,38 @@ class Mchess:
         else:
             self.web_agent = None
 
-        self.uci_engines = UciEngines(self.appque, self.prefs)
         self.uci_agent = None
         self.uci_agent2 = None
         avail_engines = ""
-        for en in self.uci_engines.engines:
-            if len(avail_engines) > 0:
-                avail_engines += ', '
-            avail_engines += en
-        self.log.info(f'Available UCI engines: {avail_engines}')
-
-        if len(self.uci_engines.engines) > 0:
-
-            if self.prefs['computer_player_name'] in self.uci_engines.engines:
-                self.log.debug(
-                    f"{self.prefs['computer_player_name']} | {self.uci_engines.engines[self.prefs['computer_player_name']]['params']} | {self.prefs}")
-                name=self.prefs['computer_player_name']
-                ejs=self.uci_engines.engines[name]['params']
-                self.uci_agent = UciAgent(self.appque, ejs, self.prefs)
+        if len(self.prefs['active_agents']['computer']) > 0:
+            self.uci_engines = UciEngines(self.appque, self.prefs)
+            for en in self.uci_engines.engines:
+                if len(avail_engines) > 0:
+                    avail_engines += ', '
+                avail_engines += en
+            self.log.info(f'Available UCI engines: {avail_engines}')
+            if len(self.uci_engines.engines) > 0:
+                if self.prefs['computer_player_name'] in self.uci_engines.engines:
+                    self.log.debug(
+                        f"{self.prefs['computer_player_name']} | {self.uci_engines.engines[self.prefs['computer_player_name']]['params']} | {self.prefs}")
+                    name=self.prefs['computer_player_name']
+                    ejs=self.uci_engines.engines[name]['params']
+                    self.uci_agent = UciAgent(self.appque, ejs, self.prefs)
+                else:
+                    uci_names = list(self.uci_engines.engines.keys())
+                    ejs=self.uci_engines.engines[uci_names[0]]['params']
+                    self.uci_agent = UciAgent(self.appque, ejs, self.prefs)
+                self.agents_all += [self.uci_agent]
+                if self.prefs['computer_player2_name'] in self.uci_engines.engines and self.prefs['computer_player2_name'] != '':
+                    name=self.prefs['computer_player2_name']
+                    ejs=self.uci_engines.engines[name]['params']
+                    self.uci_agent2 = UciAgent(self.appque, ejs, self.prefs)
+                    self.agents_all += [self.uci_agent2]
+                else:
+                    self.uci_agent2 = None
             else:
-                uci_names = list(self.uci_engines.engines.keys())
-                ejs=self.uci_engines.engines[uci_names[0]]['params']
-                self.uci_agent = UciAgent(self.appque, ejs, self.prefs)
-            self.agents_all += [self.uci_agent]
-            if self.prefs['computer_player2_name'] in self.uci_engines.engines and self.prefs['computer_player2_name'] != '':
-                name=self.prefs['computer_player2_name']
-                ejs=self.uci_engines.engines[name]['params']
-                self.uci_agent2 = UciAgent(self.appque, ejs, self.prefs)
-                self.agents_all += [self.uci_agent2]
-            else:
+                self.uci_agent = None
                 self.uci_agent2 = None
-        else:
-            self.uci_agent = None
-            self.uci_agent2 = None
 
     class Mode(Enum):
         NONE = 0
@@ -297,7 +309,7 @@ class Mchess:
         #     self.log.error("SETUP mode not yet implemented.")
         #     return False
         else:
-            self.log.error("Undefined set_mode situation: {}".format(mode))
+            self.log.error(f"Undefined set_mode situation: {mode}")
             return False
         self.mode = mode
         if silent is False:
@@ -321,12 +333,12 @@ class Mchess:
         ags = ""
         for p in self.agents_all:
             if p.agent_ready() is False:
-                self.log.error('Failed to initialize agent {}.'.format(p.name))
+                self.log.error(f'Failed to initialize agent {p.name}')
             else:
                 if len(ags) > 0:
                     ags += ", "
                 ags += '"'+p.name+'"'
-        self.log.info("Agents {} initialized".format(ags))
+        self.log.info(f"Agents {ags} initialized")
 
     def set_loglevels(self, prefs):
         if 'log_levels' in prefs:
@@ -391,14 +403,14 @@ class Mchess:
                 agent.display_board(
                    st_board, attribs=attribs)
 
-    def update_display_move(self, msg):
+    def update_display_move(self, mesg):
         for agent in self.agents_all:
             dispm = getattr(agent, "display_move", None)
             if callable(dispm):
-                agent.display_move(msg)
+                agent.display_move(mesg)
 
-    def update_display_info(self, msg):
-        st_msg = copy.deepcopy(msg)
+    def update_display_info(self, mesg):
+        st_msg = copy.deepcopy(mesg)
         st_board = copy.deepcopy(self.board)
         for agent in self.agents_all:
             dinfo = getattr(agent, "display_info", None)
@@ -452,7 +464,7 @@ class Mchess:
 
                 if self.board.is_game_over() is True:
                     self.update_display_board()
-                    self.log.info('Result: {}'.format(self.board.result()))
+                    self.log.info(f'Result: {self.board.result()}')
                     self.set_mode(self.Mode.NONE)
 
                 for agent in passive_player:
@@ -470,8 +482,7 @@ class Mchess:
                         agent.set_valid_moves(self.board, val)
                     gom = getattr(agent, "go", None)
                     if callable(gom):
-                        self.log.debug(
-                            'Initiating GO for agent {}'.format(agent.name))
+                        self.log.debug(f'Initiating GO for agent {agent.name}')
                         brd_copy = copy.deepcopy(self.board)
                         if chess.Move.from_uci('0000') in brd_copy.move_stack:
                             # if history contains NULL moves (UCI: '0000'), do not use
@@ -503,17 +514,15 @@ class Mchess:
                 if msg == None:
                     self.log.warning("None message received.")
                     continue
-                self.log.debug("App received msg: {}".format(msg))
+                self.log.debug(f"App received msg: {msg}")
 
                 # remove 'error' element after all transports are updated.
                 if 'error' in msg:
-                    self.log.error(
-                        'OBSOLETE PROTOCOL ELEMENT! Error condition: {}'.format(msg['error']))
+                    self.log.error(f"Obsolete protocol. Error condition: {msg['error']}")
 
                 if 'agent-state' in msg:
                     if 'message' not in msg or 'actor' not in msg:
-                        self.log.error(
-                            'Invalid <agent-state> message: {}'.format(msg))
+                        self.log.error(f'Invalid <agent-state> message: {msg}')
                     else:
                         if self.uci_agent is not None and msg['actor']==self.uci_agent.name:
                             if msg['agent-state']=='idle':
@@ -534,8 +543,7 @@ class Mchess:
                     #     self.state = self.State.IDLE
                     # else:
                     self.stop(new_mode=None, silent=True)
-                    self.log.info(
-                        "New game initiated by {}".format(msg['actor']))
+                    self.log.info(f"New game initiated by {msg['actor']}")
                     self.board.reset()
                     self.undo_stack = []
                     self.update_display_board()
@@ -549,8 +557,7 @@ class Mchess:
                             fen = agent.get_fen()
                             # Only treat as setup, if it's not the start position
                             if self.short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
-                                self.log.debug("Importing position from {}, initiated by {}, FEN: {}".format(
-                                    agent.name, msg['actor'], fen))
+                                self.log.debug(f"Importing position from {agent.name}, initiated by {msg['actor']}, FEN: {fen}")
                                 self.stop(silent=True)
                                 if self.analysis_active is True:
                                     self.analysis_active = False
@@ -570,8 +577,7 @@ class Mchess:
                     except Exception as e:
                         if 'fen_setup' not in msg:
                             msg['fen_setup'] = 'None'
-                        self.log.warning(
-                            "Invalid FEN {} not imported: {}".format(msg['fen_setup'], e))
+                        self.log.warning(f"Invalid FEN {msg['fen_setup']} not imported: {e}")
 
                 if 'pgn_game' in msg:
                     self.stop()
@@ -673,13 +679,11 @@ class Mchess:
                     self.set_mode(self.Mode.PLAYER_PLAYER)
                     self.analysis_active = True
                     if self.uci_agent is not None:
-                        self.log.info("Starting analysis with {}".format(
-                            self.uci_agent.name))
+                        self.log.info(f"Starting analysis with {self.uci_agent.name}")
                         # self.uci_agent.busy = True
                         # self.uci_agent.go(self.board,-1, analysis=True)
                     if self.uci_agent2 is not None:
-                        self.log.info("Starting analysis with {}".format(
-                            self.uci_agent2.name))
+                        self.log.info(f"Starting analysis with {self.uci_agent2.name}")
                         # self.uci_agent2.busy = True
                         # self.uci_agent2.go(self.board, -1, analysis=True)
 
