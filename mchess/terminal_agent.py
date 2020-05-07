@@ -1,9 +1,9 @@
+''' Simple terminal agent '''
 import logging
 import time
 import sys
 import platform
 import threading
-import queue
 import copy
 
 import chess
