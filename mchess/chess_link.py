@@ -26,7 +26,6 @@ import chess_link_protocol as clp
 # for details on the Chess Link protocol.
 
 
-
 class ChessLink:
     """
     This implements the 'Chess Link' protocol for Millennium Chess Genius Exclusive and
@@ -104,7 +103,8 @@ class ChessLink:
             exit(-1)
 
         if platform.system() not in self.transports:
-            self.log.critical(f"Fatal: {platform.system()} is not a supported platform.")
+            self.log.critical(
+                f"Fatal: {platform.system()} is not a supported platform.")
             msg = "Supported are: "
             for p in self.transports:
                 msg += '{} '.format(p)
@@ -144,8 +144,8 @@ class ChessLink:
                     self.mill_config['btle_iface'] = 0
                     self.write_configuration()
                 if 'transport' in self.mill_config and 'address' in self.mill_config:
-                    self.log.debug(f"Checking default configuration for board via "\
-                                   "{self.mill_config['transport']} "\
+                    self.log.debug(f"Checking default configuration for board via "
+                                   "{self.mill_config['transport']} "
                                    "at {self.mill_config['address']}")
                     self.orientation = self.mill_config['orientation']
                     trans = self._open_transport(self.mill_config['transport'],
@@ -157,7 +157,8 @@ class ChessLink:
                             self.trans = trans
                         else:
                             if self.mill_config['autodetect'] is False:
-                                self.log.warning('Default board not available, autodetect=False.')
+                                self.log.warning(
+                                    'Default board not available, autodetect=False.')
                                 self.error_condition = True
                                 return
                             else:
@@ -165,9 +166,11 @@ class ChessLink:
                                     'Default board not available, start scan.')
                                 self.mill_config = None
         except Exception as e:
-            self.log.debug(f'No valid default configuration, starting board-scan: {e}')
-        reps = 0  # These repetitions are caused by monolitic arch of bluepy single-threads.
-                  # Should be replaced by async refactor at some point.
+            self.log.debug(
+                f'No valid default configuration, starting board-scan: {e}')
+        # These repetitions are caused by monolitic arch of bluepy single-threads.
+        reps = 0
+        # Should be replaced by async refactor at some point.
         while reps < 2:
             if reps > 0:
                 self.log.warning('Retrying scan and connect after error.')
@@ -182,10 +185,12 @@ class ChessLink:
                             tr = tri.Transport(self.trque)
                             self.log.debug("created obj")
                             if tr.is_init() is True:
-                                self.log.debug(f"Transport {tr.get_name()} loaded.")
-                                address = tr.search_board(self.mill_config['btle_iface'])
+                                self.log.debug(
+                                    f"Transport {tr.get_name()} loaded.")
+                                address = tr.search_board(
+                                    self.mill_config['btle_iface'])
                                 if address is not None:
-                                    self.log.debug(f"Found board on transport {tr.get_name()} "\
+                                    self.log.debug(f"Found board on transport {tr.get_name()} "
                                                    "at address {address}")
                                     self.mill_config = {
                                         'transport': tr.get_name(), 'address': address}
@@ -193,9 +198,11 @@ class ChessLink:
                                     self.write_configuration()
                                     break
                             else:
-                                self.log.warning(f"Transport {tr.get_name()} failed to initialize")
+                                self.log.warning(
+                                    f"Transport {tr.get_name()} failed to initialize")
                         except Exception as e:
-                            self.log.warning(f"Internal error, import of {transport} failed: {e}")
+                            self.log.warning(
+                                f"Internal error, import of {transport} failed: {e}")
 
             if self.mill_config is None or self.trans is None:
                 self.log.error("No transport available, cannot connect.")
@@ -205,20 +212,21 @@ class ChessLink:
                 self.error_condition = True
                 return
             else:
-                self.log.debug(f"Valid board available on {self.mill_config['transport']} "\
+                self.log.debug(f"Valid board available on {self.mill_config['transport']} "
                                "at {self.mill_config['address']}")
                 if platform.system() != 'Windows':
                     if os.geteuid() == 0:
-                        self.log.warning('Do not run as root, once intial BLE scan is done.')
-                self.log.debug(f"Connecting to Chess Link via {self.mill_config['transport']} "\
+                        self.log.warning(
+                            'Do not run as root, once intial BLE scan is done.')
+                self.log.debug(f"Connecting to Chess Link via {self.mill_config['transport']} "
                                "at {self.mill_config['address']}")
                 self.connected = self.trans.open_mt(
                     self.mill_config['address'])
                 if self.connected is True:
-                    self.log.info(f"Connected to Chess Link via {self.mill_config['transport']}"\
+                    self.log.info(f"Connected to Chess Link via {self.mill_config['transport']}"
                                   " at {self.mill_config['address']}")
                 else:
-                    self.log.error(f"Connection to Chess Link via {self.mill_config['transport']}"\
+                    self.log.error(f"Connection to Chess Link via {self.mill_config['transport']}"
                                    " at {self.mill_config['address']} FAILED.")
                     self.error_condition = True
 
@@ -270,7 +278,7 @@ class ChessLink:
                 json.dump(self.mill_config, f, indent=4)
                 return True
         except Exception as e:
-            self.log.error(f"Failed to save default configuration {self.mill_config} "\
+            self.log.error(f"Failed to save default configuration {self.mill_config} "
                            "to chess_link_config.json: {e}")
         return False
 
@@ -295,7 +303,8 @@ class ChessLink:
                     else:
                         state = toks
                         emsg = ''
-                    self.log.info(f"Agent state of {self.name} changed to {state}, {emsg}")
+                    self.log.info(
+                        f"Agent state of {self.name} changed to {state}, {emsg}")
                     if state == 'offline':
                         self.error_condition = True
                     else:
@@ -317,7 +326,8 @@ class ChessLink:
                                         c = rp[7-x+y*8]
                                         i = self.figrep['ascii'].find(c)
                                         if i == -1:
-                                            self.log.warning(f"Invalid char in raw position: {c}")
+                                            self.log.warning(
+                                                f"Invalid char in raw position: {c}")
                                             val_pos = False
                                             continue
                                         else:
@@ -328,7 +338,8 @@ class ChessLink:
                                                 position[7-y][7-x] = f
                             else:
                                 val_pos = False
-                                self.log.warning(f"Error in board position, received {len(rp)}")
+                                self.log.warning(
+                                    f"Error in board position, received {len(rp)}")
                                 continue
                         else:
                             val_pos = False
@@ -386,7 +397,8 @@ class ChessLink:
                             self.appque.put(
                                 {'version': version, 'actor': self.name})
                         else:
-                            self.log.warning(f"Bad length of version-reply: {len(version)}")
+                            self.log.warning(
+                                f"Bad length of version-reply: {len(version)}")
 
                     if msg[0] == 'l':
                         self.log.debug('got led-set reply')
@@ -399,7 +411,8 @@ class ChessLink:
                                 msg[1]+msg[2], msg[3]+msg[4])
                             self.log.debug(f'Register written: {reg_cont}')
                         else:
-                            self.log.warning(f'Invalid length {len(msg)} for write-register reply')
+                            self.log.warning(
+                                f'Invalid length {len(msg)} for write-register reply')
                     if msg[0] == 'r':
                         self.log.debug('got read-register reply')
                         if len(msg) == 7:
@@ -407,7 +420,8 @@ class ChessLink:
                                 msg[1]+msg[2], msg[3]+msg[4])
                             self.log.debug(f'Register content: {reg_cont}')
                         else:
-                            self.log.warning(f'Invalid length {len(msg)} for read-register reply')
+                            self.log.warning(
+                                f'Invalid length {len(msg)} for read-register reply')
 
             else:
                 time.sleep(0.01)
@@ -672,7 +686,8 @@ class ChessLink:
                 ilevel = int(level*15)
                 cmd += clp.hex2(ilevel)
                 self.trans.write_mt(cmd)
-                self.log.debug(f"Setting led brightness to {ilevel} (bri={level})")
+                self.log.debug(
+                    f"Setting led brightness to {ilevel} (bri={level})")
         else:
             self.log.warning("Not connected to Chess Link.")
 
@@ -705,7 +720,7 @@ class ChessLink:
         if self.connected is True:
             cmd = "W01"
             if scan_ms < 2.048 * 15.0 or scan_ms > 255.0 * 2.048:
-                self.log.error(f'Invalid scan_ms {scan_ms}, shouldbe between 30.72(fastest, '\
+                self.log.error(f'Invalid scan_ms {scan_ms}, shouldbe between 30.72(fastest, '
                                'might not work)..522.24(slowest, about 2 scans per sec))')
             else:
                 iscans = int(scan_ms/2.048)
@@ -715,8 +730,8 @@ class ChessLink:
                     iscans = 255
                 cmd += clp.hex2(iscans)
                 self.trans.write_mt(cmd)
-                self.log.debug(f"Setting scan_ms intervall to {iscans} -> "\
-                                "{scan_ms}ms ({1000.0/scan_ms} scans per sec)")
+                self.log.debug(f"Setting scan_ms intervall to {iscans} -> "
+                               "{scan_ms}ms ({1000.0/scan_ms} scans per sec)")
         else:
             self.log.warning(
                 "Not connected to Chess Link.")
@@ -760,7 +775,8 @@ class ChessLink:
                         c = self.figrep['ascii'][i]
                         break
                 if c == '?':
-                    self.log.error(f"Internal FEN error, could not translation {c} at {y}{x}")
+                    self.log.error(
+                        f"Internal FEN error, could not translation {c} at {y}{x}")
                     return ""
                 if c == '.':
                     blanks = blanks + 1
@@ -815,12 +831,14 @@ class ChessLink:
                         ci = self.figrep['int'][i]
                         break
                 if ci == -99:
-                    self.log.error(f"Internal FEN2 error decoding {c} at {y}{x}")
+                    self.log.error(
+                        f"Internal FEN2 error decoding {c} at {y}{x}")
                     return []
                 position[7-y][x] = ci
                 x += 1
             if y < 7 and fenp[fi] != '/':
-                self.log.error(f"Illegal fen: missing '/' {y}{x}: {fenp[fi]}[{fi}]")
+                self.log.error(
+                    f"Illegal fen: missing '/' {y}{x}: {fenp[fi]}[{fi}]")
                 return []
             fi += 1
         return position
@@ -838,9 +856,10 @@ class ChessLink:
                 self.log.debug(f"Transport {tr.get_name()} loaded.")
                 return tr
             else:
-                self.log.warning(f"Transport {tr.get_name()} failed to initialize")
+                self.log.warning(
+                    f"Transport {tr.get_name()} failed to initialize")
         except Exception as e:
-            self.log.warning(f"Internal error {e}, import of {transport} failed, "\
+            self.log.warning(f"Internal error {e}, import of {transport} failed, "
                              "transport not available.")
         return None
 
