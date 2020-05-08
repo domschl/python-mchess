@@ -1,14 +1,16 @@
+''' Turquoise chess main module '''
 import argparse
-import platform
 import logging
 import json
 import importlib
 
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 
 class TurquoiseSetup():
+    ''' Load configuration and prepare agent initialization '''
+
     def __init__(self):
         self.preference_version = 1
 
@@ -16,12 +18,11 @@ class TurquoiseSetup():
 
         # self.imports = {'Darwin': ['chess_link_usb'], 'Linux': [
         #    'chess_link_bluepy', 'chess_link_usb'], 'Windows': ['chess_link_usb']}
-        system = platform.system()
-
-        # if system not in self.imports:
-        #    self.log.error("xx")
+        # system = platform.system()
 
         self.prefs = self.read_preferences(self.preference_version)
+        self.bg_agents = []
+        self.fg_agent = None
 
         if 'chesslink' in self.prefs['agents']:
             self.chess_link_agent_module = importlib.import_module(
@@ -129,8 +130,9 @@ class TurquoiseSetup():
                 default_prefs = True
 
         if default_prefs is True:
-            prefs = self.set_default_preferences(version)
-
+            self.prefs = self.set_default_preferences(version)
+            self.write_preferences(self.prefs)
+        '''
         if 'think_ms' not in prefs:
             prefs['think_ms'] = 500
             changed_prefs = True
@@ -174,6 +176,7 @@ class TurquoiseSetup():
             changed_prefs = True
         if changed_prefs is True:
             self.write_preferences(prefs)
+            '''
         return prefs
 
 
@@ -209,8 +212,11 @@ if __name__ == '__main__':
 
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(name)s %(message)s', level=log_level)
-    logger = logging.getLogger('mchess')
-    logger.warning("STARTING")
+    logger.setLevel(logging.INFO)
+    logger = logging.getLogger('Turquoise')
+    logger.info("STARTING")
     logger.setLevel(log_level)
+
+    ts = TurquoiseSetup()
     # mc = Mchess()
     # mc.game_state_machine()
