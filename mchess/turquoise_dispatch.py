@@ -92,15 +92,15 @@ class TurquoiseDispatcher:
         else:
             self.tk_agent = None
         if 'qt' in self.agents:
-            self.tk_agent = self.agents['qt']
-            self.agents_all.append(self.tk_agent)
+            self.qt_agent = self.agents['qt']
+            self.agents_all.append(self.qt_agent)
         else:
-            self.tk_agent = None
+            self.qt_agent = None
         if 'web' in self.agents:
-            self.tk_agent = self.agents['web']
-            self.agents_all.append(self.tk_agent)
+            self.web_agent = self.agents['web']
+            self.agents_all.append(self.web_agent)
         else:
-            self.tk_agent = None
+            self.qt_agent = None
 
         self.uci_agent = None
         self.uci_agent2 = None
