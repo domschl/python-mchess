@@ -58,7 +58,9 @@ class TerminalAgent:
             print()
         self.kdb_thread_active = False
 
-    def position_to_text(self, brd, use_unicode_chess_figures=True, invert=False):
+    def position_to_text(self, brd):
+        use_unicode_chess_figures = self.prefs['use_unicode_figures']
+        invert = self.prefs['invert_term_color']
         board = copy.deepcopy(brd)
         tpos = []
         tpos.append(
@@ -97,7 +99,9 @@ class TerminalAgent:
         tpos.append("    A  B  C  D  E  F  G  H  ")
         return tpos
 
-    def moves_to_text(self, brd, score=None, use_unicode_chess_figures=True, invert=False, lines=11):
+    def moves_to_text(self, brd, score=None, lines=11):
+        use_unicode_chess_figures = self.prefs['use_unicode_figures']
+        invert = self.prefs['invert_term_color']
         board = copy.deepcopy(brd)
         ams = ["" for _ in range(11)]
         mc = len(board.move_stack)
@@ -207,12 +211,10 @@ class TerminalAgent:
         esc = chr(27)
         print("{}[{}A".format(esc, n), end="")
 
-    def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
-        txa = self.position_to_text(
-            board, use_unicode_chess_figures=attribs['unicode'], invert=attribs['invert'])
+    def display_board(self, board, attribs):
+        txa = self.position_to_text(board)
         
-        ams = self.moves_to_text(board, lines=len(
-            txa), use_unicode_chess_figures=attribs['unicode'], invert=attribs['invert'])
+        ams = self.moves_to_text(board, lines=len(txa))
         header = '                                {:>10.10s} - {:10.10s}'.format(
             attribs['white_name'], attribs['black_name'])
         new_cache = header

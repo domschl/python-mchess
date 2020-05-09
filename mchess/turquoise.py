@@ -5,6 +5,8 @@ import json
 import importlib
 import queue
 
+from turquoise_dispatch import TurquoiseDispatcher
+
 
 __version__ = "0.3.0"
 
@@ -36,10 +38,13 @@ class TurquoiseSetup():
         self.config_logging(self.prefs)
 
         self.main_thread = None
+        self.dispatcher = None
         self.main_event_queue = queue.Queue()
 
         self.agent_modules={}
+        self.uci_engine_configurator = None
         self.agents = {}
+        self.engines = {}
         for agent in self.known_agents:
             if agent in self.prefs['agents']:
                 try:
@@ -139,11 +144,17 @@ class TurquoiseSetup():
         else:
             self.log.warning('Custom log levels not defined')
 
-    def start_up(self):
+    def main(self):
         for agent in self.agent_modules:
             class_name = self.known_agents[agent][1]
             if isinstance(class_name, list):
-                self.log.error(f"Not yet implemented: {class_name}")
+                if class_name[0] == 'UciEngines':
+                    self.uci_engine_configurator = self.agent_modules[agent].UciEngines(self.main_event_queue, self.prefs[agent])
+                    for engine in self.uci_engine_configurator.engines:
+                        self.log.info(f"Found engine {engine}")
+                    # XXX: startup engine-agents...
+                else:
+                    self.log.error(f"Not yet implemented: {class_name}")
             else:
                 try:
                     self.log.info(f"Instantiating agent {agent}, {class_name}")
@@ -152,6 +163,13 @@ class TurquoiseSetup():
                 except Exception as e:
                     self.log.error(f"Failed to instantiate {class_name} for agent {agent}: {e}")
 
+        # mainthreader id
+        self.dispatcher = TurquoiseDispatcher(self.main_event_queue, self.prefs, self.agents, self.uci_engine_configurator)
+
+        try:
+            self.dispatcher.game_state_machine_NEH()
+        except KeyboardInterrupt:
+            self.dispatcher.quit()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='python mchess.py')
@@ -179,17 +197,18 @@ if __name__ == '__main__':
     else:
         log_level = logging.INFO
 
-    logging.basicConfig(
-        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=log_level)
+    logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',
+                        level=log_level, filename='turquoise.log', filemode='w')
+
+    # console = logging.StreamHandler()
+    # console.setLevel(logging.INFO)
+                            
     logger = logging.getLogger('Turquoise')
+
     logger.setLevel(log_level)
     logger.info("STARTING")
     logger.setLevel(log_level)
 
     ts = TurquoiseSetup(args)
-    ts.start_up()
+    ts.main()
 
-    # if ts.main_thread is None:
-
-    # mc = Mchess()
-    # mc.game_state_machine()

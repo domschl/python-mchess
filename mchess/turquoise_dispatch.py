@@ -1,27 +1,35 @@
 ''' MChess Turquoise application '''
-import argparse
 import logging
 import sys
-# import signal
-# import threading
-import json
-import queue
 import time
 from enum import Enum
 import copy
 import io
 
 import chess
-# import chess.uci
 import chess.pgn
 
-class TurqoiseDispatch:
-    ''' Main dispather and event state machine '''
-    def __init__(self):
-        self.log = logging.getLogger('mchess')
+class TurquoiseDispatcher:
+    ''' Main dispatcher and event state machine '''
+    def __init__(self, appque, prefs, agents, uci_conf):
+        self.log = logging.getLogger('StateMachine')
+        self.appque = appque
+        self.prefs = prefs
+        self.agents = agents
+        self.uci_engine_configurator = uci_conf
+
+        # XXX: to be removed:
+        self.chess_link_agent = None
+        self.term_agent = None
+        self.tk_agent = None
+        self.qt_agent = None
+        self.web_agent = None
+        self.uci_agent = None
+        self.uci_agent2 = None
 
         self.board = chess.Board()
         self.state = self.State.IDLE
+
         self.last_info = 0
         self.ponder_move = None
         self.analysis_active = False
@@ -38,9 +46,6 @@ class TurqoiseDispatch:
         self.undo_stack = []
 
         self.mode = None
-        self.prefs = self.read_preferences()
-        self.set_loglevels(self.prefs)
-        self.appque = queue.Queue()
 
         self.init_agents()
 
@@ -49,67 +54,6 @@ class TurqoiseDispatch:
 
         # self.update_display_board()
         self.state_machine_active = True
-
-    def write_preferences(self, pref):
-        try:
-            with open("preferences.json", "w") as fp:
-                json.dump(pref, fp, indent=4)
-        except Exception as e:
-            self.log.error(f"Failed to write preferences.json, {e}")
-
-    def read_preferences(self):
-        prefs = {}
-        changed_prefs = False
-        try:
-            with open('preferences.json', 'r') as f:
-                prefs = json.load(f)
-        except Exception as e:
-            changed_prefs = True
-            self.log.warning(f'Failed to read preferences.json, initializing defaults: {e}')
-        if 'think_ms' not in prefs:
-            prefs['think_ms'] = 500
-            changed_prefs = True
-        if 'use_unicode_figures' not in prefs:
-            prefs['use_unicode_figures'] = True
-            changed_prefs = True
-        if 'invert_term_color' not in prefs:
-            prefs['invert_term_color'] = False
-            changed_prefs = True
-        if 'max_plies_terminal' not in prefs:
-            prefs['max_plies_terminal'] = 6
-            changed_prefs = True
-        if 'max_plies_board' not in prefs:
-            prefs['max_plies_board'] = 3
-            changed_prefs = True
-        if 'ply_vis_delay' not in prefs:
-            prefs['ply_vis_delay'] = 80
-            changed_prefs = True
-        if 'import_chesslink_position' not in prefs:
-            prefs['import_chesslink_position'] = True
-            changed_prefs = True
-        if 'computer_player_name' not in prefs:
-            prefs['computer_player_name'] = 'stockfish'
-            changed_prefs = True
-        if 'computer_player2_name' not in prefs:
-            prefs['computer_player2_name'] = ''
-            changed_prefs = True
-        if 'human_name' not in prefs:
-            prefs['human_name'] = 'human'
-            changed_prefs = True
-        if 'active_agents' not in prefs:
-            prefs['active_agents'] = {
-                "human": ["chess_link", "terminal", "web", "tk"],
-                "computer": ["stockfish", "lc0"]
-            }
-            changed_prefs = True
-        if 'log_levels' not in prefs:
-            prefs['log_levels'] = {
-                'chess.engine': 'ERROR'
-            }
-            changed_prefs = True
-        if changed_prefs is True:
-            self.write_preferences(prefs)
-        return prefs
 
     def short_fen(self, fen):
         i = fen.find(' ')
@@ -128,39 +72,40 @@ class TurqoiseDispatch:
         return vals
 
     def init_agents(self):
+        # XXX temp. Gurkenschnorchel
         self.agents_all = []
-
-        conditional_imports(self.prefs)
-
-        if 'chess_link' in self.prefs['active_agents']['human']:
-            self.chess_link_agent = ChessLinkAgent(self.appque, self.prefs)
-            self.chess_link_agent.max_plies = self.prefs['max_plies_board']
-            self.agents_all += [self.chess_link_agent]
+        if 'chesslink' in self.agents:
+            self.chess_link_agent = self.agents['chesslink']
+            self.agents_all.append(self.chess_link_agent)
+            # XXX: self.chess_link_agent.max_plies = self.prefs['max_plies_board']
         else:
             self.chess_link_agent = None
-
-        if 'terminal' in self.prefs['active_agents']['human']:
-            self.term_agent = TerminalAgent(self.appque, self.prefs)
-            self.term_agent.max_plies = self.prefs['max_plies_terminal']
-            self.agents_all += [self.term_agent]
+        if 'terminal' in self.agents:
+            self.term_agent = self.agents['terminal']
+            self.agents_all.append(self.term_agent)
+            # XXX: self.term_agent.max_plies = self.prefs['max_plies_terminal']
         else:
             self.term_agent = None
-
-        if 'tk' in self.prefs['active_agents']['human']:
-            self.tk_agent = TkAgent(self.appque, self.prefs)
-            self.agents_all += [self.tk_agent]
+        if 'tk' in self.agents:
+            self.tk_agent = self.agents['tk']
+            self.agents_all.append(self.tk_agent)
+        else:
+            self.tk_agent = None
+        if 'qt' in self.agents:
+            self.tk_agent = self.agents['qt']
+            self.agents_all.append(self.tk_agent)
+        else:
+            self.tk_agent = None
+        if 'web' in self.agents:
+            self.tk_agent = self.agents['web']
+            self.agents_all.append(self.tk_agent)
         else:
             self.tk_agent = None
 
-
-        if 'web' in self.prefs['active_agents']['human']:
-            self.web_agent = WebAgent(self.appque, self.prefs)
-            self.agents_all += [self.web_agent]
-        else:
-            self.web_agent = None
-
         self.uci_agent = None
         self.uci_agent2 = None
+        
+        '''
         avail_engines = ""
         if len(self.prefs['active_agents']['computer']) > 0:
             self.uci_engines = UciEngines(self.appque, self.prefs)
@@ -190,6 +135,7 @@ class TurqoiseDispatch:
             else:
                 self.uci_agent = None
                 self.uci_agent2 = None
+            '''
 
     class Mode(Enum):
         ''' state machine play mode '''
@@ -265,8 +211,8 @@ class TurqoiseDispatch:
             self.player_w_name = "None"
             self.player_b_name = "None"
         elif mode == self.Mode.PLAYER_PLAYER:
-            self.player_w_name = self.prefs['human_name']
-            self.player_b_name = self.prefs['human_name']
+            self.player_w_name = self.prefs['default_human_player']['name']
+            self.player_b_name = self.prefs['default_human_player']['name']
             self.player_w = self.get_human_agents()
             self.player_b = self.get_human_agents()
             self.player_watch = self.get_uci_agent()
@@ -384,9 +330,7 @@ class TurqoiseDispatch:
         for agent in self.agents_all:
             dispb = getattr(agent, "display_board", None)
             if callable(dispb):
-                attribs = {'unicode': self.prefs['use_unicode_figures'],
-                           'invert': self.prefs['invert_term_color'],
-                           'white_name': self.player_w_name,
+                attribs = {'white_name': self.player_w_name,
                            'black_name': self.player_b_name
                            }
                 agent.display_board(st_board, attribs=attribs)
@@ -429,7 +373,7 @@ class TurqoiseDispatch:
         try:
             self.game_state_machine_NEH()
         except KeyboardInterrupt:
-            mc.quit()
+            self.quit()
 
     def game_state_machine_NEH(self):
         while self.state_machine_active:
@@ -724,7 +668,7 @@ class TurqoiseDispatch:
                     ply = int(msg['led_hint'])
                     if ply >= 0 and ply < 4:
                         self.prefs['max_plies_board'] = ply
-                        self.write_preferences(self.prefs)
+                        # XXX updates prefs: self.write_preferences(self.prefs)
 
                 if 'quit' in msg:
                     self.stop()
@@ -754,14 +698,9 @@ class TurqoiseDispatch:
 
                 if 'encoding' in msg:
                     self.prefs['use_unicode_figures'] = not self.prefs['use_unicode_figures']
-                    self.write_preferences(self.prefs)
+                    # XXX: update prefs: self.write_preferences(self.prefs)
                     self.update_display_board()
 
             else:
                 time.sleep(0.05)
-
-    def start(self, synchronous=True):
-        if synchronous is True:
-            self.game_state_machine()
-        else:
             
