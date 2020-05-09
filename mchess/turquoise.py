@@ -3,6 +3,7 @@ import argparse
 import logging
 import json
 import importlib
+import queue
 
 
 __version__ = "0.3.0"
@@ -11,8 +12,19 @@ __version__ = "0.3.0"
 class TurquoiseSetup():
     ''' Load configuration and prepare agent initialization '''
 
-    def __init__(self):
+    def __init__(self, args):
+        self.args = args
         self.preference_version = 1
+
+        # Entries: 'config_name': ('module_name', 'class(es)')
+        self.known_agents = {
+            'chesslink': ('chess_link_agent', 'ChessLinkAgent'),
+            'terminal': ('terminal_agent', 'TerminalAgent'),
+            'tk': ('tk_agent', 'TkAgent'),
+            'qt': ('qt_agent', 'QtAgent'),
+            'web': ('web_agent', 'WebAgent'),
+            'computer': ('async_uci_agent', ['UciEngines', 'UciAgent'])
+        }
 
         self.log = logging.getLogger("TurquoiseStartup")
 
@@ -21,36 +33,20 @@ class TurquoiseSetup():
         # system = platform.system()
 
         self.prefs = self.read_preferences(self.preference_version)
-        self.bg_agents = []
-        self.fg_agent = None
+        self.config_logging(self.prefs)
 
-        if 'chesslink' in self.prefs['agents']:
-            self.chess_link_agent_module = importlib.import_module(
-                'chess_link_agent')
-            # import ChessLinkAgent
-        else:
-            self.chess_link_agent_module = None
-        if 'terminal' in self.prefs['agents']:
-            self.terminal_agent_module = importlib.import_module(
-                'terminal_agent')
-            # import TerminalAgent
-        else:
-            self.terminal_agent_module = None
-        if 'tk' in self.prefs['agents']:
-            self.tk_agent_module = importlib.import_module('tk_agent')
-            # import TkAgent
-        else:
-            self.tk_agent_mdule = None
-        if 'web' in self.prefs['agents']:
-            self.web_agent_module = importlib.import_module('web_agent')
-            #import WebAgent
-        else:
-            self.web_agent_module = None
-        if 'computer' in self.prefs['agents']:
-            self.computer_module = importlib.import_module('async_uci_agent')
-            # import UciAgent, UciEngines
-        else:
-            self.computer_module = None
+        self.main_thread = None
+        self.main_event_queue = queue.Queue()
+
+        self.agent_modules={}
+        self.agents = {}
+        for agent in self.known_agents:
+            if agent in self.prefs['agents']:
+                try:
+                    module = importlib.import_module(self.known_agents[agent][0])
+                    self.agent_modules[agent] = module
+                except Exception as e:
+                    self.log.error(f"Failed to import module {self.known_agents[agent][0]} for agent {agent}: {e}")
 
     def write_preferences(self, pref):
         try:
@@ -102,7 +98,7 @@ class TurquoiseSetup():
                 "default_player": "stockfish",
                 "default_2nd_analyser": "lc0",
                 "engines": [
-                    "stockfish", "lc0", "komodo"
+                    "stockfish"
                 ]
             },
             "log_levels": {
@@ -130,54 +126,31 @@ class TurquoiseSetup():
                 default_prefs = True
 
         if default_prefs is True:
-            self.prefs = self.set_default_preferences(version)
-            self.write_preferences(self.prefs)
-        '''
-        if 'think_ms' not in prefs:
-            prefs['think_ms'] = 500
-            changed_prefs = True
-        if 'use_unicode_figures' not in prefs:
-            prefs['use_unicode_figures'] = True
-            changed_prefs = True
-        if 'invert_term_color' not in prefs:
-            prefs['invert_term_color'] = False
-            changed_prefs = True
-        if 'max_plies_terminal' not in prefs:
-            prefs['max_plies_terminal'] = 6
-            changed_prefs = True
-        if 'max_plies_board' not in prefs:
-            prefs['max_plies_board'] = 3
-            changed_prefs = True
-        if 'ply_vis_delay' not in prefs:
-            prefs['ply_vis_delay'] = 80
-            changed_prefs = True
-        if 'import_chesslink_position' not in prefs:
-            prefs['import_chesslink_position'] = True
-            changed_prefs = True
-        if 'computer_player_name' not in prefs:
-            prefs['computer_player_name'] = 'stockfish'
-            changed_prefs = True
-        if 'computer_player2_name' not in prefs:
-            prefs['computer_player2_name'] = ''
-            changed_prefs = True
-        if 'human_name' not in prefs:
-            prefs['human_name'] = 'human'
-            changed_prefs = True
-        if 'active_agents' not in prefs:
-            prefs['active_agents'] = {
-                "human": ["chess_link", "terminal", "web", "tk"],
-                "computer": ["stockfish", "lc0"]
-            }
-            changed_prefs = True
-        if 'log_levels' not in prefs:
-            prefs['log_levels'] = {
-                'chess.engine': 'ERROR'
-            }
-            changed_prefs = True
-        if changed_prefs is True:
+            prefs = self.set_default_preferences(version)
             self.write_preferences(prefs)
-            '''
         return prefs
+
+    def config_logging(self, prefs):
+        if 'log_levels' in prefs:
+            for module in prefs['log_levels']:
+                level = logging.getLevelName(prefs['log_levels'][module])
+                logi = logging.getLogger(module)
+                logi.setLevel(level)
+        else:
+            self.log.warning('Custom log levels not defined')
+
+    def start_up(self):
+        for agent in self.agent_modules:
+            class_name = self.known_agents[agent][1]
+            if isinstance(class_name, list):
+                self.log.error(f"Not yet implemented: {class_name}")
+            else:
+                try:
+                    self.log.info(f"Instantiating agent {agent}, {class_name}")
+                    agent_class = getattr(self.agent_modules[agent], class_name)
+                    self.agents[agent] = agent_class(self.main_event_queue, self.prefs[agent])
+                except Exception as e:
+                    self.log.error(f"Failed to instantiate {class_name} for agent {agent}: {e}")
 
 
 if __name__ == '__main__':
@@ -203,20 +176,20 @@ if __name__ == '__main__':
     print("    Enter 'help' to see an overview of console commands")
     if args.verbose is True:
         log_level = logging.DEBUG
-        log_level_e = logging.DEBUG
-        log_level_pce = logging.DEBUG
     else:
-        log_level = logging.WARNING
-        log_level_e = logging.ERROR
-        log_level_pce = logging.ERROR
+        log_level = logging.INFO
 
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(name)s %(message)s', level=log_level)
-    logger.setLevel(logging.INFO)
     logger = logging.getLogger('Turquoise')
+    logger.setLevel(log_level)
     logger.info("STARTING")
     logger.setLevel(log_level)
 
-    ts = TurquoiseSetup()
+    ts = TurquoiseSetup(args)
+    ts.start_up()
+
+    # if ts.main_thread is None:
+
     # mc = Mchess()
     # mc.game_state_machine()
