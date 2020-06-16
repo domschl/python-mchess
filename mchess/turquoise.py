@@ -71,7 +71,7 @@ class TurquoiseSetup():
             "chess_link": {
                 "max_plies_board": 3,
                 "ply_vis_delay": 80,
-                "import_chesslink_position": True,
+                "import_position": True,
                 "autodetect": True,
                 "orientation": True,
                 "btle_iface": 0,

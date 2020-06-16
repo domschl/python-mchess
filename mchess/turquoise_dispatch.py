@@ -77,7 +77,7 @@ class TurquoiseDispatcher:
         if 'chesslink' in self.agents:
             self.chess_link_agent = self.agents['chesslink']
             self.agents_all.append(self.chess_link_agent)
-            # XXX: self.chess_link_agent.max_plies = self.prefs['max_plies_board']
+            # XXX: self.chess_link_agent.max_plies = self.prefs['chess_link']['max_plies_board']
         else:
             self.chess_link_agent = None
         if 'terminal' in self.agents:
@@ -224,7 +224,7 @@ class TurquoiseDispatcher:
                         self.player_watch_name += ", "
                     self.player_watch_name += p.name
         elif mode == self.Mode.PLAYER_ENGINE:
-            self.player_w_name = self.prefs['human_name']
+            self.player_w_name = self.prefs['default_human_player']['name']
             self.player_w = self.get_human_agents()
             self.player_b = self.get_uci_agent()
             if self.player_b == []:
@@ -241,7 +241,7 @@ class TurquoiseDispatcher:
                     "Cannot set ENGINE_PLAYER mode: uci engine 1 not defined.")
                 return False
             self.player_w_name = self.player_w[0].name
-            self.player_b_name = self.prefs['human_name']
+            self.player_b_name = self.prefs['default_human_player']['name']
             self.player_b = self.get_human_agents()
             self.player_watch = []
             self.player_watch_name = "None"
@@ -259,7 +259,7 @@ class TurquoiseDispatcher:
                 return False
             self.player_b_name = self.player_b[0].name
             self.player_watch = self.get_human_agents()
-            self.player_watch_name = self.prefs['human_name']
+            self.player_watch_name = self.prefs['default_human_player']['name']
         # elif mode == self.Mode.ANALYSIS:
         #     self.log.error("ANALYSIS mode not yet implemented.")
         #     return False
@@ -287,7 +287,7 @@ class TurquoiseDispatcher:
 
     def init_board_agents(self):
         if self.chess_link_agent and self.chess_link_agent.agent_ready() and \
-           self.prefs['import_chesslink_position'] is True:
+           self.prefs['chess_link']['import_position'] is True:
             self.import_chesslink_position()
 
         ags = ""
@@ -425,7 +425,7 @@ class TurquoiseDispatcher:
                         # print("This is sent to UCI:")
                         # self.term_agent.display_board(brd_copy)
                         self.log.debug(f"Go {agent.name}")
-                        agent.go(self.board, self.prefs['think_ms'])
+                        agent.go(self.board, self.prefs['computer']['think_ms'])
                         self.uci_agent.busy = True
                         self.log.debug(f"Done Go {agent.name}")
 
@@ -667,7 +667,7 @@ class TurquoiseDispatcher:
                 if 'led_hint' in msg:
                     ply = int(msg['led_hint'])
                     if ply >= 0 and ply < 4:
-                        self.prefs['max_plies_board'] = ply
+                        self.prefs['chess_link']['max_plies_board'] = ply
                         # XXX updates prefs: self.write_preferences(self.prefs)
 
                 if 'quit' in msg:
@@ -697,7 +697,7 @@ class TurquoiseDispatcher:
                     self.import_chesslink_position()
 
                 if 'encoding' in msg:
-                    self.prefs['use_unicode_figures'] = not self.prefs['use_unicode_figures']
+                    self.prefs['terminal']['use_unicode_figures'] = not self.prefs['terminal']['use_unicode_figures']
                     # XXX: update prefs: self.write_preferences(self.prefs)
                     self.update_display_board()
 
