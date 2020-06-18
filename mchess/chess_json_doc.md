@@ -2,6 +2,9 @@
 
 * Revision 0.1.0, 2020-June-18
 
+This JSON protocol is used for agents communicating with the dispatcher
+and for network-connections (e.g. websocket clients).
+
 ## Game modes
 
 ### New game
@@ -25,7 +28,7 @@
 }
 ```
 
-### Set computer level
+### Set computer play-strength level
 
 ```json
 {
@@ -109,29 +112,53 @@
 
 ### Update board display
 
-* Black/white are redundant? (in pgn)
+This message is sent, if the board position changes. (New move, new game,
+position imported etc.)
 
 ```json
 {
     "cmd": "display_board",
     "fen": "FEN position",
     "pgn": "PGN game history",
-    "white": "name-of-white-player",
-    "black": "name-of-black-player",
-    "actor": "name-of-agent-sending-this"
+    "attribs": {
+        "unicode": true,
+        "invert": false,
+        "white": "name-of-white-player",
+        "black": "name-of-black-player"
+    }
 }
 ```
 
 ### Engine information
 
+Provide information while UCI chess computer engine calculates about
+best variations and evaluations. This message is sent often.
+
 ```json
 {
     "cmd": "current_move_info",
+    "multipv_index": "index of variant: 1 is main variant",
+    "score": "centi-pawn score or #2 mate announcement",
+    "depth": "search depth (half moves)",
+    "seldepth": "selective search depth (half moves)",
+    "nps": "nodes per second",
+    "tbhits": "table-base hits",
+    "variant": [
+        ["half-move-number", "uci-formatted moves"],
+        ["half-move-number", "uci-formatted moves"],
+    ],
+    "san_variant": [
+        ["full-move-number","white-move or ..","black-move"],
+        ["full-move-number","white-move","black-move or empty"],
+    ],
+    "preview_fen_depth": "number of half moves for preview FEN",
+    "preview_fen": "FEN <preview_fen_depth> half-moves in the future",
     "actor": "name-of-agent-sending-this"
 }
 ```
 
-
+The generator can decide, if variants are provided as uci- or san-formatted
+arrays. Recipients will receive both formats from dispatcher.
 
 ## Board moves
 
@@ -181,10 +208,45 @@
 }
 ```
 
+## Configuration messages
+
+### Chose depth of preview FEN
+
+```json
+{
+    "cmd": "preview_fen_depth",
+    "depth": "number-of-half-moves-for-preview-position",
+    "actor": "name-of-agent-sending-this"
+}
+```
+
 ## Hardware board specific messages
 
 ### Hardware board orientation
 
+```json
+{
+    "cmd": "turn_hardware_board",
+    "actor": "name-of-agent-sending-this"
+}
+```
+
 ### Hardware board led mode
 
+```json
+{
+    "cmd": "led_info",
+    "plies": "number of plies to visualise with board leds (max 4)",
+    "actor": "name-of-agent-sending-this"
+}
+```
+
 ### Fetch hardware board position
+
+```json
+{
+    "cmd": "import_hardware_board_position",
+    "from": "name-of-hardware-board_agent, e.g. 'ChessLinkAgent'",
+    "actor": "name-of-agent-sending-this"
+}
+```

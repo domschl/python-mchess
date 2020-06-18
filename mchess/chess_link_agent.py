@@ -9,6 +9,7 @@ import chess_link as cl
 
 class ChessLinkAgent:
     ''' Hardware board agent implementation '''
+
     def __init__(self, appque, prefs, timeout=30):
         self.name = 'ChessLinkAgent'
         self.appque = appque
@@ -47,7 +48,8 @@ class ChessLinkAgent:
         if self.init_position is True:
             self.log.debug("board position received, init ok.")
         else:
-            self.log.error(f"no board position received within timeout {timeout}")
+            self.log.error(
+                f"no board position received within timeout {timeout}")
 
     def quit(self):
         self.cl_brd.quit()

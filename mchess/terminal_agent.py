@@ -21,7 +21,7 @@ class TerminalAgent:
         self.max_plies = 6
         if 'max_plies_terminal' in prefs:
             self.max_plies = prefs['max_plies_terminal']
-            if self.max_plies<=0:
+            if self.max_plies <= 0:
                 self.show_infos = False
         self.display_cache = ""
         self.last_cursor_up = 0
@@ -213,7 +213,7 @@ class TerminalAgent:
 
     def display_board(self, board, attribs):
         txa = self.position_to_text(board)
-        
+
         ams = self.moves_to_text(board, lines=len(txa))
         header = '                                {:>10.10s} - {:10.10s}'.format(
             attribs['white_name'], attribs['black_name'])
@@ -252,7 +252,7 @@ class TerminalAgent:
         if 'ponder' in move_msg['move']:
             new_move += '\nPonder: {}'.format(move_msg['move']['ponder'])
 
-        if 'result' in move_msg['move'] and move_msg['move']['result']!='':
+        if 'result' in move_msg['move'] and move_msg['move']['result'] != '':
             new_move += f" ({move_msg['move']['result']})"
 
         if new_move != self.move_cache:
@@ -358,32 +358,33 @@ class TerminalAgent:
                 if cmd in self.kbd_moves:
                     self.kbd_moves = []
                     appque.put(
-                        {'move': {'uci': cmd, 'actor': self.name}})
+                        {'cmd': 'move', 'uci': cmd, 'actor': self.name})
                 elif cmd == '--':
                     self.kbd_moves = []
                     appque.put(
-                        {'move': {'uci': '0000', 'actor': self.name}})
+                        {'cmd': 'move', 'uci': '0000', 'actor': self.name})
                 elif cmd == 'a':
-                    log.debug('analyze')
-                    appque.put({'analysis': '', 'actor': self.name})
+                    log.debug('analyse')
+                    appque.put({'cmd': 'analyse', 'actor': self.name})
                 elif cmd == 'b':
                     log.debug('move back')
-                    appque.put({'back': '', 'actor': self.name})
+                    appque.put({'cmd': 'move_back', 'actor': self.name})
                 elif cmd == 'c':
                     log.debug('change ChessLink board orientation')
                     appque.put(
-                        {'turn eboard orientation': '', 'actor': self.name})
-                elif cmd == 'e':
-                    log.debug('board encoding switch')
-                    appque.put({'encoding': '', 'actor': self.name})
+                        {'cmd': 'turn_hardware_board', 'actor': self.name})
+#                elif cmd == 'e':
+#                    log.debug('board encoding switch')
+#                    appque.put({'encoding': '', 'actor': self.name})
                 elif cmd == 'f':
                     log.debug('move forward')
-                    appque.put({'forward': '', 'actor': self.name})
+                    appque.put({'cmd': 'move_forward', 'actor': self.name})
                 elif cmd[:4] == 'fen ':
-                    appque.put({'fen_setup': cmd[4:], 'actor': self.name})
+                    appque.put(
+                        {'cmd': 'import_fen', 'fen': cmd[4:], 'actor': self.name})
                 elif cmd == 'g':
                     log.debug('go')
-                    appque.put({'go': 'current', 'actor': self.name})
+                    appque.put({'cmd': 'go', 'actor': self.name})
                 elif cmd[:2] == 'h ':
                     log.debug(
                         'show analysis for n plies (max 4) on ChessLink board.')
@@ -392,48 +393,54 @@ class TerminalAgent:
                         ply = 0
                     if ply > 4:
                         ply = 4
-                    appque.put({'led_hint': ply})
+                    appque.put({'cmd': 'led_info', 'plies': ply})
                 elif cmd[:1] == 'm':
                     if len(cmd) == 4:
                         if cmd[2:] == "PP":
                             log.debug("mode: player-player")
-                            appque.put({'game_mode': 'PLAYER_PLAYER'})
+                            appque.put(
+                                {'cmd': 'game_mode', 'mode': 'human-human'})
                         elif cmd[2:] == "PE":
                             log.debug("mode: player-engine")
-                            appque.put({'game_mode': 'PLAYER_ENGINE'})
+                            appque.put(
+                                {'cmd': 'game_mode', 'mode': 'human-computer'})
                         elif cmd[2:] == "EP":
                             log.debug("mode: engine-player")
-                            appque.put({'game_mode': 'ENGINE_PLAYER'})
+                            appque.put(
+                                {'cmd': 'game_mode', 'mode': 'computer-human'})
                         elif cmd[2:] == "EE":
                             log.debug("mode: engine-engine")
-                            appque.put({'game_mode': 'ENGINE_ENGINE'})
+                            appque.put(
+                                {'cmd': 'game_mode', 'mode': 'computer_computer'})
                     else:
                         log.warning(
                             'Illegal m parameter, use: PP, PE, EP, EE (see help-command)')
                 elif cmd == 'n':
                     log.debug('requesting new game')
-                    appque.put({'new game': '', 'actor': self.name})
+                    appque.put({'cmd': 'new game', 'actor': self.name})
                 elif cmd == 'p':
                     log.debug('position_fetch')
                     appque.put(
-                        {'position_fetch': 'ChessLinkAgent', 'actor': self.name})
+                        {'cmd': 'import_hardware_board_position', 'from': 'ChessLinkAgent', 'actor': self.name})
                 elif cmd == 'q':
-                    appque.put({'quit': '', 'actor': self.name})
+                    appque.put({'cmd': 'quit', 'actor': self.name})
                 elif cmd == 's':
                     log.debug('stop')
-                    appque.put({'stop': '', 'actor': self.name})
+                    appque.put({'cmd': 'stop', 'actor': self.name})
                 elif cmd == 'tw':
                     log.debug('turn white')
-                    appque.put({'turn': 'white', 'actor': self.name})
+                    appque.put(
+                        {'cmd': 'turn', 'color': 'white', 'actor': self.name})
                 elif cmd == 'tb':
                     log.debug('turn black')
-                    appque.put({'turn': 'black', 'actor': self.name})
+                    appque.put(
+                        {'cmd': 'turn', 'color': 'black', 'actor': self.name})
 
                 elif cmd == 'help':
                     print('Terminal commands:')
                     print('e2e4 - enter a valid move (in UCI format)')
                     print('--  null move')
-                    print('a - analyze current position')
+                    print('a - analyse current position')
                     print('b - take back move')
                     print(
                         'c - change cable orientation (eboard cable left/right')

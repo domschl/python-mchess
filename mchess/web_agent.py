@@ -113,11 +113,12 @@ class WebAgent:
                     "Sending to WebSocket client {} failed with {}".format(handle, e))
                 return
             for actor in self.agent_state_cache:
-                msg=self.agent_state_cache[actor]
+                msg = self.agent_state_cache[actor]
                 try:
                     ws.send(json.dumps(msg))
                 except Exception as e:
-                    self.log.warning(f"Failed to update agents states to new web-socket client: {e}")
+                    self.log.warning(
+                        f"Failed to update agents states to new web-socket client: {e}")
         self.ws_clients[handle] = ws
         while not ws.closed:
             message = ws.receive()
@@ -158,7 +159,8 @@ class WebAgent:
             return
         self.last_pgn = pgntxt
         # print("pgn: {}".format(pgntxt))
-        msg = {'fen': board.fen(), 'pgn': pgntxt, 'attribs': attribs}
+        msg = {'cmd': 'display_board', 'fen': board.fen(), 'pgn': pgntxt,
+               'attribs': attribs}
         for w in self.ws_clients:
             try:
                 self.ws_clients[w].send(json.dumps(msg))
@@ -173,14 +175,14 @@ class WebAgent:
         ninfo = copy.deepcopy(info)
         nboard = copy.deepcopy(board)
         nboard_cut = copy.deepcopy(nboard)
-        max_cut=max_board_preview_hmoves
+        max_cut = max_board_preview_hmoves
         if 'variant' in ninfo:
             ml = []
             mv = ''
             if nboard.turn is False:
                 mv = (nboard.fullmove_number,)
                 mv += ("..",)
-            rel_mv=0
+            rel_mv = 0
             for move in ninfo['variant']:
                 if move is None:
                     self.log.error("None-move in variant: {}".format(ninfo))
