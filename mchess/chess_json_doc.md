@@ -164,6 +164,8 @@ arrays. Recipients will receive both formats from dispatcher.
 
 ### Move
 
+
+
 ```json
 {
     "cmd": "move",
