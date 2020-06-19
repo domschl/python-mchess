@@ -39,7 +39,26 @@ class WebAgent:
         self.last_attribs = None
         self.last_pgn = None
 
-        self.port = 8001
+        if 'port' in self.prefs:
+            self.port = self.prefs['port']
+        else:
+            self.port = 8001
+            self.log.warning(f'Port not configured, defaulting to {self.port}')
+
+        if 'bind_address' in self.prefs:
+            self.bind_address = self.prefs['bind_address']
+        else:
+            self.bind_address = 'localhost'
+            self.log.warning(f'Bind_address not configured, defaulting to f{self.bind_address}, set to "0.0.0.0" for remote accessibility')
+
+        self.private_key = None
+        self.public_key = None
+        if 'tls' in self.prefs and self.prefs['tls'] is True:
+            if 'private_key' not in self.prefs or 'public_key' not in self.prefs:
+                self.log.error(f"Cannot configure tls without public_key and private_key configured!")
+            else:
+                self.private_key = prefs['private_key']
+                self.public_key = prefs['public_key']
 
         self.socket_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -80,7 +99,7 @@ class WebAgent:
         self.sockets.add_url_rule('/ws', 'ws', self.ws_sockets)
         self.ws_clients = {}
         self.ws_handle = 0
-
+        self.log.debug("Initializing web server...")
         self.socket_handler()  # Start threads for web and ws:sockets
 
     def node_modules(self, path):
@@ -104,7 +123,7 @@ class WebAgent:
         self.ws_handle += 1
         handle = self.ws_handle
         if self.last_board is not None and self.last_attribs is not None:
-            msg = {'fen': self.last_board.fen(), 'pgn': self.last_pgn,
+            msg = {'cmd': 'display_board', 'fen': self.last_board.fen(), 'pgn': self.last_pgn,
                    'attribs': self.last_attribs}
             try:
                 ws.send(json.dumps(msg))
@@ -113,11 +132,12 @@ class WebAgent:
                     "Sending to WebSocket client {} failed with {}".format(handle, e))
                 return
             for actor in self.agent_state_cache:
-                msg=self.agent_state_cache[actor]
+                msg = self.agent_state_cache[actor]
                 try:
                     ws.send(json.dumps(msg))
                 except Exception as e:
-                    self.log.warning(f"Failed to update agents states to new web-socket client: {e}")
+                    self.log.warning(
+                        f"Failed to update agents states to new web-socket client: {e}")
         self.ws_clients[handle] = ws
         while not ws.closed:
             message = ws.receive()
@@ -158,7 +178,8 @@ class WebAgent:
             return
         self.last_pgn = pgntxt
         # print("pgn: {}".format(pgntxt))
-        msg = {'fen': board.fen(), 'pgn': pgntxt, 'attribs': attribs}
+        msg = {'cmd': 'display_board', 'fen': board.fen(), 'pgn': pgntxt,
+               'attribs': attribs}
         for w in self.ws_clients:
             try:
                 self.ws_clients[w].send(json.dumps(msg))
@@ -169,51 +190,10 @@ class WebAgent:
     def display_move(self, move_msg):
         pass
 
-    def display_info(self, board, info, max_board_preview_hmoves=6):
-        ninfo = copy.deepcopy(info)
-        nboard = copy.deepcopy(board)
-        nboard_cut = copy.deepcopy(nboard)
-        max_cut=max_board_preview_hmoves
-        if 'variant' in ninfo:
-            ml = []
-            mv = ''
-            if nboard.turn is False:
-                mv = (nboard.fullmove_number,)
-                mv += ("..",)
-            rel_mv=0
-            for move in ninfo['variant']:
-                if move is None:
-                    self.log.error("None-move in variant: {}".format(ninfo))
-                if nboard.turn is True:
-                    mv = (nboard.fullmove_number,)
-                try:
-                    san = nboard.san(move)
-                except Exception as e:
-                    self.log.warning(
-                        "Internal error '{}' at san conversion.".format(e))
-                    san = None
-                if san is not None:
-                    mv += (san,)
-                else:
-                    self.log.info(
-                        "Variant cut off due to san-conversion-error: '{}'".format(mv))
-                    break
-                if nboard.turn is False:
-                    ml.append(mv)
-                    mv = ""
-                nboard.push(move)
-                if rel_mv < max_cut:
-                    nboard_cut.push(move)
-                    rel_mv += 1
-            if mv != "":
-                ml.append(mv)
-                mv = ""
-            ninfo['variant'] = ml
-
-        msg = {'fenref': nboard_cut.fen(), 'info': ninfo}
+    def display_info(self, board, info):
         for w in self.ws_clients:
             try:
-                self.ws_clients[w].send(json.dumps(msg))
+                self.ws_clients[w].send(json.dumps(info))
             except Exception as e:
                 self.log.warning(
                     "Sending to WebSocket client {} failed with {}".format(w, e))
@@ -234,9 +214,22 @@ class WebAgent:
                 self.socket_moves.append(vals[v])
 
     def socket_event_worker_thread(self, appque, log, app, WebSocketHandler):
-        server = pywsgi.WSGIServer(
-            ('0.0.0.0', self.port), app, handler_class=WebSocketHandler)
-        print("Web browser: http://{}:{}".format(socket.gethostname(), self.port))
+        if self.bind_address == '0.0.0.0':
+            address = socket.gethostname()
+        else:
+            address = self.bind_address
+
+        if self.private_key is None or self.public_key is None:
+            server = pywsgi.WSGIServer(
+                (self.bind_address, self.port), app, handler_class=WebSocketHandler)
+            protocol='http'
+            self.log.info(f"Web browser: {protocol}://{address}:{self.port}")
+        else:
+            server = pywsgi.WSGIServer(
+                (self.bind_address, self.port), app, keyfile=self.private_key, certfile=self.public_key, handler_class=WebSocketHandler)
+            protocol='https'
+            self.log.info(f"Web browser: {protocol}://{address}:{self.port}")
+        print(f"Web browser: {protocol}://{address}:{self.port}")
         server.serve_forever()
 
     def socket_handler(self):

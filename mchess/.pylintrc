@@ -1,5 +1,8 @@
 [MASTER]
 extension-pkg-whitelist=PyQt5
+
+[MESSAGES CONTROL]
 logging-format-style=fstr
 
-disable=not-callable,global-statement,broad-except,redefined-outer-name,import-outside-toplevel,invalid-name,missing-function-docstring
+[LOGGING]
+max-line-length=120

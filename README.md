@@ -87,7 +87,7 @@ This installs the dependency `cm-chessboard`.
 Then in directory `mchess`, simply start from console:
 
 ```bash
-python3 mchess.py
+python3 turquoise.py
 ```
 
 This will start chess agents for the chess board, automatically detecting board hardware via USB or BLuetooth LE (Linux, Raspberry PI only), and load the [first active] UCI engine (testet with Leela Chess Zero (Lc0) and Stockfish 9).
@@ -101,7 +101,7 @@ _Early alpha preview of web client "Turquoise"_
 
 Note: Bluetooth LE hardware detection either requires admin privileges for the one-time intial bluetooth scan, or the `setcap` command below.
 
-#### Bluetooth LE board search without `sudo`
+#### Bluetooth LE board search without `sudo` (recommended)
 
 ```bash
 sudo setcap 'cap_net_raw,cap_net_admin+eip' PATH/TO/LIB/python3._x_/site-packages/bluepy/bluepy-helper
@@ -115,10 +115,10 @@ python3 mchess.py
 If the above fails, try to scan once with `sudo`:
 
 ```bash
-sudo python3 mchess.py
+sudo python3 turquoise.py
 ```
 
-If `mchess.py` has been started with `sudo`, it is advisible to change the ownership of `chess_link_config.json` to the user account that is used for games, otherwise `mchess.py` cannot update the configuration (e.g. orientation changes) automatically.
+If `turqoise.py` has been started with `sudo`, it is advisible to change the ownership of `chess_link_config.json` to the user account that is used for games, otherwise `turquoise.py` cannot update the configuration (e.g. orientation changes) automatically.
 
 Restart the program, once the board has connected (the connection address is saved in `chess_link_config.json`)
 
@@ -144,6 +144,8 @@ Enter `help` on the terminal console to get an overview of commands, and see bel
 Currrently, there doesn't exist much of a GUI to configure `mchess`, and configuration relies on a number of JSON files.
 
 ### `preferences.json`, general options for mchess
+
+* outdated
 
 | Field                | Default  | Description                                             |
 | -------------------- | -------- | --------------------------------------------------------|
@@ -266,6 +268,7 @@ like so:
 This will show bit-level communication with the ChessLink board.
 
 ## History
+* 2020-06-19: Major cleanup of internals, basis for extending functionality, v0.3.0
 * 2020-04-28: Work started on updating changes in module depencies (especially the async interface python-chess)
 
 ## Documentation
