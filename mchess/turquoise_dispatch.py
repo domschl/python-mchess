@@ -19,7 +19,7 @@ class TurquoiseDispatcher:
         self.uci_engine_configurator = uci_conf
 
         # XXX: to be removed:
-        self.chess_link_agent = None
+        self.chesslink_agent = None
         self.term_agent = None
         self.tk_agent = None
         self.qt_agent = None
@@ -55,6 +55,11 @@ class TurquoiseDispatcher:
         # self.update_display_board()
         self.state_machine_active = True
 
+        self.cmds={
+            'quit': self.quit,
+            'agent_state': self.agent_state,
+        }
+
     def short_fen(self, fen):
         i = fen.find(' ')
         if i == -1:
@@ -75,11 +80,11 @@ class TurquoiseDispatcher:
         # XXX temp. Gurkenschnorchel
         self.agents_all = []
         if 'chesslink' in self.agents:
-            self.chess_link_agent = self.agents['chesslink']
-            self.agents_all.append(self.chess_link_agent)
-            # XXX: self.chess_link_agent.max_plies = self.prefs['chess_link']['max_plies_board']
+            self.chesslink_agent = self.agents['chesslink']
+            self.agents_all.append(self.chesslink_agent)
+            # XXX: self.chesslink_agent.max_plies = self.prefs['chesslink']['max_plies_board']
         else:
-            self.chess_link_agent = None
+            self.chesslink_agent = None
         if 'terminal' in self.agents:
             self.term_agent = self.agents['terminal']
             self.agents_all.append(self.term_agent)
@@ -105,38 +110,6 @@ class TurquoiseDispatcher:
         self.uci_agent = None
         self.uci_agent2 = None
         
-        '''
-        avail_engines = ""
-        if len(self.prefs['active_agents']['computer']) > 0:
-            self.uci_engines = UciEngines(self.appque, self.prefs)
-            for en in self.uci_engines.engines:
-                if len(avail_engines) > 0:
-                    avail_engines += ', '
-                avail_engines += en
-            self.log.info(f'Available UCI engines: {avail_engines}')
-            if len(self.uci_engines.engines) > 0:
-                if self.prefs['computer_player_name'] in self.uci_engines.engines:
-                    name = self.prefs['computer_player_name']
-                    ejs = self.uci_engines.engines[name]['params']
-                    self.uci_agent = UciAgent(self.appque, ejs, self.prefs)
-                else:
-                    uci_names = list(self.uci_engines.engines.keys())
-                    ejs = self.uci_engines.engines[uci_names[0]]['params']
-                    self.uci_agent = UciAgent(self.appque, ejs, self.prefs)
-                self.agents_all += [self.uci_agent]
-                if self.prefs['computer_player2_name'] in self.uci_engines.engines and \
-                   self.prefs['computer_player2_name'] != '':
-                    name = self.prefs['computer_player2_name']
-                    ejs = self.uci_engines.engines[name]['params']
-                    self.uci_agent2 = UciAgent(self.appque, ejs, self.prefs)
-                    self.agents_all += [self.uci_agent2]
-                else:
-                    self.uci_agent2 = None
-            else:
-                self.uci_agent = None
-                self.uci_agent2 = None
-            '''
-
     class Mode(Enum):
         ''' state machine play mode '''
         NONE = 0
@@ -157,8 +130,8 @@ class TurquoiseDispatcher:
         agents = []
         if self.term_agent and self.term_agent.agent_ready() is True:
             agents += [self.term_agent]
-        if self.chess_link_agent and self.chess_link_agent.agent_ready() is True:
-            agents += [self.chess_link_agent]
+        if self.chesslink_agent and self.chesslink_agent.agent_ready() is True:
+            agents += [self.chesslink_agent]
         if self.tk_agent and self.tk_agent.agent_ready() is True:
             agents += [self.tk_agent]
         if self.web_agent and self.web_agent.agent_ready() is True:
@@ -280,14 +253,14 @@ class TurquoiseDispatcher:
         BUSY = 1
 
     def import_chesslink_position(self):
-        if self.chess_link_agent:
+        if self.chesslink_agent:
             self.appque.put(
-                {'position_fetch': 'ChessLinkAgent', 'actor': self.chess_link_agent.name})
+                {'position_fetch': 'ChessLinkAgent', 'actor': self.chesslink_agent.name})
         # self.state = self.State.BUSY  # Check?
 
     def init_board_agents(self):
-        if self.chess_link_agent and self.chess_link_agent.agent_ready() and \
-           self.prefs['chess_link']['import_position'] is True:
+        if self.chesslink_agent and self.chesslink_agent.agent_ready() and \
+           self.prefs['chesslink']['import_position'] is True:
             self.import_chesslink_position()
 
         ags = ""
@@ -349,19 +322,6 @@ class TurquoiseDispatcher:
             if callable(dinfo):
                 agent.display_info(
                     st_board, info=st_msg['curmove'])
-
-    def quit(self):
-        print("Quitting...")
-        # leds off
-        if self.chess_link_agent:
-            self.chess_link_agent.cl_brd.set_led_off()
-        time.sleep(1)
-        for agent in self.agents_all:
-            fquit = getattr(agent, "quit", None)
-            if callable(fquit):
-                agent.quit()
-        self.state_machine_active = False
-        sys.exit(0)
 
     def quit_signal(self, sig, frame):
         self.log.debug(f"sig: {sig} frame: {frame}")
@@ -448,26 +408,22 @@ class TurquoiseDispatcher:
                     self.log.warning("None message received.")
                     continue
                 self.log.debug(f"App received msg: {msg}")
-
-                # remove 'error' element after all transports are updated.
-                if 'error' in msg:
-                    self.log.error(f"Obsolete protocol. Error condition: {msg['error']}")
-
-                if 'agent-state' in msg:
-                    if 'message' not in msg or 'actor' not in msg:
-                        self.log.error(f'Invalid <agent-state> message: {msg}')
+                if 'cmd' not in msg:
+                    if 'actor' in msg:
+                        agent=msg['actor']
                     else:
-                        if self.uci_agent is not None and msg['actor'] == self.uci_agent.name:
-                            if msg['agent-state'] == 'idle':
-                                self.uci_agent.busy = False
-                        if self.uci_agent2 is not None and msg['actor'] == self.uci_agent2.name:
-                            if msg['agent-state'] == 'idle':
-                                self.uci_agent2.busy = False
-                        for agent in self.agents_all:
-                            if agent != msg['actor']:
-                                fstate = getattr(agent, "agent_states", None)
-                                if callable(fstate):
-                                    agent.agent_states(msg)
+                        agent='unknown'
+                    self.log.error(f"Old-style message {msg} received from {agent}, ignored, please update agent!")
+                    continue
+                if msg['cmd'] in self.cmds:
+                    self.cmds[msg['cmd']]()
+                else:
+                    if 'actor' in msg:
+                        agent=msg['actor']
+                    else:
+                        agent='unknown'
+                    self.log.error(f"Message cmd {msg['cmd']} has not yet been implemented (from: {agent}), msg: {msg}")
+                    continue
 
                 if 'new game' in msg:
                     # if self.board.fen() == chess.STARTING_FEN:
@@ -667,12 +623,8 @@ class TurquoiseDispatcher:
                 if 'led_hint' in msg:
                     ply = int(msg['led_hint'])
                     if ply >= 0 and ply < 4:
-                        self.prefs['chess_link']['max_plies_board'] = ply
+                        self.prefs['chesslink']['max_plies_board'] = ply
                         # XXX updates prefs: self.write_preferences(self.prefs)
-
-                if 'quit' in msg:
-                    self.stop()
-                    self.quit()
 
                 if 'stop' in msg:
                     # self.analysis_active=False
@@ -688,11 +640,11 @@ class TurquoiseDispatcher:
 
                 if 'turn eboard orientation' in msg:
                     self.stop()
-                    if self.chess_link_agent.cl_brd.get_orientation() is False:
-                        self.chess_link_agent.cl_brd.set_orientation(True)
+                    if self.chesslink_agent.cl_brd.get_orientation() is False:
+                        self.chesslink_agent.cl_brd.set_orientation(True)
                         self.log.info("eboard cable on right side.")
                     else:
-                        self.chess_link_agent.cl_brd.set_orientation(False)
+                        self.chesslink_agent.cl_brd.set_orientation(False)
                         self.log.info("eboard cable on left side.")
                     self.import_chesslink_position()
 
@@ -703,4 +655,34 @@ class TurquoiseDispatcher:
 
             else:
                 time.sleep(0.05)
-            
+    
+    def agent_state(msg):
+        if 'message' not in msg or 'actor' not in msg:
+            self.log.error(f'Invalid <agent-state> message: {msg}')
+        else:
+            if self.uci_agent is not None and msg['actor'] == self.uci_agent.name:
+                if msg['state'] == 'idle':
+                    self.uci_agent.busy = False
+            if self.uci_agent2 is not None and msg['actor'] == self.uci_agent2.name:
+                if msg['state'] == 'idle':
+                    self.uci_agent2.busy = False
+            for agent in self.agents_all:
+                if agent != msg['actor']:
+                    fstate = getattr(agent, "agent_states", None)
+                    if callable(fstate):
+                        agent.agent_states(msg)
+
+    def quit(self):
+        print("Quitting...")
+        self.stop()
+        # leds off
+        if self.chesslink_agent:
+            self.chesslink_agent.cl_brd.set_led_off()
+        time.sleep(1)
+        for agent in self.agents_all:
+            fquit = getattr(agent, "quit", None)
+            if callable(fquit):
+                agent.quit()
+        self.state_machine_active = False
+        sys.exit(0)
+

@@ -212,6 +212,20 @@ arrays. Recipients will receive both formats from dispatcher.
 
 ## Configuration messages
 
+### update agent state
+
+```json
+{
+    "cmd": "agent_state",
+    "state": "idle or busy or offline",
+    "message": "optional message",
+    "name": "Descriptive name",
+    "authors": "authors in case of engine",
+    "class": "agent class, e.g. engine or human",
+    "actor": "name-of-agent-sending-this"
+}
+```
+
 ### Chose depth of preview FEN
 
 ```json

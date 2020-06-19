@@ -63,12 +63,12 @@ class TurquoiseSetup():
     def set_default_preferences(self, version):
         prefs = {
             "version": version,
-            "agents": ["chess_link", "terminal", "web", "tk", "qt", "computer"],
+            "agents": ["chesslink", "terminal", "web", "tk", "qt", "computer"],
             "default_human_player": {
                 "name": "human",
                 "location": ""
             },
-            "chess_link": {
+            "chesslink": {
                 "max_plies_board": 3,
                 "ply_vis_delay": 80,
                 "import_position": True,
