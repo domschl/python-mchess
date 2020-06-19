@@ -157,14 +157,12 @@ best variations and evaluations. This message is sent often.
 }
 ```
 
-The generator can decide, if variants are provided as uci- or san-formatted
-arrays. Recipients will receive both formats from dispatcher.
+The generator should provide only `"variant"` in uci format, a san-formatted variantformat
+is added by the dispatcher for client-display use.
 
 ## Board moves
 
 ### Move
-
-
 
 ```json
 {
