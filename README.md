@@ -273,7 +273,8 @@ This will show bit-level communication with the ChessLink board.
 
 ## Documentation
 
-[API Documentation for chess_link.py](https://domschl.github.io/python-mchess/doc/build/html/index.html)
+* Chess-JSON protocol used by agents and websocket clients: [Chess Json](https://github.com/domschl/python-mchess/blob/master/mchess/chess_json_doc.md). Note: protocol is still subject to change.
+* [API Documentation for chess_link.py](https://domschl.github.io/python-mchess/doc/build/html/index.html)
 
 ## Important external projects used by this project
 
