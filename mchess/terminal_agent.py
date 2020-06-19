@@ -421,7 +421,7 @@ class TerminalAgent:
                 elif cmd == 'p':
                     log.debug('position_fetch')
                     appque.put(
-                        {'cmd': 'import_hardware_board_position', 'from': 'ChessLinkAgent', 'actor': self.name})
+                        {'cmd': 'position_fetch', 'from': 'ChessLinkAgent', 'actor': self.name})
                 elif cmd == 'q':
                     appque.put({'cmd': 'quit', 'actor': self.name})
                 elif cmd == 's':

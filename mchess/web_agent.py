@@ -39,7 +39,28 @@ class WebAgent:
         self.last_attribs = None
         self.last_pgn = None
 
-        self.port = 8001
+        if 'port' in self.prefs:
+            self.port = self.prefs['port']
+        else:
+            self.port = 8001
+            self.log.warning(f'Port not configured, defaulting to {self.port}')
+
+        if 'bind_address' in self.prefs:
+            self.bind_address = self.prefs['bind_address']
+        else:
+            self.bind_address = 'localhost'
+            self.log.warning(f'Bind_address not configured, defaulting to f{self.bind_address}, set to "0.0.0.0" for remote accessibility')
+
+        self.private_key = None
+        self.public_key = None
+        if 'tls' in self.prefs and self.prefs['tls'] is True:
+            if 'private_key' not in self.prefs or 'public_key' not in self.prefs:
+                self.log.error(f"Cannot configure tls without public_key and private_key configured!")
+            else {
+                self.private_key = prefs['private_key']
+                self.public_key = prefs['public_key']
+            }
+        }
 
         self.socket_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -104,7 +125,7 @@ class WebAgent:
         self.ws_handle += 1
         handle = self.ws_handle
         if self.last_board is not None and self.last_attribs is not None:
-            msg = {'fen': self.last_board.fen(), 'pgn': self.last_pgn,
+            msg = {'cmd': 'display_board', 'fen': self.last_board.fen(), 'pgn': self.last_pgn,
                    'attribs': self.last_attribs}
             try:
                 ws.send(json.dumps(msg))
@@ -212,7 +233,7 @@ class WebAgent:
                 mv = ""
             ninfo['variant'] = ml
 
-        msg = {'fenref': nboard_cut.fen(), 'info': ninfo}
+        msg = {'cmd': 'current_move_info': 'preview_fen': nboard_cut.fen(), 'san_variant': ninfo}
         for w in self.ws_clients:
             try:
                 self.ws_clients[w].send(json.dumps(msg))
@@ -236,9 +257,22 @@ class WebAgent:
                 self.socket_moves.append(vals[v])
 
     def socket_event_worker_thread(self, appque, log, app, WebSocketHandler):
-        server = pywsgi.WSGIServer(
-            ('0.0.0.0', self.port), app, handler_class=WebSocketHandler)
-        print("Web browser: http://{}:{}".format(socket.gethostname(), self.port))
+        if self.bind_address == '0.0.0.0':
+            address = socket.gethostname()
+        else:
+            address = self.bind_address
+
+        if self.private_key is None or self.public_key is None:
+            server = pywsgi.WSGIServer(
+                (self.bind_address, self.port), app, handler_class=WebSocketHandler)
+            self.log.info(f"Web browser: http://{socket.gethostname()}:{self.port}")
+            protocol='http'
+        else:
+            server = pywsgi.WSGIServer(
+                (self.bind_address, self.port), app, keyfile=self.private_key, certfile=self.public_key, handler_class=WebSocketHandler)
+            self.log.info(f"Web browser: https://{socket.gethostname()}:{self.port}")
+            protocol='https'
+        print(f"Web browser: {protocol}://{address}:{self.port}"
         server.serve_forever()
 
     def socket_handler(self):

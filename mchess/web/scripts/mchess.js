@@ -18,6 +18,12 @@ var oldFen = null;
 
 wsConnect("ws://" + window.location.host + "/ws");
 
+var cmds = {
+    'agent_state': agent_state,
+    'display_board': display_board,
+    'current_move_info': current_move_info
+}
+
 function wsConnect(address) {
     var mchessSocket = new WebSocket(address);
     mchessSocket.onopen = function (event) {
@@ -27,63 +33,64 @@ function wsConnect(address) {
 
         document.getElementById("m-new").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
-                'new game': '',
+                'cmd': 'new game',
                 actor: 'WebAgent'
             }));
             document.getElementById("m-new").blur();
         }, false);
         document.getElementById("m-bb").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
-                'fast-back': '',
+                'cmd': 'move_start',
                 actor: 'WebAgent'
             }));
             document.getElementById("m-bb").blur();
         }, false);
         document.getElementById("m-bw").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
-                'back': '',
+                'cmd': 'move_back',
                 actor: 'WebAgent'
             }));
             document.getElementById("m-ba").blur();
         }, false);
         document.getElementById("m-st").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
-                'stop': '',
+                'cmd': 'stop',
                 actor: 'WebAgent'
             }));
             document.getElementById("m-st").blur();
         }, false);
         document.getElementById("m-fw").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
-                'forward': '',
+                'cmd': 'move_forward',
                 actor: 'WebAgent'
             }));
             document.getElementById("m-fw").blur();
         }, false);
         document.getElementById("m-ff").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
-                'fast-forward': '',
+                'cmd': 'move_end',
                 actor: 'WebAgent'
             }));
             document.getElementById("m-ff").blur();
         }, false);
         document.getElementById("m-analyse").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
-                'analysis': '',
+                'cmd': 'analyse',
                 actor: 'WebAgent'
             }));
             document.getElementById("m-analyse").blur();
         }, false);
         document.getElementById("m-import").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
-                'position_fetch': 'ChessLinkAgent',
+                'cmd': 'position_fetch',
+                'form': 'ChessLinkAgent',
                 actor: 'WebAgent'
             }));
             document.getElementById("m-import").blur();
         }, false);
         document.getElementById("m-send").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
-                'fen_setup': document.getElementById("m-edit").value,
+                'cmd': 'import_fen', 'fen': document.getElementById("m-edit").value,
                 actor: 'WebAgent'
             }));
             document.getElementById("m-send").blur();
@@ -111,201 +118,223 @@ function wsConnect(address) {
         }
         // console.log("got message: ")
         // console.log(msg)
-        if (msg.hasOwnProperty("fen") && msg.hasOwnProperty("attribs") && msg.hasOwnProperty("pgn")) {
-            console.log("got board position.");
-            console.log(msg.pgn)
-            var title = msg.attribs.white_name + " - " + msg.attribs.black_name;
-            console.log(msg.fen)
-            if (msg.fen==oldFen) {
-                console.log("position did not change, ignoring FEN update");
-                return;
-            }
-            oldFen=msg.fen;
-            if (mainBoard == null) {
-                mainBoard = new Chessboard(document.getElementById("board1"), {
-                    position: msg.fen,
-                    style: {
-                        showCoordinates: true,
-                        showBorder: true,
-                    },
-                    responsive: true,
-                    sprite: {
-                        url: "node_modules/cm-chessboard/assets/images/chessboard-sprite.svg"
-                    }
-                });
-                var brd = document.getElementsByClassName("board");
-                document.getElementById("board1").style.height = "260px";
-                document.getElementById("board1").style.width = "260px";
-                console.log(brd[0].style.width);
-                //document.getElementById("ph1").style.width = brd[0].style.width;
+        if (!msg.hasOwnProperty("cmd")) {
+            console.log("received and ignored old-style message");
+            console.log(msg);
+        } else {
+            if (!msg[cmd] in cmds) {
+                console.log("cmd "+msg[cmd]+" is not yet implemented, ignored.");
+                console.log(msg);
             } else {
-                mainBoard.setPosition(msg.fen);
+                cmds[msg[cmd]](msg);
             }
-            document.getElementById("ph1").innerText = title;
-            var pi = msg.pgn.search("\n\n");
-            var pgn = msg.pgn;
-            if (pi != -1) {
-                pgn = msg.pgn.substring(pi);
-            }
-            // pgn = pgn.replace(" *", "");
-            pgn = pgn.replace(" ", "&nbsp;")
-            var regex = /([0-9]+\.)/g;
-            pgn = pgn.replace(regex, " <span class=\"movenrb\"> $1</span>")
-            document.getElementById("mainmoves").innerHTML = pgn;
+        }
 
-            if (miniBoard1 == null) {
-                miniBoard1 = new Chessboard(document.getElementById("miniboard1"), {
-                    position: msg.fen,
-                    style: {
-                        showCoordinates: true,
-                        showBorder: true,
-                    },
-                    responsive: true,
-                    sprite: {
-                        url: "node_modules/cm-chessboard/assets/images/chessboard-sprite.svg"
-                    }
-                });
-                document.getElementById("miniboard1").style.height = "120px";
-                document.getElementById("miniboard1").style.width = "120px";
-            } else {
-                miniBoard1.setPosition(msg.fen);
-            }
-            document.getElementById("miniinfo1").innerHTML=""
-            document.getElementById("ph21").innerHTML=""
-            if (miniBoard2 == null) {
-                miniBoard2 = new Chessboard(document.getElementById("miniboard2"), {
-                    position: msg.fen,
-                    style: {
-                        showCoordinates: true,
-                        showBorder: true,
-                    },
-                    responsive: true,
-                    sprite: {
-                        url: "node_modules/cm-chessboard/assets/images/chessboard-sprite.svg"
-                    }
-                });
-                document.getElementById("miniboard2").style.height = "120px";
-                document.getElementById("miniboard2").style.width = "120px";
-            } else {
-                miniBoard2.setPosition(msg.fen);
-            }
-            document.getElementById("miniinfo2").innerHTML=""
-            document.getElementById("ph31").innerHTML=""
-        } else if (msg.hasOwnProperty("info")) {
-            if (VariantInfo == null) {
-                VariantInfo = {};
-            }
-            if (msg.info.hasOwnProperty("variant")) {
-                //console.log("V");
-                var actor = msg.info.actor;
-                var id = msg.info.multipv_ind;
-                if (!(actor in VariantInfo)) {
-                    VariantInfo[actor] = {}
-                }
-                if (id == 1) FenRef[actor] = msg["fenref"];
-                var hd = ""
-                if ("nps" in msg.info) {
-                    hd += " | Nps: " + msg.info.nps;
-                }
-                if (id == 1 && "score" in msg.info) {
-                    hd += " | Score: " + msg.info.score;
-                }
-                if ("depth" in msg.info) {
-                    hd += " | Depth: " + msg.info.depth;
-                    if ("seldepth" in msg.info) {
-                        hd += "/" + msg.info.seldepth;
-                    }
-                }
-                if ("tbhits" in msg.info) {
-                    hd += " | TbHits: " + msg.info["tbhits"];
-                }
-                hd += " |";
-                StatHeader[actor] = hd;
-                var htmlpgn = "<div class=\"variant\"><span class=\"leadt\">";
-                if (msg.info.score!="") htmlpgn+="[" + msg.info.score + "]";
-                else htmlpgn+="&nbsp;&nbsp;&nbsp;&nbsp;";
-                htmlpgn+="</span>&nbsp;&nbsp;";
-                var first = true;
-                for (var mvi in msg.info.variant) {
-                    if (mvi == "fen") continue;
-                    var mv = msg.info.variant[mvi];
-                    if (mvi != 0) htmlpgn += "&nbsp;";
-                    var mv1 = mv[1].replace('-', '‑'); // make dash non-breaking
-                    var mv2 = "";
-                    if (mv.length > 2) {
-                        var mv2 = mv[2].replace('-', '‑');
-                    }
-                    if (first) {
-                        if (mv1 == '..')
-                            htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;<span class=\"mainmove\">" + mv2 + "</span> ";
-                        else
-                            htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;<span class=\"mainmove\">" + mv1 + "</span>&nbsp;" + mv2 + " ";
-                        first = false;
-                    } else {
-                        htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;" + mv2 + " ";
-                    }
-                }
-                htmlpgn += "</div>";
-                VariantInfo[actor][id] = htmlpgn
+ 
+    }
+}
 
-                var n = 0;
-                for (var actorName in VariantInfo) {
-                    var ai = VariantInfo[actorName];
-                    var htmlpi = "";
-                    for (var j in ai) {
-                        htmlpi += ai[j];
-                    }
-                    if (n == 0) {
-                        document.getElementById("miniinfo1").innerHTML = htmlpi;
-                        document.getElementById("ph2").innerText = actorName;
-                        miniBoard1.setPosition(FenRef[actorName], false);
-                        document.getElementById("ph21").innerText = StatHeader[actorName];
-                    }
-                    if (n == 1) {
-                        document.getElementById("miniinfo2").innerHTML = htmlpi;
-                        document.getElementById("ph3").innerText = actorName;
-                        miniBoard2.setPosition(FenRef[actorName], false);
-                        document.getElementById("ph31").innerText = StatHeader[actorName];
-                    }
-                    n += 1;
+function agent_state(msg) {
+    console.log('agent-state msg: ' + msg['actor'] + ' ' + msg['agent-state'] + ' ' + msg['message'])
+    if (msg['actor'] == 'ChessLinkAgent') {
+        if (msg['agent-state'] == 'online') {
+            document.getElementById("chesslink-state").style.color = "#58A4B0";
+        } else {
+            document.getElementById("chesslink-state").style.color = "red";
+        }
+    }
+    if (msg['class']=='engine') {
+        if (EngineStates==null) EngineStates={};
+        if (!(msg['actor'] in EngineStates)) {
+            id=Object.keys(EngineStates).length;
+            EngineStates[msg['actor']]=id;
+            console.log(id);
+            if (id==0) document.getElementById("engine1-name").innerHTML = msg['name'];
+            else document.getElementById("engine2-name").innerHTML = msg['name'];
+        }
+        id=EngineStates[msg['actor']]
+        if (id==0) {
+            if (msg['agent-state']=='busy') {
+                document.getElementById("engine1-state").style.color = "#D8DBE2";
+                document.getElementById("mb1-a").style.backgroundColor = "#D8DBE2";
+            } else { 
+                document.getElementById("engine1-state").style.color = "#58A4B0";
+                document.getElementById("mb1-a").style.backgroundColor = "#58A4B0";
+            }
+        } else {
+            if (msg['agent-state']=='busy') {
+                document.getElementById("engine2-state").style.color = "#D8DBE2";
+                document.getElementById("mb2-a").style.backgroundColor = "#D8DBE2";
+            } else { 
+                document.getElementById("engine2-state").style.color = "#58A4B0";
+                document.getElementById("mb2-a").style.backgroundColor = "#58A4B0";
+            }
+        }
+    }
+}
+
+function display_board(msg) {
+    if (msg.hasOwnProperty("fen") && msg.hasOwnProperty("attribs") && msg.hasOwnProperty("pgn")) {
+        console.log("got board position.");
+        console.log(msg.pgn)
+        var title = msg.attribs.white_name + " - " + msg.attribs.black_name;
+        console.log(msg.fen)
+        if (msg.fen==oldFen) {
+            console.log("position did not change, ignoring FEN update");
+            return;
+        }
+        oldFen=msg.fen;
+        if (mainBoard == null) {
+            mainBoard = new Chessboard(document.getElementById("board1"), {
+                position: msg.fen,
+                style: {
+                    showCoordinates: true,
+                    showBorder: true,
+                },
+                responsive: true,
+                sprite: {
+                    url: "node_modules/cm-chessboard/assets/images/chessboard-sprite.svg"
+                }
+            });
+            var brd = document.getElementsByClassName("board");
+            document.getElementById("board1").style.height = "260px";
+            document.getElementById("board1").style.width = "260px";
+            console.log(brd[0].style.width);
+            //document.getElementById("ph1").style.width = brd[0].style.width;
+        } else {
+            mainBoard.setPosition(msg.fen);
+        }
+        document.getElementById("ph1").innerText = title;
+        var pi = msg.pgn.search("\n\n");
+        var pgn = msg.pgn;
+        if (pi != -1) {
+            pgn = msg.pgn.substring(pi);
+        }
+        // pgn = pgn.replace(" *", "");
+        pgn = pgn.replace(" ", "&nbsp;")
+        var regex = /([0-9]+\.)/g;
+        pgn = pgn.replace(regex, " <span class=\"movenrb\"> $1</span>")
+        document.getElementById("mainmoves").innerHTML = pgn;
+
+        if (miniBoard1 == null) {
+            miniBoard1 = new Chessboard(document.getElementById("miniboard1"), {
+                position: msg.fen,
+                style: {
+                    showCoordinates: true,
+                    showBorder: true,
+                },
+                responsive: true,
+                sprite: {
+                    url: "node_modules/cm-chessboard/assets/images/chessboard-sprite.svg"
+                }
+            });
+            document.getElementById("miniboard1").style.height = "120px";
+            document.getElementById("miniboard1").style.width = "120px";
+        } else {
+            miniBoard1.setPosition(msg.fen);
+        }
+        document.getElementById("miniinfo1").innerHTML=""
+        document.getElementById("ph21").innerHTML=""
+        if (miniBoard2 == null) {
+            miniBoard2 = new Chessboard(document.getElementById("miniboard2"), {
+                position: msg.fen,
+                style: {
+                    showCoordinates: true,
+                    showBorder: true,
+                },
+                responsive: true,
+                sprite: {
+                    url: "node_modules/cm-chessboard/assets/images/chessboard-sprite.svg"
+                }
+            });
+            document.getElementById("miniboard2").style.height = "120px";
+            document.getElementById("miniboard2").style.width = "120px";
+        } else {
+            miniBoard2.setPosition(msg.fen);
+        }
+        document.getElementById("miniinfo2").innerHTML=""
+        document.getElementById("ph31").innerHTML=""
+    }
+}
+
+function current_move_info(msg) {
+    if (msg.hasOwnProperty("info")) {
+        if (VariantInfo == null) {
+            VariantInfo = {};
+        }
+        if (msg.info.hasOwnProperty("variant")) {
+            //console.log("V");
+            var actor = msg.info.actor;
+            var id = msg.info.multipv_ind;
+            if (!(actor in VariantInfo)) {
+                VariantInfo[actor] = {}
+            }
+            if (id == 1) FenRef[actor] = msg["fenref"];
+            var hd = ""
+            if ("nps" in msg.info) {
+                hd += " | Nps: " + msg.info.nps;
+            }
+            if (id == 1 && "score" in msg.info) {
+                hd += " | Score: " + msg.info.score;
+            }
+            if ("depth" in msg.info) {
+                hd += " | Depth: " + msg.info.depth;
+                if ("seldepth" in msg.info) {
+                    hd += "/" + msg.info.seldepth;
                 }
             }
-        } else if (msg.hasOwnProperty("agent-state")) {
-            console.log('agent-state msg: ' + msg['actor'] + ' ' + msg['agent-state'] + ' ' + msg['message'])
-            if (msg['actor'] == 'ChessLinkAgent') {
-                if (msg['agent-state'] == 'online') {
-                    document.getElementById("chesslink-state").style.color = "#58A4B0";
+            if ("tbhits" in msg.info) {
+                hd += " | TbHits: " + msg.info["tbhits"];
+            }
+            hd += " |";
+            StatHeader[actor] = hd;
+            var htmlpgn = "<div class=\"variant\"><span class=\"leadt\">";
+            if (msg.info.score!="") htmlpgn+="[" + msg.info.score + "]";
+            else htmlpgn+="&nbsp;&nbsp;&nbsp;&nbsp;";
+            htmlpgn+="</span>&nbsp;&nbsp;";
+            var first = true;
+            for (var mvi in msg.info.variant) {
+                if (mvi == "fen") continue;
+                var mv = msg.info.variant[mvi];
+                if (mvi != 0) htmlpgn += "&nbsp;";
+                var mv1 = mv[1].replace('-', '‑'); // make dash non-breaking
+                var mv2 = "";
+                if (mv.length > 2) {
+                    var mv2 = mv[2].replace('-', '‑');
+                }
+                if (first) {
+                    if (mv1 == '..')
+                        htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;<span class=\"mainmove\">" + mv2 + "</span> ";
+                    else
+                        htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;<span class=\"mainmove\">" + mv1 + "</span>&nbsp;" + mv2 + " ";
+                    first = false;
                 } else {
-                    document.getElementById("chesslink-state").style.color = "red";
+                    htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;" + mv2 + " ";
                 }
             }
-            if (msg['class']=='engine') {
-                if (EngineStates==null) EngineStates={};
-                if (!(msg['actor'] in EngineStates)) {
-                    id=Object.keys(EngineStates).length;
-                    EngineStates[msg['actor']]=id;
-                    console.log(id);
-                    if (id==0) document.getElementById("engine1-name").innerHTML = msg['name'];
-                    else document.getElementById("engine2-name").innerHTML = msg['name'];
+            htmlpgn += "</div>";
+            VariantInfo[actor][id] = htmlpgn
+
+            var n = 0;
+            for (var actorName in VariantInfo) {
+                var ai = VariantInfo[actorName];
+                var htmlpi = "";
+                for (var j in ai) {
+                    htmlpi += ai[j];
                 }
-                id=EngineStates[msg['actor']]
-                if (id==0) {
-                    if (msg['agent-state']=='busy') {
-                        document.getElementById("engine1-state").style.color = "#D8DBE2";
-                        document.getElementById("mb1-a").style.backgroundColor = "#D8DBE2";
-                    } else { 
-                        document.getElementById("engine1-state").style.color = "#58A4B0";
-                        document.getElementById("mb1-a").style.backgroundColor = "#58A4B0";
-                    }
-                } else {
-                    if (msg['agent-state']=='busy') {
-                        document.getElementById("engine2-state").style.color = "#D8DBE2";
-                        document.getElementById("mb2-a").style.backgroundColor = "#D8DBE2";
-                    } else { 
-                        document.getElementById("engine2-state").style.color = "#58A4B0";
-                        document.getElementById("mb2-a").style.backgroundColor = "#58A4B0";
-                    }
+                if (n == 0) {
+                    document.getElementById("miniinfo1").innerHTML = htmlpi;
+                    document.getElementById("ph2").innerText = actorName;
+                    miniBoard1.setPosition(FenRef[actorName], false);
+                    document.getElementById("ph21").innerText = StatHeader[actorName];
                 }
+                if (n == 1) {
+                    document.getElementById("miniinfo2").innerHTML = htmlpi;
+                    document.getElementById("ph3").innerText = actorName;
+                    miniBoard2.setPosition(FenRef[actorName], false);
+                    document.getElementById("ph31").innerText = StatHeader[actorName];
+                }
+                n += 1;
             }
         }
     }

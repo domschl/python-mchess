@@ -261,8 +261,8 @@ arrays. Recipients will receive both formats from dispatcher.
 
 ```json
 {
-    "cmd": "import_hardware_board_position",
-    "from": "name-of-hardware-board_agent, e.g. 'ChessLinkAgent'",
+    "cmd": "position_fetch",
+    "from": "name-of-[hardware-]board-agent from which position should be fetched, e.g. 'ChessLinkAgent'",
     "actor": "name-of-agent-sending-this"
 }
 ```

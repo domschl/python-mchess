@@ -425,50 +425,6 @@ class TurquoiseDispatcher:
                     self.log.error(f"Message cmd {msg['cmd']} has not yet been implemented (from: {agent}), msg: {msg}")
                     continue
 
-                if 'new game' in msg:
-                    # if self.board.fen() == chess.STARTING_FEN:
-                    #     self.log.debug("New game request initiated by {} ignored,
-                    #          already at starting position.".format(msg['actor']))
-                    #     self.state = self.State.IDLE
-                    # else:
-                    self.stop(new_mode=None, silent=True)
-                    self.log.info(f"New game initiated by {msg['actor']}")
-                    self.board.reset()
-                    self.undo_stack = []
-                    self.update_display_board()
-                    self.state = self.State.IDLE
-                    if self.analysis_active is True:
-                        self.analysis_active = False
-
-                if 'position_fetch' in msg:
-                    for agent in self.player_b+self.player_w:
-                        if agent.name == msg['position_fetch']:
-                            fen = agent.get_fen()
-                            # Only treat as setup, if it's not the start position
-                            if self.short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
-                                self.log.debug(f"Importing position from {agent.name}, by" \
-                                                " {msg['actor']}, FEN: {fen}")
-                                self.stop(silent=True)
-                                if self.analysis_active is True:
-                                    self.analysis_active = False
-                                self.board = chess.Board(fen)
-                                self.update_display_board()
-                                self.state = self.State.IDLE
-                                break
-
-                if 'fen_setup' in msg:
-                    self.stop()
-                    if self.analysis_active is True:
-                        self.analysis_active = False
-                    try:
-                        self.board = chess.Board(msg['fen_setup'])
-                        self.update_display_board()
-                        self.state = self.State.IDLE
-                    except Exception as e:
-                        if 'fen_setup' not in msg:
-                            msg['fen_setup'] = 'None'
-                        self.log.warning(f"Invalid FEN {msg['fen_setup']} not imported: {e}")
-
                 if 'pgn_game' in msg:
                     self.stop()
                     if self.analysis_active is True:
@@ -685,4 +641,41 @@ class TurquoiseDispatcher:
                 agent.quit()
         self.state_machine_active = False
         sys.exit(0)
+
+    def new_game(msg):
+        self.stop(new_mode=None, silent=True)
+        self.log.info(f"New game initiated by {msg['actor']}")
+        self.board.reset()
+        self.undo_stack = []
+        self.update_display_board()
+        self.state = self.State.IDLE
+        if self.analysis_active is True:
+            self.analysis_active = False
+
+    def position_fetch(msg):
+        for agent in self.player_b+self.player_w:
+            if agent.name == msg['from']:
+                fen = agent.get_fen()
+                # Only treat as setup, if it's not the start position
+                if self.short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
+                    self.log.debug(f"Importing position from {agent.name}, by" \
+                                    " {msg['actor']}, FEN: {fen}")
+                    self.stop(silent=True)
+                    if self.analysis_active is True:
+                        self.analysis_active = False
+                    self.board = chess.Board(fen)
+                    self.update_display_board()
+                    self.state = self.State.IDLE
+                    break
+
+    def import_fen(msg):
+        self.stop()
+        if self.analysis_active is True:
+            self.analysis_active = False
+        try:
+            self.board = chess.Board(msg['fen'])
+            self.update_display_board()
+            self.state = self.State.IDLE
+        except Exception as e:
+            self.log.warning(f"Invalid import FEN {msg} not imported: {e}")
 
