@@ -298,15 +298,15 @@ class TerminalAgent:
         variant = '({}) '.format(mpv_ind)
         if 'score' in info:
             variant += '{}  '.format(info['score'])
-        if 'variant' in info:
-            moves = info['variant']
+        if 'san_variant' in info:
+            moves = info['san_variant']
             mvs = len(moves)
             if mvs > self.max_plies:
                 mvs = self.max_plies
             for i in range(mvs):
                 if i > 0:
                     variant += ' '
-                variant += moves[i] # .uci()
+                variant += f"{moves[i][1]} " 
 
         if info['actor'] not in self.info_provider:
             self.info_provider[info['actor']] = {}
