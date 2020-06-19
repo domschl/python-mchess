@@ -141,7 +141,7 @@ class UciAgent:
         return self.active
 
     def send_agent_state(self, state, msg=""):
-        stmsg = {'agent-state': state, 'message': msg, 'name': self.version_name,
+        stmsg = {'cmd': 'agent_state', 'state': state, 'message': msg, 'name': self.version_name,
                  'authors': self.authors, 'class': 'engine', 'actor': self.name}
         self.que.put(stmsg)
         self.log.debug(f"Sent {stmsg}")

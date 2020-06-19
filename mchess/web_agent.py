@@ -56,11 +56,9 @@ class WebAgent:
         if 'tls' in self.prefs and self.prefs['tls'] is True:
             if 'private_key' not in self.prefs or 'public_key' not in self.prefs:
                 self.log.error(f"Cannot configure tls without public_key and private_key configured!")
-            else {
+            else:
                 self.private_key = prefs['private_key']
                 self.public_key = prefs['public_key']
-            }
-        }
 
         self.socket_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
@@ -101,7 +99,7 @@ class WebAgent:
         self.sockets.add_url_rule('/ws', 'ws', self.ws_sockets)
         self.ws_clients = {}
         self.ws_handle = 0
-
+        self.log.debug("Initializing web server...")
         self.socket_handler()  # Start threads for web and ws:sockets
 
     def node_modules(self, path):
@@ -233,7 +231,7 @@ class WebAgent:
                 mv = ""
             ninfo['variant'] = ml
 
-        msg = {'cmd': 'current_move_info': 'preview_fen': nboard_cut.fen(), 'san_variant': ninfo}
+        msg = {'cmd': 'current_move_info', 'preview_fen': nboard_cut.fen(), 'san_variant': ninfo}
         for w in self.ws_clients:
             try:
                 self.ws_clients[w].send(json.dumps(msg))
@@ -265,14 +263,14 @@ class WebAgent:
         if self.private_key is None or self.public_key is None:
             server = pywsgi.WSGIServer(
                 (self.bind_address, self.port), app, handler_class=WebSocketHandler)
-            self.log.info(f"Web browser: http://{socket.gethostname()}:{self.port}")
             protocol='http'
+            self.log.info(f"Web browser: {protocol}://{address}:{self.port}")
         else:
             server = pywsgi.WSGIServer(
                 (self.bind_address, self.port), app, keyfile=self.private_key, certfile=self.public_key, handler_class=WebSocketHandler)
-            self.log.info(f"Web browser: https://{socket.gethostname()}:{self.port}")
             protocol='https'
-        print(f"Web browser: {protocol}://{address}:{self.port}"
+            self.log.info(f"Web browser: {protocol}://{address}:{self.port}")
+        print(f"Web browser: {protocol}://{address}:{self.port}")
         server.serve_forever()
 
     def socket_handler(self):

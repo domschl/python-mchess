@@ -58,6 +58,9 @@ class TurquoiseDispatcher:
         self.cmds={
             'quit': self.quit,
             'agent_state': self.agent_state,
+            'new_game': self.new_game,
+            'position_fetch': self.position_fetch,
+            'import_fen': self.import_fen,
         }
 
     def short_fen(self, fen):
@@ -255,7 +258,7 @@ class TurquoiseDispatcher:
     def import_chesslink_position(self):
         if self.chesslink_agent:
             self.appque.put(
-                {'position_fetch': 'ChessLinkAgent', 'actor': self.chesslink_agent.name})
+                {'cmd': 'position_fetch', 'from': 'ChessLinkAgent', 'actor': 'dispatcher'})
         # self.state = self.State.BUSY  # Check?
 
     def init_board_agents(self):
@@ -416,7 +419,7 @@ class TurquoiseDispatcher:
                     self.log.error(f"Old-style message {msg} received from {agent}, ignored, please update agent!")
                     continue
                 if msg['cmd'] in self.cmds:
-                    self.cmds[msg['cmd']]()
+                    self.cmds[msg['cmd']](msg)
                 else:
                     if 'actor' in msg:
                         agent=msg['actor']
@@ -612,9 +615,9 @@ class TurquoiseDispatcher:
             else:
                 time.sleep(0.05)
     
-    def agent_state(msg):
+    def agent_state(self, msg):
         if 'message' not in msg or 'actor' not in msg:
-            self.log.error(f'Invalid <agent-state> message: {msg}')
+            self.log.error(f'Invalid <agent_state> message: {msg}')
         else:
             if self.uci_agent is not None and msg['actor'] == self.uci_agent.name:
                 if msg['state'] == 'idle':
@@ -642,7 +645,7 @@ class TurquoiseDispatcher:
         self.state_machine_active = False
         sys.exit(0)
 
-    def new_game(msg):
+    def new_game(self, msg):
         self.stop(new_mode=None, silent=True)
         self.log.info(f"New game initiated by {msg['actor']}")
         self.board.reset()
@@ -652,7 +655,7 @@ class TurquoiseDispatcher:
         if self.analysis_active is True:
             self.analysis_active = False
 
-    def position_fetch(msg):
+    def position_fetch(self, msg):
         for agent in self.player_b+self.player_w:
             if agent.name == msg['from']:
                 fen = agent.get_fen()
@@ -668,7 +671,7 @@ class TurquoiseDispatcher:
                     self.state = self.State.IDLE
                     break
 
-    def import_fen(msg):
+    def import_fen(self, msg):
         self.stop()
         if self.analysis_active is True:
             self.analysis_active = False

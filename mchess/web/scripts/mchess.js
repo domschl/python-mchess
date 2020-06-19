@@ -122,11 +122,11 @@ function wsConnect(address) {
             console.log("received and ignored old-style message");
             console.log(msg);
         } else {
-            if (!msg[cmd] in cmds) {
-                console.log("cmd "+msg[cmd]+" is not yet implemented, ignored.");
+            if (!msg['cmd'] in cmds) {
+                console.log("cmd "+msg['cmd']+" is not yet implemented, ignored.");
                 console.log(msg);
             } else {
-                cmds[msg[cmd]](msg);
+                cmds[msg['cmd']](msg);
             }
         }
 
@@ -135,9 +135,9 @@ function wsConnect(address) {
 }
 
 function agent_state(msg) {
-    console.log('agent-state msg: ' + msg['actor'] + ' ' + msg['agent-state'] + ' ' + msg['message'])
+    console.log('agent_state msg: ' + msg['actor'] + ' ' + msg['state'] + ' ' + msg['message'])
     if (msg['actor'] == 'ChessLinkAgent') {
-        if (msg['agent-state'] == 'online') {
+        if (msg['state'] == 'online') {
             document.getElementById("chesslink-state").style.color = "#58A4B0";
         } else {
             document.getElementById("chesslink-state").style.color = "red";
@@ -154,7 +154,7 @@ function agent_state(msg) {
         }
         id=EngineStates[msg['actor']]
         if (id==0) {
-            if (msg['agent-state']=='busy') {
+            if (msg['state']=='busy') {
                 document.getElementById("engine1-state").style.color = "#D8DBE2";
                 document.getElementById("mb1-a").style.backgroundColor = "#D8DBE2";
             } else { 
@@ -162,7 +162,7 @@ function agent_state(msg) {
                 document.getElementById("mb1-a").style.backgroundColor = "#58A4B0";
             }
         } else {
-            if (msg['agent-state']=='busy') {
+            if (msg['state']=='busy') {
                 document.getElementById("engine2-state").style.color = "#D8DBE2";
                 document.getElementById("mb2-a").style.backgroundColor = "#D8DBE2";
             } else { 

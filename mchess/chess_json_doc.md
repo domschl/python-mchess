@@ -217,11 +217,12 @@ arrays. Recipients will receive both formats from dispatcher.
 ```json
 {
     "cmd": "agent_state",
-    "state": "idle or busy or offline",
+    "state": "idle or busy or offline or online",
     "message": "optional message",
     "name": "Descriptive name",
+    "version": "Version information",
     "authors": "authors in case of engine",
-    "class": "agent class, e.g. engine or human",
+    "class": "agent class, e.g. engine, board",
     "actor": "name-of-agent-sending-this"
 }
 ```

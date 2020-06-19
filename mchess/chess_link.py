@@ -86,6 +86,7 @@ class ChessLink:
         :param name: identifies this protocol
         """
         self.version = "0.2.0"
+        self.board_version = "---"
         self.name = name
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "ascii": "PNBRQK.pnbrqk"}
@@ -309,7 +310,7 @@ class ChessLink:
                         self.error_condition = True
                     else:
                         self.error_condition = False
-                    self.appque.put({'agent-state': state, 'message': emsg, 'version': self.version,
+                    self.appque.put({'cmd': 'agent_state', 'state': state, 'message': emsg, 'version': f"{self.version} ChessLink: {self.board_version}",
                                      'class': 'board', 'actor': self.name})
                     continue
 
@@ -372,8 +373,8 @@ class ChessLink:
                             if sfen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
                                 if self.is_new_game is False:
                                     self.is_new_game = True   # XXX changed on cleanup
-                                    cmd = {'new game': '', 'actor': self.name,
-                                           'orientation': self.orientation}
+                                    cmd = {'cmd': 'new_game', 'actor': self.name,
+                                           'orientation': self.orientation}  # XXX: orientation?!
                                     self.new_game(position)
                                     self.appque.put(cmd)
                             else:
@@ -387,15 +388,16 @@ class ChessLink:
                                 self.show_delta(
                                     self.reference_position, self.position)
                             # self.print_position_ascii(position)
-                            self.appque.put({'fen': fen, 'actor': self.name})
+                            self.appque.put({'cmd': 'import_fen', 'fen': fen, 'actor': self.name})
                             self._check_move(position)
                     if msg[0] == 'v':
                         self.log.debug('got version reply')
                         if len(msg) == 7:
                             version = '{}.{}'.format(
                                 msg[1]+msg[2], msg[3]+msg[4])
-                            self.appque.put(
-                                {'version': version, 'actor': self.name})
+                            self.board_version = version
+                            # self.appque.put(
+                            #     {'version': version, 'actor': self.name})
                         else:
                             self.log.warning(
                                 f"Bad length of version-reply: {len(version)}")
@@ -448,7 +450,7 @@ class ChessLink:
         if self.legal_moves is not None and fen in self.legal_moves:
             # TODO: inconsistent message format
             self.appque.put(
-                {'move': {'uci': self.legal_moves[fen], 'fen': fen, 'actor': self.name}})
+                {'cmd': 'move', 'uci': self.legal_moves[fen], 'actor': self.name})
             self.legal_moves = None
             self.reference_position = pos
             self.set_led_off()

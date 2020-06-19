@@ -240,7 +240,7 @@ class TerminalAgent:
 
     def agent_states(self, msg):
         print('State of agent {} changed to {}, {}'.format(
-            msg['actor'], msg['agent-state'], msg['message']))
+            msg['actor'], msg['state'], msg['message']))
 
     def display_move(self, move_msg):
         if 'score' in move_msg['move']:
