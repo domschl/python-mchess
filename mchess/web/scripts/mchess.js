@@ -35,49 +35,49 @@ function wsConnect(address) {
         document.getElementById("m-new").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
                 'cmd': 'new game',
-                actor: 'WebAgent'
+                'actor': 'WebAgent'
             }));
             document.getElementById("m-new").blur();
         }, false);
         document.getElementById("m-bb").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
                 'cmd': 'move_start',
-                actor: 'WebAgent'
+                'actor': 'WebAgent'
             }));
             document.getElementById("m-bb").blur();
         }, false);
         document.getElementById("m-bw").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
                 'cmd': 'move_back',
-                actor: 'WebAgent'
+                'actor': 'WebAgent'
             }));
             document.getElementById("m-ba").blur();
         }, false);
         document.getElementById("m-st").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
                 'cmd': 'stop',
-                actor: 'WebAgent'
+                'actor': 'WebAgent'
             }));
             document.getElementById("m-st").blur();
         }, false);
         document.getElementById("m-fw").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
                 'cmd': 'move_forward',
-                actor: 'WebAgent'
+                'actor': 'WebAgent'
             }));
             document.getElementById("m-fw").blur();
         }, false);
         document.getElementById("m-ff").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
                 'cmd': 'move_end',
-                actor: 'WebAgent'
+                'actor': 'WebAgent'
             }));
             document.getElementById("m-ff").blur();
         }, false);
         document.getElementById("m-analyse").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
                 'cmd': 'analyse',
-                actor: 'WebAgent'
+                'actor': 'WebAgent'
             }));
             document.getElementById("m-analyse").blur();
         }, false);
@@ -85,14 +85,14 @@ function wsConnect(address) {
             mchessSocket.send(JSON.stringify({
                 'cmd': 'position_fetch',
                 'form': 'ChessLinkAgent',
-                actor: 'WebAgent'
+                'actor': 'WebAgent'
             }));
             document.getElementById("m-import").blur();
         }, false);
         document.getElementById("m-send").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
                 'cmd': 'import_fen', 'fen': document.getElementById("m-edit").value,
-                actor: 'WebAgent'
+                'actor': 'WebAgent'
             }));
             document.getElementById("m-send").blur();
         }, false);

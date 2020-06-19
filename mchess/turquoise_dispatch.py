@@ -197,7 +197,7 @@ class TurquoiseDispatcher:
                 time.sleep(0.1)
                 if time.time()-t0 > 5:
                     t0 = time.time()
-                    self.log.warning(f"Problems stopping {self.uci_agent.name}")
+                    self.log.warning(f"Problems stopping {self.uci_agent2.name}")
 
 
     def set_mode(self, mode, silent=False):
@@ -459,9 +459,11 @@ class TurquoiseDispatcher:
                 if self.analysis_active:
                     if self.uci_agent is not None:
                         self.uci_agent.busy = True
+                        self.log.info("Start uci_agent")
                         self.uci_agent.go(self.board, mtime=-1, analysis=True)
                     if self.uci_agent2 is not None:
                         self.uci_agent2.busy = True
+                        self.log.info("Start uci_agent2")
                         self.uci_agent2.go(self.board, mtime=-1, analysis=True)
 
                 self.state = self.State.BUSY
