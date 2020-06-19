@@ -61,6 +61,16 @@ class TurquoiseDispatcher:
             'new_game': self.new_game,
             'position_fetch': self.position_fetch,
             'import_fen': self.import_fen,
+            'import_pgn': self.import_pgn,
+            'move': self.move,
+            'move_back': self.move_back,
+            'move_forward': self.move_forward,
+            'move_start': self.move_start,
+            'move_end': self.move_end,
+            'go': self.go,
+            'analyse': self.analyse,
+            'turn': self.turn,
+            'game_mode': self.game_mode,
         }
 
     def short_fen(self, fen):
@@ -112,6 +122,12 @@ class TurquoiseDispatcher:
 
         self.uci_agent = None
         self.uci_agent2 = None
+        if 'uci1' in self.agents:
+            self.uci_agent = self.agents['uci1']
+            self.agents_all.append(self.uci_agent)
+        if 'uci2' in self.agents:
+            self.uci_agent2 = self.agents['uci2']
+            self.agents_all.append(self.uci_agent2)
         
     class Mode(Enum):
         ''' state machine play mode '''
@@ -428,156 +444,7 @@ class TurquoiseDispatcher:
                     self.log.error(f"Message cmd {msg['cmd']} has not yet been implemented (from: {agent}), msg: {msg}")
                     continue
 
-                if 'pgn_game' in msg:
-                    self.stop()
-                    if self.analysis_active is True:
-                        self.analysis_active = False
-                    try:
-                        pgnd = msg['pgn_game']['pgn_data']
-                        pgndata = io.StringIO(pgnd)
-                        game = chess.pgn.read_game(pgndata)
-                    except Exception as e:
-                        self.log.error(f"Failed to import PGN data {pgnd}: {e}")
-                        continue
-                    # set metadata
-                    try:
-                        self.player_w_name = game.headers["White"]
-                    except Exception as e:
-                        self.log.warning(f'PGN misses White-name-field: {e}')
-                        self.player_w_name = 'unknown'
-                    try:
-                        self.player_b_name = game.headers["Black"]
-                    except Exception as e:
-                        self.log.warning(f'PGN misses Black-name-field: {e}')
-                        self.player_b_name = 'unknown'
-                    self.board = game.board()
-                    for move in game.mainline_moves():
-                        self.board.push(move)
-                    self.update_display_board()
-                    self.state = self.State.IDLE
 
-                if 'move' in msg:
-                    self.log.info(f"move: {msg['move']['uci']}, {msg}")
-                    self.uci_stop_engines()
-                    self.undo_stack = []
-                    self.board.push(chess.Move.from_uci(msg['move']['uci']))
-                    if self.board.is_game_over() is True:
-                        msg['move']['result'] = self.board.result()
-                    else:
-                        msg['move']['result'] = ''
-                    self.update_display_move(msg)
-                    self.update_display_board()
-                    if 'ponder' in msg['move']:
-                        self.ponder_move = msg['move']['ponder']
-                    self.state = self.State.IDLE
-
-                if 'back' in msg:
-                    if len(self.board.move_stack) > 0:
-                        self.stop()
-                        move = self.board.pop()
-                        self.undo_stack.append(move)
-                        self.update_display_board()
-                        self.state = self.State.IDLE
-                    else:
-                        self.log.debug(
-                            'Cannot take back move, if none has occured.')
-
-                if 'fast-back' in msg:
-                    self.stop()
-                    while len(self.board.move_stack) > 0:
-                        move = self.board.pop()
-                        self.undo_stack.append(move)
-                    self.update_display_board()
-                    self.state = self.State.IDLE
-
-                if 'forward' in msg:
-                    if len(self.undo_stack) > 0:
-                        self.stop()
-                        move = self.undo_stack.pop()
-                        self.board.push(move)
-                        self.update_display_board()
-                        self.state = self.State.IDLE
-                    else:
-                        self.log.debug(
-                            'Cannot move forward, nothing taken back.')
-                        # Stack empty, translate to 'go' command.
-                        msg['go'] = ''
-
-                if 'fast-forward' in msg:
-                    self.stop()
-                    while len(self.undo_stack) > 0:
-                        move = self.undo_stack.pop()
-                        self.board.push(move)
-                    self.update_display_board()
-                    self.state = self.State.IDLE
-
-                if 'go' in msg:
-                    self.stop(new_mode=None)
-                    if self.analysis_active is True:
-                        self.log.debug("Aborting analysis...")
-                        self.analysis_active = False
-                    if (self.board.turn == chess.WHITE and self.mode == self.Mode.ENGINE_PLAYER) or\
-                       (self.board.turn == chess.BLACK and self.mode == self.Mode.PLAYER_ENGINE):
-                        pass
-                    else:
-                        if self.board.turn == chess.WHITE:
-                            self.set_mode(self.Mode.ENGINE_PLAYER)
-                        else:
-                            self.set_mode(self.Mode.PLAYER_ENGINE)
-                        self.update_display_board()
-
-                if 'analysis' in msg:
-                    self.stop()
-                    self.set_mode(self.Mode.PLAYER_PLAYER)
-                    self.analysis_active = True
-                    if self.uci_agent is not None:
-                        self.log.info(f"Starting analysis with {self.uci_agent.name}")
-                        # self.uci_agent.busy = True
-                        # self.uci_agent.go(self.board,-1, analysis=True)
-                    if self.uci_agent2 is not None:
-                        self.log.info(f"Starting analysis with {self.uci_agent2.name}")
-                        # self.uci_agent2.busy = True
-                        # self.uci_agent2.go(self.board, -1, analysis=True)
-
-                if 'turn' in msg:
-                    if msg['turn'] == 'white':
-                        if self.board.turn != chess.WHITE:
-                            self.stop()
-                            # self.board.turn=chess.WHITE
-                            self.board.push(chess.Move.from_uci('0000'))
-                            self.state = self.State.IDLE
-                            self.update_display_board()
-                            if self.board.turn == chess.WHITE:
-                                self.log.info("It's now white's turn.")
-                            else:
-                                self.log.error(
-                                    "TURN information corrupted! (Should be white's turn.)")
-
-                    elif msg['turn'] == 'black':
-                        if self.board.turn != chess.BLACK:
-                            self.stop()
-                            # self.board.turn=chess.BLACK
-                            self.board.push(chess.Move.from_uci('0000'))
-                            self.state = self.State.IDLE
-                            self.update_display_board()
-                            if self.board.turn == chess.BLACK:
-                                self.log.info("It's now black's turn.")
-                            else:
-                                self.log.error(
-                                    "TURN information corrupted! (Should be black's turn.)")
-                    else:
-                        self.log.warning(
-                            "turn message should send white or black")
-
-                if 'game_mode' in msg:
-                    if msg['game_mode'] == 'PLAYER_PLAYER':
-                        self.stop(new_mode=self.Mode.PLAYER_PLAYER)
-                    elif msg['game_mode'] == 'PLAYER_ENGINE':
-                        self.stop(new_mode=self.Mode.PLAYER_ENGINE)
-                    elif msg['game_mode'] == 'ENGINE_PLAYER':
-                        self.stop(new_mode=self.Mode.ENGINE_PLAYER)
-                    elif msg['game_mode'] == 'ENGINE_ENGINE':
-                        self.stop(new_mode=self.Mode.ENGINE_ENGINE)
 
                 if 'led_hint' in msg:
                     ply = int(msg['led_hint'])
@@ -682,3 +549,151 @@ class TurquoiseDispatcher:
         except Exception as e:
             self.log.warning(f"Invalid import FEN {msg} not imported: {e}")
 
+    def import_pgn(self, msg):
+        self.stop()
+        if self.analysis_active is True:
+            self.analysis_active = False
+        try:
+            pgnd = msg['pgn']
+            pgndata = io.StringIO(pgnd)
+            game = chess.pgn.read_game(pgndata)
+        except Exception as e:
+            self.log.error(f"Failed to import PGN data {pgnd}: {e}")
+            return
+        # set metadata
+        try:
+            self.player_w_name = game.headers["White"]
+        except Exception as e:
+            self.log.warning(f'PGN misses White-name-field: {e}')
+            self.player_w_name = 'unknown'
+        try:
+            self.player_b_name = game.headers["Black"]
+        except Exception as e:
+            self.log.warning(f'PGN misses Black-name-field: {e}')
+            self.player_b_name = 'unknown'
+        self.board = game.board()
+        for move in game.mainline_moves():
+            self.board.push(move)
+        self.update_display_board()
+        self.state = self.State.IDLE
+
+    def move(self, msg):
+        self.log.info(f"move: {msg['uci']}, {msg}")
+        self.uci_stop_engines()
+        self.undo_stack = []
+        self.board.push(chess.Move.from_uci(msg['uci']))
+        if self.board.is_game_over() is True:
+            msg['result'] = self.board.result()
+        else:
+            msg['result'] = ''
+        self.update_display_move(msg)
+        self.update_display_board()
+        if 'ponder' in msg:
+            self.ponder_move = msg['ponder']
+        self.state = self.State.IDLE
+
+    def move_back(self, msg):
+        if len(self.board.move_stack) > 0:
+            self.stop()
+            move = self.board.pop()
+            self.undo_stack.append(move)
+            self.update_display_board()
+            self.state = self.State.IDLE
+        else:
+            self.log.debug(
+                'Cannot take back move, if none has occured.')
+
+    def move_start(self, msg):
+        self.stop()
+        while len(self.board.move_stack) > 0:
+            move = self.board.pop()
+            self.undo_stack.append(move)
+        self.update_display_board()
+        self.state = self.State.IDLE
+
+    def move_forward(self, msg):
+        if len(self.undo_stack) > 0:
+            self.stop()
+            move = self.undo_stack.pop()
+            self.board.push(move)
+            self.update_display_board()
+            self.state = self.State.IDLE
+        else:
+            self.log.debug(
+                'Cannot move forward, nothing taken back.')
+            # Stack empty, translate to 'go' command.
+            msg['go'] = ''
+
+    def move_end(self, msg):
+        self.stop()
+        while len(self.undo_stack) > 0:
+            move = self.undo_stack.pop()
+            self.board.push(move)
+        self.update_display_board()
+        self.state = self.State.IDLE
+
+    def go(self, msg):
+        self.stop(new_mode=None)
+        if self.analysis_active is True:
+            self.log.debug("Aborting analysis...")
+            self.analysis_active = False
+        if (self.board.turn == chess.WHITE and self.mode == self.Mode.ENGINE_PLAYER) or\
+            (self.board.turn == chess.BLACK and self.mode == self.Mode.PLAYER_ENGINE):
+            pass
+        else:
+            if self.board.turn == chess.WHITE:
+                self.set_mode(self.Mode.ENGINE_PLAYER)
+            else:
+                self.set_mode(self.Mode.PLAYER_ENGINE)
+            self.update_display_board()
+
+    def analyse(self, msg):
+        self.stop()
+        self.set_mode(self.Mode.PLAYER_PLAYER)
+        self.analysis_active = True
+        if self.uci_agent is not None:
+            self.log.info(f"Starting analysis with {self.uci_agent.name}")
+        if self.uci_agent2 is not None:
+            self.log.info(f"Starting analysis with {self.uci_agent2.name}")
+
+    def turn(self, msg):
+        if msg['color'] == 'white':
+            if self.board.turn != chess.WHITE:
+                self.stop()
+                # self.board.turn=chess.WHITE
+                self.board.push(chess.Move.from_uci('0000'))
+                self.state = self.State.IDLE
+                self.update_display_board()
+                if self.board.turn == chess.WHITE:
+                    self.log.info("It's now white's turn.")
+                else:
+                    self.log.error(
+                        "TURN information corrupted! (Should be white's turn.)")
+
+        elif msg['color'] == 'black':
+            if self.board.turn != chess.BLACK:
+                self.stop()
+                # self.board.turn=chess.BLACK
+                self.board.push(chess.Move.from_uci('0000'))
+                self.state = self.State.IDLE
+                self.update_display_board()
+                if self.board.turn == chess.BLACK:
+                    self.log.info("It's now black's turn.")
+                else:
+                    self.log.error(
+                        "TURN information corrupted! (Should be black's turn.)")
+        else:
+            self.log.warning(
+                "turn message should send 'color' white or black")
+
+    def game_mode(self, msg):
+        if msg['mode'] == 'human-human':
+            self.stop(new_mode=self.Mode.PLAYER_PLAYER)
+        elif msg['mode'] == 'human-computer':
+            self.stop(new_mode=self.Mode.PLAYER_ENGINE)
+        elif msg['mode'] == 'computer-human':
+            self.stop(new_mode=self.Mode.ENGINE_PLAYER)
+        elif msg['mode'] == 'computer-computer':
+            self.stop(new_mode=self.Mode.ENGINE_ENGINE)
+        else:
+            self.log.error(f"Undefined game_mode {msg['mode']} in {msg}")

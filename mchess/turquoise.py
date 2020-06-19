@@ -152,7 +152,18 @@ class TurquoiseSetup():
                     self.uci_engine_configurator = self.agent_modules[agent].UciEngines(self.main_event_queue, self.prefs[agent])
                     for engine in self.uci_engine_configurator.engines:
                         self.log.info(f"Found engine {engine}")
-                    # XXX: startup engine-agents...
+                        engine_json = self.uci_engine_configurator.engines[engine]['params']
+                        if engine==self.prefs['computer']['default_player']:
+                            self.log.info(f"{engine} is default-engine")
+                            self.agents['uci1'] = self.agent_modules[agent].UciAgent(self.main_event_queue, engine_json, self.prefs['computer'])
+                            if self.agents['uci1'] is None:
+                                self.log.error(f'Failed to instantiate {engine}')
+                        if engine==self.prefs['computer']['default_2nd_analyser']:
+                            self.log.info(f"{engine} is 2nd-engine")
+                            self.agents['uci2'] = self.agent_modules[agent].UciAgent(self.main_event_queue, engine_json, self.prefs['computer'])
+                            if self.agents['uci2'] is None:
+                                self.log.error(f'Failed to instantiate {engine}')
+                        # XXX: startup 1..n engine-agents ?!
                 else:
                     self.log.error(f"Not yet implemented: {class_name}")
             else:

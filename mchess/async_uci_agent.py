@@ -294,11 +294,11 @@ class UciAgent:
                     else:
                         ind = 0
                     pv[ind] = info['pv']
-                    rep = {'curmove': {
-                        'multipv_ind': ind+1,
+                    rep = {'cmd': 'current_move_info',
+                        'multipv_index': ind+1,
                         'variant': info['pv'],
                         'actor': self.name
-                    }}
+                    }
                     if 'score' in info:
                         try:
                             if info['score'].is_mate():
@@ -309,17 +309,17 @@ class UciAgent:
                         except Exception as e:
                             self.log.error(f"Score transform failed {info['score']}: {e}")
                             sc = '?'
-                        rep['curmove']['score'] = sc
+                        rep['score'] = sc
                         if ind == 0:
                             best_score = sc
                     if 'depth' in info:
-                        rep['curmove']['depth'] = info['depth']
+                        rep['depth'] = info['depth']
                     if 'seldepth' in info:
-                        rep['curmove']['seldepth'] = info['seldepth']
+                        rep['seldepth'] = info['seldepth']
                     if 'nps' in info:
-                        rep['curmove']['nps'] = info['nps']
+                        rep['nps'] = info['nps']
                     if 'tbhits' in info:
-                        rep['curmove']['tbhits'] = info['tbhits']
+                        rep['tbhits'] = info['tbhits']
                     if time.time()-last_info[ind] > self.info_throttle:
                         self.que.put(rep)
                         last_info[ind] = time.time()
@@ -335,20 +335,20 @@ class UciAgent:
         if len(pv) > 0 and len(pv[0]) > 0:
             if analysis is False:
                 move = pv[0][0]
-                rep = {'move': {
+                rep = {'cmd': 'move',
                     'uci': move.uci(),
                     'actor': self.name
-                }}
+                }
                 if best_score is not None:
-                    rep['move']['score'] = best_score
+                    rep['score'] = best_score
                 if 'depth' in info:
-                    rep['move']['depth'] = info['depth']
+                    rep['depth'] = info['depth']
                 if 'seldepth' in info:
-                    rep['move']['seldepth'] = info['seldepth']
+                    rep['seldepth'] = info['seldepth']
                 if 'nps' in info:
-                    rep['move']['nps'] = info['nps']
+                    rep['nps'] = info['nps']
                 if 'tbhits' in info:
-                    rep['move']['tbhits'] = info['tbhits']
+                    rep['tbhits'] = info['tbhits']
 
                 self.log.debug(f"Queing result: {rep}")
                 self.que.put(rep)

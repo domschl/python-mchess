@@ -170,6 +170,13 @@ arrays. Recipients will receive both formats from dispatcher.
 {
     "cmd": "move",
     "uci": "move-in-uci-format (e.g. e2-e4, e8-g8, e7-e8Q, 0000)",
+    "result": "empty, 1-0, 0-1, 1/2-1/2",
+    "ponder": "t.b.d",
+    "score": "optional (engine move) centi-pawn score or #2 mate announcement",
+    "depth": "optional (engine move) search depth (half moves)",
+    "seldepth": "optional (engine move) selective search depth (half moves)",
+    "nps": "optional (engine move) nodes per second",
+    "tbhits": "optional (engine move) table-base hits",
     "actor": "name-of-agent-sending-this"
 }
 ```

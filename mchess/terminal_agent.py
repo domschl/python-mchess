@@ -243,17 +243,17 @@ class TerminalAgent:
             msg['actor'], msg['state'], msg['message']))
 
     def display_move(self, move_msg):
-        if 'score' in move_msg['move']:
+        if 'score' in move_msg:
             new_move = '\nMove {} (ev: {}) by {}'.format(
-                move_msg['move']['uci'], move_msg['move']['score'], move_msg['move']['actor'])
+                move_msg['uci'], move_msg['score'], move_msg['actor'])
         else:
             new_move = '\nMove {} by {}'.format(
-                move_msg['move']['uci'], move_msg['move']['actor'])
-        if 'ponder' in move_msg['move']:
-            new_move += '\nPonder: {}'.format(move_msg['move']['ponder'])
+                move_msg['uci'], move_msg['actor'])
+        if 'ponder' in move_msg:
+            new_move += '\nPonder: {}'.format(move_msg['ponder'])
 
-        if 'result' in move_msg['move'] and move_msg['move']['result'] != '':
-            new_move += f" ({move_msg['move']['result']})"
+        if 'result' in move_msg and move_msg['result'] != '':
+            new_move += f" ({move_msg['result']})"
 
         if new_move != self.move_cache:
             for _ in range(self.last_cursor_up):
@@ -417,7 +417,7 @@ class TerminalAgent:
                             'Illegal m parameter, use: PP, PE, EP, EE (see help-command)')
                 elif cmd == 'n':
                     log.debug('requesting new game')
-                    appque.put({'cmd': 'new game', 'actor': self.name})
+                    appque.put({'cmd': 'new_game', 'actor': self.name})
                 elif cmd == 'p':
                     log.debug('position_fetch')
                     appque.put(
