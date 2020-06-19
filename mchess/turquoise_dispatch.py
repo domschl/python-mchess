@@ -71,6 +71,11 @@ class TurquoiseDispatcher:
             'analyse': self.analyse,
             'turn': self.turn,
             'game_mode': self.game_mode,
+            'led_info': self.led_info,
+            'stop': self.stop_cmd,
+            'current_move_info': self.current_move_info,
+            'text_encoding': self.text_encoding,
+            'turn_hardware_board': self.turn_hardware_board
         }
 
     def short_fen(self, fen):
@@ -333,14 +338,56 @@ class TurquoiseDispatcher:
             if callable(dispm):
                 agent.display_move(mesg)
 
-    def update_display_info(self, mesg):
+    def update_display_info(self, mesg, max_board_preview_hmoves=6):
         st_msg = copy.deepcopy(mesg)
         st_board = copy.deepcopy(self.board)
+        # XXX: deepcopy needs cleanup
+        ninfo = copy.deepcopy(mesg)
+        nboard = copy.deepcopy(self.board)
+        nboard_cut = copy.deepcopy(nboard)
+        max_cut = max_board_preview_hmoves
+        if 'variant' in ninfo and 'san_variant' not in ninfo:
+            ml = []
+            mv = ''
+            if nboard.turn is False:
+                mv = (nboard.fullmove_number,)
+                mv += ("..",)
+            rel_mv = 0
+            for move in ninfo['variant']:
+                if move is None:
+                    self.log.error("None-move in variant: {}".format(ninfo))
+                if nboard.turn is True:
+                    mv = (nboard.fullmove_number,)
+                try:
+                    san = nboard.san(chess.Move.from_uci(move))
+                except Exception as e:
+                    self.log.warning(
+                        "Internal error '{}' at san conversion.".format(e))
+                    san = None
+                if san is not None:
+                    mv += (san,)
+                else:
+                    self.log.info(
+                        "Variant cut off due to san-conversion-error: '{}'".format(mv))
+                    break
+                if nboard.turn is False:
+                    ml.append(mv)
+                    mv = ""
+                nboard.push(chess.Move.from_uci(move))
+                if rel_mv < max_cut:
+                    nboard_cut.push(chess.Move.from_uci(move)) 
+                    rel_mv += 1
+            if mv != "":
+                ml.append(mv)
+                mv = ""
+            st_msg['san_variant'] = ml
+            st_msg['preview_fen'] = nboard_cut.fen()
+
         for agent in self.agents_all:
             dinfo = getattr(agent, "display_info", None)
             if callable(dinfo):
                 agent.display_info(
-                    st_board, info=st_msg['curmove'])
+                    st_board, info=st_msg)
 
     def quit_signal(self, sig, frame):
         self.log.debug(f"sig: {sig} frame: {frame}")
@@ -445,39 +492,6 @@ class TurquoiseDispatcher:
                     continue
 
 
-
-                if 'led_hint' in msg:
-                    ply = int(msg['led_hint'])
-                    if ply >= 0 and ply < 4:
-                        self.prefs['chesslink']['max_plies_board'] = ply
-                        # XXX updates prefs: self.write_preferences(self.prefs)
-
-                if 'stop' in msg:
-                    # self.analysis_active=False
-                    if self.analysis_active is True:
-                        self.log.debug("Aborting analysis...")
-                        self.analysis_active = False
-                    self.stop(silent=False)
-
-                if 'curmove' in msg:
-                    self.last_info = time.time()
-                    msg['curmove']['appque'] = self.appque.qsize()
-                    self.update_display_info(msg)
-
-                if 'turn eboard orientation' in msg:
-                    self.stop()
-                    if self.chesslink_agent.cl_brd.get_orientation() is False:
-                        self.chesslink_agent.cl_brd.set_orientation(True)
-                        self.log.info("eboard cable on right side.")
-                    else:
-                        self.chesslink_agent.cl_brd.set_orientation(False)
-                        self.log.info("eboard cable on left side.")
-                    self.import_chesslink_position()
-
-                if 'encoding' in msg:
-                    self.prefs['terminal']['use_unicode_figures'] = not self.prefs['terminal']['use_unicode_figures']
-                    # XXX: update prefs: self.write_preferences(self.prefs)
-                    self.update_display_board()
 
             else:
                 time.sleep(0.05)
@@ -697,3 +711,37 @@ class TurquoiseDispatcher:
             self.stop(new_mode=self.Mode.ENGINE_ENGINE)
         else:
             self.log.error(f"Undefined game_mode {msg['mode']} in {msg}")
+
+    def led_info(self, msg):
+        ply = int(msg['plies'])
+        if ply >= 0 and ply < 4:
+            self.prefs['chesslink']['max_plies_board'] = ply
+            # XXX updates prefs: self.write_preferences(self.prefs)
+
+    def stop_cmd(self, msg):
+        # self.analysis_active=False
+        if self.analysis_active is True:
+            self.log.debug("Aborting analysis...")
+            self.analysis_active = False
+        self.stop(silent=False)
+
+    def current_move_info(self, msg):
+        self.last_info = time.time()
+        msg['appque'] = self.appque.qsize()
+        self.update_display_info(msg)
+
+    def turn_hardware_board(self, msg):
+        self.stop()
+        if self.chesslink_agent.cl_brd.get_orientation() is False:
+            self.chesslink_agent.cl_brd.set_orientation(True)
+            self.log.info("eboard cable on right side.")
+        else:
+            self.chesslink_agent.cl_brd.set_orientation(False)
+            self.log.info("eboard cable on left side.")
+        self.import_chesslink_position()
+
+    def text_encoding(self, msg):
+        self.prefs['terminal']['use_unicode_figures'] = msg['unicode'] # not self.prefs['terminal']['use_unicode_figures']
+        # XXX: update prefs: self.write_preferences(self.prefs)
+        # XXX: old implementation toggles and doesn't save?!
+        self.update_display_board()

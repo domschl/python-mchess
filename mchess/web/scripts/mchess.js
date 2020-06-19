@@ -13,6 +13,7 @@ var VariantInfo = null;
 var EngineStates = null;
 var FenRef = {};
 var StatHeader = {};
+var id = null;
 
 var oldFen = null;
 
@@ -258,84 +259,87 @@ function display_board(msg) {
 }
 
 function current_move_info(msg) {
-    if (msg.hasOwnProperty("info")) {
-        if (VariantInfo == null) {
-            VariantInfo = {};
+    if (VariantInfo == null) {
+        VariantInfo = {};
+    }
+    console.log(msg)
+    if (msg.hasOwnProperty("san_variant")) {
+        //console.log("V");
+        var actor = msg.actor;
+        var id = msg.multipv_index;
+        if (!(actor in VariantInfo)) {
+            VariantInfo[actor] = {}
         }
-        if (msg.info.hasOwnProperty("variant")) {
-            //console.log("V");
-            var actor = msg.info.actor;
-            var id = msg.info.multipv_ind;
-            if (!(actor in VariantInfo)) {
-                VariantInfo[actor] = {}
+        if (id == 1) FenRef[actor] = msg["preview_fen"];
+        var hd = ""
+        if ("nps" in msg) {
+            hd += " | Nps: " + msg.nps;
+        }
+        if (id == 1 && "score" in msg) {
+            hd += " | Score: " + msg.score;
+        }
+        if ("depth" in msg) {
+            hd += " | Depth: " + msg.depth;
+            if ("seldepth" in msg) {
+                hd += "/" + msg.seldepth;
             }
-            if (id == 1) FenRef[actor] = msg["fenref"];
-            var hd = ""
-            if ("nps" in msg.info) {
-                hd += " | Nps: " + msg.info.nps;
+        }
+        if ("tbhits" in msg) {
+            hd += " | TbHits: " + msg["tbhits"];
+        }
+        hd += " |";
+        StatHeader[actor] = hd;
+        var htmlpgn = "<div class=\"variant\"><span class=\"leadt\">";
+        if (msg.score!="") htmlpgn+="[" + msg.score + "]";
+        else htmlpgn+="&nbsp;&nbsp;&nbsp;&nbsp;";
+        htmlpgn+="</span>&nbsp;&nbsp;";
+        var first = true;
+        for (var mvi in msg.san_variant) {
+            if (mvi == "fen") continue;
+            var mv = msg.san_variant[mvi];
+            if (mvi != 0) htmlpgn += "&nbsp;";
+            var mv1 = mv[1].replace('-', '‑'); // make dash non-breaking
+            var mv2 = "";
+            if (mv.length > 2) {
+                var mv2 = mv[2].replace('-', '‑');
             }
-            if (id == 1 && "score" in msg.info) {
-                hd += " | Score: " + msg.info.score;
+            if (first) {
+                if (mv1 == '..')
+                    htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;<span class=\"mainmove\">" + mv2 + "</span> ";
+                else
+                    htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;<span class=\"mainmove\">" + mv1 + "</span>&nbsp;" + mv2 + " ";
+                first = false;
+            } else {
+                htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;" + mv2 + " ";
             }
-            if ("depth" in msg.info) {
-                hd += " | Depth: " + msg.info.depth;
-                if ("seldepth" in msg.info) {
-                    hd += "/" + msg.info.seldepth;
-                }
-            }
-            if ("tbhits" in msg.info) {
-                hd += " | TbHits: " + msg.info["tbhits"];
-            }
-            hd += " |";
-            StatHeader[actor] = hd;
-            var htmlpgn = "<div class=\"variant\"><span class=\"leadt\">";
-            if (msg.info.score!="") htmlpgn+="[" + msg.info.score + "]";
-            else htmlpgn+="&nbsp;&nbsp;&nbsp;&nbsp;";
-            htmlpgn+="</span>&nbsp;&nbsp;";
-            var first = true;
-            for (var mvi in msg.info.variant) {
-                if (mvi == "fen") continue;
-                var mv = msg.info.variant[mvi];
-                if (mvi != 0) htmlpgn += "&nbsp;";
-                var mv1 = mv[1].replace('-', '‑'); // make dash non-breaking
-                var mv2 = "";
-                if (mv.length > 2) {
-                    var mv2 = mv[2].replace('-', '‑');
-                }
-                if (first) {
-                    if (mv1 == '..')
-                        htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;<span class=\"mainmove\">" + mv2 + "</span> ";
-                    else
-                        htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;<span class=\"mainmove\">" + mv1 + "</span>&nbsp;" + mv2 + " ";
-                    first = false;
-                } else {
-                    htmlpgn += "<span class=\"movenr\">" + mv[0] + ".</span>&nbsp;" + mv1 + "&nbsp;" + mv2 + " ";
-                }
-            }
-            htmlpgn += "</div>";
-            VariantInfo[actor][id] = htmlpgn
+        }
+        htmlpgn += "</div>";
+        VariantInfo[actor][id] = htmlpgn
 
-            var n = 0;
-            for (var actorName in VariantInfo) {
-                var ai = VariantInfo[actorName];
-                var htmlpi = "";
-                for (var j in ai) {
-                    htmlpi += ai[j];
-                }
-                if (n == 0) {
-                    document.getElementById("miniinfo1").innerHTML = htmlpi;
-                    document.getElementById("ph2").innerText = actorName;
-                    miniBoard1.setPosition(FenRef[actorName], false);
-                    document.getElementById("ph21").innerText = StatHeader[actorName];
-                }
-                if (n == 1) {
-                    document.getElementById("miniinfo2").innerHTML = htmlpi;
-                    document.getElementById("ph3").innerText = actorName;
-                    miniBoard2.setPosition(FenRef[actorName], false);
-                    document.getElementById("ph31").innerText = StatHeader[actorName];
-                }
-                n += 1;
+        var n = 0;
+        for (var actorName in VariantInfo) {
+            var ai = VariantInfo[actorName];
+            var htmlpi = "";
+            for (var j in ai) {
+                htmlpi += ai[j];
             }
+            if (n == 0) {
+                document.getElementById("miniinfo1").innerHTML = htmlpi;
+                document.getElementById("ph2").innerText = actorName;
+                if (FenRef.hasOwnProperty(actorName)) {
+                    miniBoard1.setPosition(FenRef[actorName], false);
+                }
+                document.getElementById("ph21").innerText = StatHeader[actorName];
+            }
+            if (n == 1) {
+                document.getElementById("miniinfo2").innerHTML = htmlpi;
+                document.getElementById("ph3").innerText = actorName;
+                if (FenRef.hasOwnProperty(actorName)) {
+                    miniBoard2.setPosition(FenRef[actorName], false);
+                }
+                document.getElementById("ph31").innerText = StatHeader[actorName];
+            }
+            n += 1;
         }
     }
 }

@@ -190,51 +190,10 @@ class WebAgent:
     def display_move(self, move_msg):
         pass
 
-    def display_info(self, board, info, max_board_preview_hmoves=6):
-        ninfo = copy.deepcopy(info)
-        nboard = copy.deepcopy(board)
-        nboard_cut = copy.deepcopy(nboard)
-        max_cut = max_board_preview_hmoves
-        if 'variant' in ninfo:
-            ml = []
-            mv = ''
-            if nboard.turn is False:
-                mv = (nboard.fullmove_number,)
-                mv += ("..",)
-            rel_mv = 0
-            for move in ninfo['variant']:
-                if move is None:
-                    self.log.error("None-move in variant: {}".format(ninfo))
-                if nboard.turn is True:
-                    mv = (nboard.fullmove_number,)
-                try:
-                    san = nboard.san(move)
-                except Exception as e:
-                    self.log.warning(
-                        "Internal error '{}' at san conversion.".format(e))
-                    san = None
-                if san is not None:
-                    mv += (san,)
-                else:
-                    self.log.info(
-                        "Variant cut off due to san-conversion-error: '{}'".format(mv))
-                    break
-                if nboard.turn is False:
-                    ml.append(mv)
-                    mv = ""
-                nboard.push(move)
-                if rel_mv < max_cut:
-                    nboard_cut.push(move)
-                    rel_mv += 1
-            if mv != "":
-                ml.append(mv)
-                mv = ""
-            ninfo['variant'] = ml
-
-        msg = {'cmd': 'current_move_info', 'preview_fen': nboard_cut.fen(), 'san_variant': ninfo}
+    def display_info(self, board, info):
         for w in self.ws_clients:
             try:
-                self.ws_clients[w].send(json.dumps(msg))
+                self.ws_clients[w].send(json.dumps(info))
             except Exception as e:
                 self.log.warning(
                     "Sending to WebSocket client {} failed with {}".format(w, e))

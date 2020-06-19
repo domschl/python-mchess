@@ -70,7 +70,7 @@ class ChessLinkAgent:
         try:
             pos.append(self.cl_brd.fen_to_position(board.fen()))
             for i in range(mvs):
-                board.push(moves[i])
+                board.push(chess.Move.from_uci(moves[i]))
                 pos.append(self.cl_brd.fen_to_position(board.fen()))
             for i in range(mvs):
                 board.pop()
@@ -97,14 +97,14 @@ class ChessLinkAgent:
 
     def display_info(self, _board, info):
         board = copy.deepcopy(_board)
-        if info['actor'] == self.prefs['computer_player_name']:
-            if 'multipv_ind' in info:
-                if info['multipv_ind'] == 1:  # Main variant only
-                    if 'variant' in info:
-                        self.visualize_variant(
-                            board, info['variant'], plies=self.max_plies)
-            else:
-                self.log.error('Unexpected info-format')
+#        if info['actor'] == self.prefs['computer_player_name']:
+        if 'multipv_index' in info:
+            if info['multipv_index'] == 1:  # Main variant only
+                if 'variant' in info:
+                    self.visualize_variant(
+                        board, info['variant'], plies=self.max_plies)
+        else:
+            self.log.error('Unexpected info-format')
 
     def set_valid_moves(self, board, val):
         if board.turn == chess.WHITE:

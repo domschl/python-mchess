@@ -261,10 +261,11 @@ class UciAgent:
             for i in range(mpv):
                 pv.append([])
                 last_info.append(0)
-                res = {'curmove' : {'multipv_ind': i+1,
-                                    'variant': [],
-                                    'actor': self.name,
-                                    'score': ''}
+                res = {'cmd': 'current_move_info',
+                        'multipv_index': i+1,
+                        'variant': [],
+                        'actor': self.name,
+                        'score': ''
                       }
                 self.que.put(res)  # reset old evals
         else:
@@ -293,10 +294,12 @@ class UciAgent:
                         ind = info['multipv']-1
                     else:
                         ind = 0
-                    pv[ind] = info['pv']
+                    pv[ind] = []
+                    for mv in info['pv']:
+                        pv[ind].append(mv.uci())
                     rep = {'cmd': 'current_move_info',
                         'multipv_index': ind+1,
-                        'variant': info['pv'],
+                        'variant': pv[ind],
                         'actor': self.name
                     }
                     if 'score' in info:
@@ -336,7 +339,7 @@ class UciAgent:
             if analysis is False:
                 move = pv[0][0]
                 rep = {'cmd': 'move',
-                    'uci': move.uci(),
+                    'uci': move,
                     'actor': self.name
                 }
                 if best_score is not None:

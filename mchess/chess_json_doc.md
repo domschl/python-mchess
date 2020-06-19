@@ -234,6 +234,16 @@ arrays. Recipients will receive both formats from dispatcher.
 }
 ```
 
+### Text encoding
+
+```json
+{
+    "cmd": "text_encoding",
+    "unicode": true,
+    "actor": "name-of-agent-sending-this"
+}
+```
+
 ### Chose depth of preview FEN
 
 ```json

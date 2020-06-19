@@ -274,7 +274,7 @@ class TerminalAgent:
     def display_info(self, board, info):
         if self.show_infos is False:
             return
-        mpv_ind = info['multipv_ind']  # index to multipv-line number 1..
+        mpv_ind = info['multipv_index']  # index to multipv-line number 1..
         if mpv_ind > self.max_mpv:
             self.max_mpv = mpv_ind
 
@@ -306,7 +306,7 @@ class TerminalAgent:
             for i in range(mvs):
                 if i > 0:
                     variant += ' '
-                variant += moves[i].uci()
+                variant += moves[i] # .uci()
 
         if info['actor'] not in self.info_provider:
             self.info_provider[info['actor']] = {}
