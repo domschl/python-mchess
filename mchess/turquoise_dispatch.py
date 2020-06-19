@@ -75,7 +75,8 @@ class TurquoiseDispatcher:
             'stop': self.stop_cmd,
             'current_move_info': self.current_move_info,
             'text_encoding': self.text_encoding,
-            'turn_hardware_board': self.turn_hardware_board
+            'turn_hardware_board': self.turn_hardware_board,
+            'raw_board_position': self.raw_board_position
         }
 
     def short_fen(self, fen):
@@ -490,9 +491,6 @@ class TurquoiseDispatcher:
                         agent='unknown'
                     self.log.error(f"Message cmd {msg['cmd']} has not yet been implemented (from: {agent}), msg: {msg}")
                     continue
-
-
-
             else:
                 time.sleep(0.05)
     
@@ -558,6 +556,7 @@ class TurquoiseDispatcher:
             self.analysis_active = False
         try:
             self.board = chess.Board(msg['fen'])
+            self.log.info(f"Imported FEN: {msg['fen']}")
             self.update_display_board()
             self.state = self.State.IDLE
         except Exception as e:
@@ -593,6 +592,7 @@ class TurquoiseDispatcher:
 
     def move(self, msg):
         self.log.info(f"move: {msg['uci']}, {msg}")
+        self.log.info(f"board.fen()")
         self.uci_stop_engines()
         self.undo_stack = []
         self.board.push(chess.Move.from_uci(msg['uci']))
@@ -743,5 +743,8 @@ class TurquoiseDispatcher:
     def text_encoding(self, msg):
         self.prefs['terminal']['use_unicode_figures'] = msg['unicode'] # not self.prefs['terminal']['use_unicode_figures']
         # XXX: update prefs: self.write_preferences(self.prefs)
-        # XXX: old implementation toggles and doesn't save?!
+        # XXX: old implementation toggles and doesn't save?! See terminal, commented out.
         self.update_display_board()
+
+    def raw_board_position(self, msg):
+        self.log.debug(f"Raw board position (unchecked) on Hardware board: {msg['fen']}")

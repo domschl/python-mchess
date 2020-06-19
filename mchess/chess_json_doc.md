@@ -284,3 +284,13 @@ arrays. Recipients will receive both formats from dispatcher.
     "actor": "name-of-agent-sending-this"
 }
 ```
+
+### Raw board position
+
+```json
+{
+    "cmd": "raw_board_position",
+    "fen": "unchecked-postion-on-hardware-board-for-debugging",
+    "actor": "name-of-agent-sending-this"
+}
+```

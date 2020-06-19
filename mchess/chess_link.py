@@ -388,7 +388,7 @@ class ChessLink:
                                 self.show_delta(
                                     self.reference_position, self.position)
                             # self.print_position_ascii(position)
-                            self.appque.put({'cmd': 'import_fen', 'fen': fen, 'actor': self.name})
+                            self.appque.put({'cmd': 'raw_board_position', 'fen': fen, 'actor': self.name})
                             self._check_move(position)
                     if msg[0] == 'v':
                         self.log.debug('got version reply')
@@ -448,7 +448,6 @@ class ChessLink:
         """
         fen = self.short_fen(self.position_to_fen(pos))
         if self.legal_moves is not None and fen in self.legal_moves:
-            # TODO: inconsistent message format
             self.appque.put(
                 {'cmd': 'move', 'uci': self.legal_moves[fen], 'actor': self.name})
             self.legal_moves = None
