@@ -35,7 +35,6 @@ body {
 }
 
 .header {
-
     display: grid;
     grid-template-columns: 60px 400px;
     /* grid-template-rows: repeat(8, 1fr); */
@@ -112,6 +111,15 @@ body {
     /* text-align: center; */
 }
 
+.outer-panel-header {
+    background: var(--color-ddark);
+    color: var(--color-dlight);
+    font-size: 7pt;
+    text-align: center;
+    padding: 1px;
+    /* text-align: center; */
+}
+
 .panel {
     background: var(--color-dark);
     color: var(--color-light);
@@ -146,7 +154,7 @@ body {
     border: var(--color-xdddark) 1px solid;
     display: grid;
     grid-template-columns: 260px 1fr;
-    grid-template-rows: 10pt 1fr;
+    grid-template-rows: 20pt 1fr;
 }
 .submain2 {
     display: grid;
@@ -249,6 +257,20 @@ div.board {
     border-radius: 2px;
 }
 
+.setupbutton {
+    background: var(--color-dlight);
+    color: var(--color-ddark);
+    border: none;
+    padding: 1px;
+/*    vertical-align: top; */
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 9px;
+    margin: 4px 2px 2px 2px;
+    border-radius: 2px;
+}
+
 .sbutton {
     background: var(--color-dlight);
     color: var(--color-ddark);
@@ -297,3 +319,4 @@ div.board {
     border-radius: 2px;
     vertical-align: -7pt;
 }
+

@@ -303,6 +303,17 @@ List of all engines currently known, reply to `get_engine_list`.
 }
 ```
 
+### Select player
+
+```json
+{
+    "cmd": "select_player",
+    "color": "white or black",
+    "name": "human or name of uci engine",
+    "actor": "name-of-agent-sending-this",
+}
+```
+
 ## Hardware board specific messages
 
 ### Hardware board orientation

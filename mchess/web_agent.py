@@ -114,9 +114,11 @@ class WebAgent:
         return self.app.send_static_file('favicon.ico')
 
     def ws_dispatch(self, ws, message):
+        self.log.info(f"message received: {message}")
         if message is not None:
             self.log.debug("Client ws_dispatch: ws:{} msg:{}".format(ws, message))
             try:
+                self.log.info(f"Received: {message}")
                 self.appque.put(json.loads(message))
             except Exception as e:
                 self.log.debug("WebClient sent invalid JSON: {}".format(e))

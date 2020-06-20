@@ -53,7 +53,7 @@ function wsConnect(address) {
                 'cmd': 'move_back',
                 'actor': 'WebAgent'
             }));
-            document.getElementById("m-ba").blur();
+            document.getElementById("m-bw").blur();
         }, false);
         document.getElementById("m-st").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
@@ -86,7 +86,7 @@ function wsConnect(address) {
         document.getElementById("m-import").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
                 'cmd': 'position_fetch',
-                'form': 'ChessLinkAgent',
+                'from': 'ChessLinkAgent',
                 'actor': 'WebAgent'
             }));
             document.getElementById("m-import").blur();
@@ -97,6 +97,28 @@ function wsConnect(address) {
                 'actor': 'WebAgent'
             }));
             document.getElementById("m-send").blur();
+        }, false);
+        document.getElementById("whiteplayer").addEventListener("change", function (event) {
+            var pl = document.getElementById("whiteplayer");
+            var player = String(pl.options[pl.selectedIndex].value);
+            console.log('wplayer: '+player+" selected.")
+            mchessSocket.send(JSON.stringify({
+                'cmd': 'select_player',
+                'color': 'white',
+                'name': player,
+                'actor': 'WebAgent'
+            }));
+        }, false);
+        document.getElementById("blackplayer").addEventListener("change", function (event) {
+            var pl = document.getElementById("blackplayer");
+            var player = pl.options[pl.selectedIndex].value;
+            console.log('bplayer: '+player+" selected.")
+            mchessSocket.send(JSON.stringify({
+                'cmd': 'select_player',
+                'color': 'black',
+                'name': player,
+                'actor': 'WebAgent'
+            }));
         }, false);
     }
     mchessSocket.onclose = function () {
@@ -176,11 +198,24 @@ function agent_state(msg) {
     }
 }
 
+function avaliablePlayers() {
+    var wHtml="<option class=\"panel-header\" value=\"human\">human</option>";
+    for (var engine in engines) {
+        wHtml = wHtml+"<option class=\"panel-header\" value=\""+engine+"\">"+engine+"</option>";
+    }
+    var bHtml="<option class=\"panel-header\" value=\"human\">human</option>"
+    for (var engine in engines) {
+        bHtml = bHtml+"<option class=\"panel-header\" value=\""+engine+"\">"+engine+"</option>";
+    }
+    console.log(wHtml);
+    document.getElementById("whiteplayer").innerHTML = wHtml;
+    document.getElementById("blackplayer").innerHTML = bHtml;
+}
+
 function display_board(msg) {
     if (msg.hasOwnProperty("fen") && msg.hasOwnProperty("attribs") && msg.hasOwnProperty("pgn")) {
         console.log("got board position.");
         console.log(msg.pgn)
-        var title = msg.attribs.white_name + " - " + msg.attribs.black_name;
         console.log(msg.fen)
         if (msg.fen==oldFen) {
             console.log("position did not change, ignoring FEN update");
@@ -207,7 +242,7 @@ function display_board(msg) {
         } else {
             mainBoard.setPosition(msg.fen);
         }
-        document.getElementById("ph1").innerText = title;
+        avaliablePlayers();
         var pi = msg.pgn.search("\n\n");
         var pgn = msg.pgn;
         if (pi != -1) {
@@ -347,9 +382,10 @@ function current_move_info(msg) {
 }
 
 function engine_list(msg) {
-    // console.log(msg)
+    // console.log(msg);
     for (var engine in msg["engines"]) {
-        console.log("Received info for engine "+engine)
+        console.log("Received info for engine "+engine);
     }
-    engines = msg["engines"]
+    engines = msg["engines"];
+    avaliablePlayers();
 }
