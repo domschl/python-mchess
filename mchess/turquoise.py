@@ -63,7 +63,7 @@ class TurquoiseSetup():
     def set_default_preferences(self, version):
         prefs = {
             "version": version,
-            "agents": ["chesslink", "terminal", "web", "tk", "qt", "computer"],
+            "agents": ["chesslink", "terminal", "web", "computer"], 
             "default_human_player": {
                 "name": "human",
                 "location": ""
@@ -107,7 +107,7 @@ class TurquoiseSetup():
                 ]
             },
             "log_levels": {
-                "chess_engine": "ERROR"
+                "chess.engine": "ERROR"
             }
         }
         return prefs
@@ -217,6 +217,7 @@ if __name__ == '__main__':
     logger = logging.getLogger('Turquoise')
 
     logger.setLevel(log_level)
+    logger.info("---------------------------------")
     logger.info("STARTING")
     logger.setLevel(log_level)
 

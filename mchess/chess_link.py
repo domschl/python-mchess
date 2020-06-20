@@ -85,7 +85,7 @@ class ChessLink:
         :param appque: a Queue that receive chess board events
         :param name: identifies this protocol
         """
-        self.version = "0.2.0"
+        self.version = "0.3.0"
         self.board_version = "---"
         self.name = name
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],

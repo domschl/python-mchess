@@ -23,6 +23,7 @@ class UciEngines:
         self.log = logging.getLogger("UciEngines")
         self.prefs = prefs
         self.appque = appque
+        self.name = "UciEngines"
 
         COMMON_ENGINES = ['stockfish', 'crafty', 'komodo']
         for engine_name in COMMON_ENGINES:
@@ -97,6 +98,28 @@ class UciEngines:
             self.engines[name] = {}
             self.engines[name]['params'] = engine_json
         self.log.debug(f"{len(self.engines)} engine descriptions loaded.")
+        # self.publish_uci_engines()
+
+    def publish_uci_engines(self):
+        uci_standard_options=["Threads", "MultiPV", "SyzygyPath", "Ponder", 
+                              "UCI_Elo", "Hash"]
+        engine_list={}
+        for engine in self.engines:
+            engine_list[engine]={}
+            engine_list[engine]={
+                "name": self.engines[engine]["params"]["name"],
+                "active": self.engines[engine]["params"]["active"],
+                "options": {}
+            }
+            for opt in uci_standard_options:
+                if "uci-options" in self.engines[engine]["params"]:
+                    if opt in self.engines[engine]["params"]["uci-options"]:
+                        engine_list[engine]["options"][opt]=self.engines[engine]["params"]["uci-options"][opt]
+        self.appque.put({
+            "cmd": "engine_list",
+            "actor": self.name,
+            "engines": engine_list
+        })
 
 
 class UciAgent:

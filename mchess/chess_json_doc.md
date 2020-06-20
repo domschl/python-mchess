@@ -252,6 +252,57 @@ is added by the dispatcher for client-display use.
 }
 ```
 
+### Get engine list
+
+Request list of engines
+
+```json
+{
+    "cmd": "get_engine_list",
+    "actor": "name-of-agent-sending-this"
+}
+```
+
+### Engine list
+
+List of all engines currently known, reply to `get_engine_list`.
+
+```json
+{
+    "cmd": "engine_list",
+    "actor": "name-of-agent-sending-this",
+    "engines": {
+        "name-of-engine-1" : {
+            "name": "name-of-engine",
+            "active": true,
+            "options": {
+                "Threads": 1,
+                "MultiPV": 4,
+                "SyzygyPath": "path-to-syzygy-endgame-database",
+                "Ponder": false,
+                "UCI_Elo": 1800,
+                "Hash": 16
+            }
+        },
+```
+...
+```json
+        "name-of-engine-n": {
+            "name": "name-of-engine-n",
+            "active": true,
+            "options": {
+                "Threads": 1,
+                "MultiPV": 4,
+                "SyzygyPath": "path-to-syzygy-endgame-database",
+                "Ponder": false,
+                "UCI_Elo": 1800,
+                "Hash": 16
+            }
+        }
+    }
+}
+```
+
 ## Hardware board specific messages
 
 ### Hardware board orientation

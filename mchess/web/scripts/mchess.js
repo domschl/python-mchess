@@ -11,6 +11,7 @@ var miniBoard1 = null;
 var miniBoard2 = null;
 var VariantInfo = null;
 var EngineStates = null;
+var engines = {};
 var FenRef = {};
 var StatHeader = {};
 var id = null;
@@ -22,7 +23,8 @@ wsConnect("ws://" + window.location.host + "/ws");
 var cmds = {
     'agent_state': agent_state,
     'display_board': display_board,
-    'current_move_info': current_move_info
+    'current_move_info': current_move_info,
+    'engine_list': engine_list
 }
 
 function wsConnect(address) {
@@ -342,4 +344,12 @@ function current_move_info(msg) {
             n += 1;
         }
     }
+}
+
+function engine_list(msg) {
+    // console.log(msg)
+    for (var engine in msg["engines"]) {
+        console.log("Received info for engine "+engine)
+    }
+    engines = msg["engines"]
 }

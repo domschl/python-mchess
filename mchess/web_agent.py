@@ -34,6 +34,7 @@ class WebAgent:
         self.info_cache = ""
         self.info_provider = {}
         self.agent_state_cache = {}
+        self.uci_engines_cache = {}
         self.max_mpv = 1
         self.last_board = None
         self.last_attribs = None
@@ -113,11 +114,12 @@ class WebAgent:
         return self.app.send_static_file('favicon.ico')
 
     def ws_dispatch(self, ws, message):
-        self.log.debug("Client ws_dispatch: ws:{} msg:{}".format(ws, message))
-        try:
-            self.appque.put(json.loads(message))
-        except Exception as e:
-            self.log.debug("WebClient sent invalid JSON: {}".format(e))
+        if message is not None:
+            self.log.debug("Client ws_dispatch: ws:{} msg:{}".format(ws, message))
+            try:
+                self.appque.put(json.loads(message))
+            except Exception as e:
+                self.log.debug("WebClient sent invalid JSON: {}".format(e))
 
     def ws_sockets(self, ws):
         self.ws_handle += 1
@@ -138,6 +140,7 @@ class WebAgent:
                 except Exception as e:
                     self.log.warning(
                         f"Failed to update agents states to new web-socket client: {e}")
+            ws.send(json.dumps(self.uci_engines_cache))
         self.ws_clients[handle] = ws
         while not ws.closed:
             message = ws.receive()
@@ -185,7 +188,7 @@ class WebAgent:
                 self.ws_clients[w].send(json.dumps(msg))
             except Exception as e:
                 self.log.warning(
-                    "Sending to WebSocket client {} failed with {}".format(w, e))
+                    "Sending board to WebSocket client {} failed with {}".format(w, e))
 
     def display_move(self, move_msg):
         pass
@@ -196,7 +199,19 @@ class WebAgent:
                 self.ws_clients[w].send(json.dumps(info))
             except Exception as e:
                 self.log.warning(
-                    "Sending to WebSocket client {} failed with {}".format(w, e))
+                    "Sending move-info to WebSocket client {} failed with {}".format(w, e))
+
+    def engine_list(self, msg):
+        for engine in msg["engines"]:
+            self.log.info(f"Engine {engine} announced.")
+        self.uci_engines_cache = msg
+        for w in self.ws_clients:
+            try:
+                self.ws_clients[w].send(json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending uci-info to WebSocket client {} failed with {}".format(w, e))
+
 
     def agent_states(self, msg):
         self.agent_state_cache[msg['actor']] = msg
@@ -205,7 +220,7 @@ class WebAgent:
                 self.ws_clients[w].send(json.dumps(msg))
             except Exception as e:
                 self.log.warning(
-                    "Sending to WebSocket client {} failed with {}".format(w, e))
+                    "Sending agent-state info to WebSocket client {} failed with {}".format(w, e))
 
     def set_valid_moves(self, board, vals):
         self.socket_moves = []

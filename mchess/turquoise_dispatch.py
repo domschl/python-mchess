@@ -76,7 +76,8 @@ class TurquoiseDispatcher:
             'current_move_info': self.current_move_info,
             'text_encoding': self.text_encoding,
             'turn_hardware_board': self.turn_hardware_board,
-            'raw_board_position': self.raw_board_position
+            'raw_board_position': self.raw_board_position,
+            'engine_list': self.engine_list
         }
 
     def short_fen(self, fen):
@@ -134,6 +135,8 @@ class TurquoiseDispatcher:
         if 'uci2' in self.agents:
             self.uci_agent2 = self.agents['uci2']
             self.agents_all.append(self.uci_agent2)
+
+        self.uci_engine_configurator.publish_uci_engines()
         
     class Mode(Enum):
         ''' state machine play mode '''
@@ -179,11 +182,11 @@ class TurquoiseDispatcher:
         if self.uci_agent is not None and self.uci_agent.busy is True:
             self.uci_agent.stop()
         else:
-            self.log.info("not stopping uci")
+            self.log.debug("not stopping uci")
         if self.uci_agent2 is not None and self.uci_agent2.busy is True:
             self.uci_agent2.stop()
         else:
-            self.log.info("not stopping uci2")
+            self.log.debug("not stopping uci2")
         t0 = time.time()
         if self.uci_agent is not None:
             while self.uci_agent.stopping is True:
@@ -338,6 +341,12 @@ class TurquoiseDispatcher:
             dispm = getattr(agent, "display_move", None)
             if callable(dispm):
                 agent.display_move(mesg)
+
+    def update_engine_list(self, mesg):
+        for agent in self.agents_all:
+            dispm = getattr(agent, "engine_list", None)
+            if callable(dispm):
+                agent.engine_list(mesg)
 
     def update_display_info(self, mesg, max_board_preview_hmoves=6):
         st_msg = copy.deepcopy(mesg)
@@ -750,3 +759,6 @@ class TurquoiseDispatcher:
 
     def raw_board_position(self, msg):
         self.log.debug(f"Raw board position (unchecked) on Hardware board: {msg['fen']}")
+
+    def engine_list(self, msg):
+        self.update_engine_list(msg)
