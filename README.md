@@ -6,6 +6,8 @@
 
 `python-mchess` is a collections of libraries to work with Millennium's Chess Genius Exclusive chess board via the Chess Link interface.
 
+Note: the client-side will be renamed to 'turquoise', hence main script is now `turquoise.py`
+
 It provides two layers of functionality:
 
 * A hardware driver for the Chess Genius Exclusive chess board, supporting piece recognition and leds via USB or Bluetooth LE
@@ -268,7 +270,7 @@ like so:
 This will show bit-level communication with the ChessLink board.
 
 ## History
-* 2020-06-19: Major cleanup of internals, basis for extending functionality, v0.3.0
+* 2020-06-19: Main file renamed from `mchess.py` to `turquoise.py`. Major cleanup of internals, basis for extending functionality, v0.3.0
 * 2020-04-28: Work started on updating changes in module depencies (especially the async interface python-chess)
 
 ## Documentation
