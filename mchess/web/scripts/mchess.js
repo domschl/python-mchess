@@ -43,7 +43,7 @@ function wsConnect(address) {
 
         document.getElementById("m-new").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
-                'cmd': 'new game',
+                'cmd': 'new_game',
                 'actor': 'WebAgent'
             }));
             document.getElementById("m-new").blur();
