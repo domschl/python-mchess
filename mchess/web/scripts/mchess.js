@@ -2,6 +2,8 @@
 // Mchess.js
 import {
     COLOR,
+    MOVE_INPUT_MODE,
+    INPUT_EVENT_TYPE,
     Chessboard
 } from "../node_modules/cm-chessboard/src/cm-chessboard/Chessboard.js";
 
@@ -14,6 +16,7 @@ var EngineStates = null;
 var engines = {};
 var FenRef = {};
 var StatHeader = {};
+var ValidMoves = [];
 var id = null;
 
 var oldFen = null;
@@ -24,11 +27,15 @@ var cmds = {
     'agent_state': agent_state,
     'display_board': display_board,
     'current_move_info': current_move_info,
-    'engine_list': engine_list
+    'engine_list': engine_list,
+    'move': set_move,
+    'valid_moves': set_valid_moves
 }
 
+var mchessSocket;
 function wsConnect(address) {
-    var mchessSocket = new WebSocket(address);
+    mchessSocket = new WebSocket(address);
+    console.log(`Socket: ${mchessSocket}`);
     mchessSocket.onopen = function (event) {
         document.getElementById("connect-state").style.color = "#58A4B0";
         document.getElementById("connect-text").innerText = "connected";
@@ -129,6 +136,8 @@ function wsConnect(address) {
         document.getElementById("engine1-state").style.color = "red";
         document.getElementById("engine2-state").style.color = "red";
         mchessSocket = null;
+        console.log(`Socket close: ${mchessSocket}`);
+        ValidMoves=[];
         setTimeout(function () {
             wsConnect(address)
         }, 1000);dfgdfghyyhyh
@@ -147,7 +156,7 @@ function wsConnect(address) {
             console.log("received and ignored old-style message");
             console.log(msg);
         } else {
-            if (!msg['cmd'] in cmds) {
+            if (!cmds.hasOwnProperty(msg['cmd'])) {
                 console.log("cmd "+msg['cmd']+" is not yet implemented, ignored.");
                 console.log(msg);
             } else {
@@ -173,7 +182,7 @@ function agent_state(msg) {
         if (!(msg['actor'] in EngineStates)) {
             id=Object.keys(EngineStates).length;
             EngineStates[msg['actor']]=id;
-            console.log(id);
+            //console.log(id);
             if (id==0) document.getElementById("engine1-name").innerHTML = msg['name'];
             else document.getElementById("engine2-name").innerHTML = msg['name'];
         }
@@ -198,7 +207,7 @@ function agent_state(msg) {
     }
 }
 
-function avaliablePlayers() {
+function availablePlayers() {
     var wHtml="<option class=\"panel-header\" value=\"human\">human</option>";
     for (var engine in engines) {
         wHtml = wHtml+"<option class=\"panel-header\" value=\""+engine+"\">"+engine+"</option>";
@@ -229,6 +238,7 @@ function display_board(msg) {
                     showBorder: true,
                 },
                 responsive: true,
+                moveInputMode: MOVE_INPUT_MODE.dragPiece,
                 sprite: {
                     url: "node_modules/cm-chessboard/assets/images/chessboard-sprite.svg"
                 }
@@ -238,10 +248,11 @@ function display_board(msg) {
             document.getElementById("board1").style.width = "260px";
             console.log(brd[0].style.width);
             //document.getElementById("ph1").style.width = brd[0].style.width;
+            mainBoard.enableMoveInput(chessMainboardInputHandler)
         } else {
             mainBoard.setPosition(msg.fen);
         }
-        avaliablePlayers();
+        availablePlayers();
         var pi = msg.pgn.search("\n\n");
         var pgn = msg.pgn;
         if (pi != -1) {
@@ -291,6 +302,44 @@ function display_board(msg) {
         }
         document.getElementById("miniinfo2").innerHTML=""
         document.getElementById("ph31").innerHTML=""
+    }
+}
+
+function chessMainboardInputHandler(event) {
+    console.log(event)
+    switch (event.type) {
+        case INPUT_EVENT_TYPE.moveStart:
+            for (var mv in ValidMoves) {
+                if (String(ValidMoves[mv].substring(0,2))==String(event.square)) {
+                    console.log(`moveStart: ${event.square}`);
+                    return true;
+                }
+            }
+            console.log("invalid all")
+            return false;
+        case INPUT_EVENT_TYPE.moveDone:
+            for (var mv in ValidMoves) {
+                if (ValidMoves[mv]==event.squareFrom+event.squareTo) 
+                {
+                    console.log(`moveDone: ${event.squareFrom}-${event.squareTo}`);
+                    console.log(`Socket: ${mchessSocket}`);
+                    if (mchessSocket==null) {
+                        console.log("Error: Cannot send move, undoing!");
+                        return false;
+                    }
+                    mchessSocket.send(JSON.stringify({
+                        'cmd': 'move',
+                        'uci': ValidMoves[mv],
+                        'actor': 'WebAgent'
+                    }));
+                    ValidMoves=[];
+                    return true;
+                }
+            }
+            console.log(`invalid move: ${event.squareFrom}-${event.squareTo}`);
+            return false;
+        case INPUT_EVENT_TYPE.moveCanceled:
+            console.log(`moveCanceled`)
     }
 }
 
@@ -386,5 +435,13 @@ function engine_list(msg) {
         console.log("Received info for engine "+engine);
     }
     engines = msg["engines"];
-    avaliablePlayers();
+    availablePlayers();
+}
+
+function set_move(msg) {
+    console.log("Ignoring move-cmd");
+}
+
+function set_valid_moves(msg) {
+    ValidMoves=msg.valid_moves;
 }

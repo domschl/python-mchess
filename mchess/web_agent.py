@@ -35,6 +35,8 @@ class WebAgent:
         self.info_provider = {}
         self.agent_state_cache = {}
         self.uci_engines_cache = {}
+        self.display_move_cache = {}
+        self.valid_moves_cache = {}
         self.max_mpv = 1
         self.last_board = None
         self.last_attribs = None
@@ -61,7 +63,6 @@ class WebAgent:
                 self.private_key = prefs['private_key']
                 self.public_key = prefs['public_key']
 
-        self.socket_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "pythc": [(chess.PAWN, chess.WHITE), (chess.KNIGHT, chess.WHITE), (chess.BISHOP, chess.WHITE), (chess.ROOK, chess.WHITE), (chess.QUEEN, chess.WHITE), (chess.KING, chess.WHITE),
                                  (chess.PAWN, chess.BLACK), (chess.KNIGHT, chess.BLACK), (chess.BISHOP, chess.BLACK), (chess.ROOK, chess.BLACK), (chess.QUEEN, chess.BLACK), (chess.KING, chess.BLACK)],
@@ -114,7 +115,7 @@ class WebAgent:
         return self.app.send_static_file('favicon.ico')
 
     def ws_dispatch(self, ws, message):
-        self.log.info(f"message received: {message}")
+        # self.log.info(f"message received: {message}")
         if message is not None:
             self.log.debug("Client ws_dispatch: ws:{} msg:{}".format(ws, message))
             try:
@@ -135,14 +136,19 @@ class WebAgent:
                 self.log.warning(
                     "Sending to WebSocket client {} failed with {}".format(handle, e))
                 return
-            for actor in self.agent_state_cache:
-                msg = self.agent_state_cache[actor]
-                try:
-                    ws.send(json.dumps(msg))
-                except Exception as e:
-                    self.log.warning(
-                        f"Failed to update agents states to new web-socket client: {e}")
+        for actor in self.agent_state_cache:
+            msg = self.agent_state_cache[actor]
+            try:
+                ws.send(json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    f"Failed to update agents states to new web-socket client: {e}")
+        if self.uci_engines_cache != {}:
             ws.send(json.dumps(self.uci_engines_cache))
+        if self.display_move_cache != {}:
+            ws.send(json.dumps(self.display_move_cache))
+        if self.valid_moves_cache != {}:
+            ws.send(json.dumps(self.valid_moves_cache))
         self.ws_clients[handle] = ws
         while not ws.closed:
             message = ws.receive()
@@ -193,7 +199,30 @@ class WebAgent:
                     "Sending board to WebSocket client {} failed with {}".format(w, e))
 
     def display_move(self, move_msg):
-        pass
+        self.display_move_cache = move_msg;
+        for w in self.ws_clients:
+            try:
+                self.ws_clients[w].send(json.dumps(move_msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending display_move to WebSocket client {} failed with {}".format(w, e))
+
+    def set_valid_moves(self, board, vals):
+        self.log.info("web set valid called.")
+        self.valid_moves_cache = {
+            "cmd": "valid_moves",
+            "valid_moves": []
+        }
+        if vals != None:
+            for v in vals:
+                self.valid_moves_cache['valid_moves'].append(vals[v])
+        self.log.info(f"Valid-moves: {self.valid_moves_cache}")
+        for w in self.ws_clients:
+            try:
+                self.ws_clients[w].send(json.dumps(self.valid_moves_cache))
+            except Exception as e:
+                self.log.warning(
+                    "Sending display_move to WebSocket client {} failed with {}".format(w, e))
 
     def display_info(self, board, info):
         for w in self.ws_clients:
@@ -224,11 +253,11 @@ class WebAgent:
                 self.log.warning(
                     "Sending agent-state info to WebSocket client {} failed with {}".format(w, e))
 
-    def set_valid_moves(self, board, vals):
-        self.socket_moves = []
-        if vals != None:
-            for v in vals:
-                self.socket_moves.append(vals[v])
+    # def set_valid_moves(self, board, vals):
+    #     self.socket_moves = []
+    #     if vals != None:
+    #         for v in vals:
+    #             self.socket_moves.append(vals[v])
 
     def socket_event_worker_thread(self, appque, log, app, WebSocketHandler):
         if self.bind_address == '0.0.0.0':

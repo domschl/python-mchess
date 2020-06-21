@@ -162,6 +162,8 @@ class TurquoiseDispatcher:
             agents += [self.chesslink_agent]
         if self.tk_agent and self.tk_agent.agent_ready() is True:
             agents += [self.tk_agent]
+        if self.qt_agent and self.qt_agent.agent_ready() is True:
+            agents += [self.tk_agent]
         if self.web_agent and self.web_agent.agent_ready() is True:
             agents += [self.web_agent]
         return agents
@@ -427,8 +429,10 @@ class TurquoiseDispatcher:
                 self.log.info(f"Passive players: {len(passive_player)}")
 
                 for agent in passive_player:
+                    self.log.info(f"Checking {agent.name} for set_valid_moves")
                     setm = getattr(agent, "set_valid_moves", None)
                     if callable(setm):
+                        self.log.info(f"Resetting {agent.name} valid-move list")
                         agent.set_valid_moves(self.board, [])
 
                 if self.board.is_game_over() is True:
@@ -448,6 +452,7 @@ class TurquoiseDispatcher:
                     self.log.info(f"Eval active agent {agent.name}")
                     setm = getattr(agent, "set_valid_moves", None)
                     if callable(setm):
+                        self.log.info(f"Sending {agent.name} valid_moves")
                         agent.set_valid_moves(self.board, val)
                     gom = getattr(agent, "go", None)
                     if callable(gom):
