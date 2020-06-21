@@ -131,7 +131,7 @@ function wsConnect(address) {
         mchessSocket = null;
         setTimeout(function () {
             wsConnect(address)
-        }, 1000);
+        }, 1000);dfgdfghyyhyh
     };
     mchessSocket.onmessage = function (event) {
         var msg;
@@ -207,7 +207,6 @@ function avaliablePlayers() {
     for (var engine in engines) {
         bHtml = bHtml+"<option class=\"panel-header\" value=\""+engine+"\">"+engine+"</option>";
     }
-    console.log(wHtml);
     document.getElementById("whiteplayer").innerHTML = wHtml;
     document.getElementById("blackplayer").innerHTML = bHtml;
 }
