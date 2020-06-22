@@ -44,6 +44,8 @@ class TurquoiseDispatcher:
 
         self.board.reset()
         self.undo_stack = []
+        self.undo_stats_stack = []
+        self.stats = []
 
         self.mode = None
 
@@ -350,6 +352,12 @@ class TurquoiseDispatcher:
             if callable(dispm):
                 agent.engine_list(mesg)
 
+    def update_stats(self):
+        for agent in self.agents_all:
+            dispm = getattr(agent, "game_stats", None)
+            if callable(dispm):
+                agent.engine_list(self.stats)
+
     def update_display_info(self, mesg, max_board_preview_hmoves=6):
         st_msg = copy.deepcopy(mesg)
         st_board = copy.deepcopy(self.board)
@@ -545,6 +553,9 @@ class TurquoiseDispatcher:
         self.log.info(f"New game initiated by {msg['actor']}")
         self.board.reset()
         self.undo_stack = []
+        self.undo_stats_stack = []
+        self.stats = []
+        self.update_stats()
         self.update_display_board()
         self.state = self.State.IDLE
         if self.analysis_active is True:
@@ -568,6 +579,9 @@ class TurquoiseDispatcher:
 
     def import_fen(self, msg):
         self.stop()
+        self.stats = []
+        self.undo_stack = []
+        self.undo_stats_stack = []
         if self.analysis_active is True:
             self.analysis_active = False
         try:
@@ -577,9 +591,13 @@ class TurquoiseDispatcher:
             self.state = self.State.IDLE
         except Exception as e:
             self.log.warning(f"Invalid import FEN {msg} not imported: {e}")
+        self.update_stats()
 
     def import_pgn(self, msg):
         self.stop()
+        self.stats = []
+        self.undo_stack = []
+        self.undo_stats_stack = []
         if self.analysis_active is True:
             self.analysis_active = False
         try:
@@ -604,6 +622,7 @@ class TurquoiseDispatcher:
         for move in game.mainline_moves():
             self.board.push(move)
         self.update_display_board()
+        self.update_stats()
         self.state = self.State.IDLE
 
     def move(self, msg):
@@ -611,11 +630,35 @@ class TurquoiseDispatcher:
         self.log.info(f"board.fen()")
         self.uci_stop_engines()
         self.undo_stack = []
+        self.undo_stats_stack = []
+
+        stat={}
+        if 'score' in msg:
+            stat['score'] = msg['score']
+        if 'depth' in msg:
+            stat['depth'] = msg['depth']
+        if 'seldepth' in msg:
+            stat['seldepth'] = msg['seldepth']
+        if 'nps' in msg:
+            stat['nps'] = msg['nps']
+        if 'tbhits' in msg:
+            stat['tbhis'] = msg['tbhis']
+        stat['move_number'] = self.board.fullmove_number
+        if self.board.turn == chess.WHITE:
+            stat['color'] = 'WHITE'
+            stat['halfmove_number'] = self.board.fullmove_number * 2
+        else:
+            stat['color'] = 'BLACK'
+            stat['halfmove_number'] = self.board.fullmove_number * 2 + 1
+        self.stats.append(stat)
+        self.update_stats()
+        
         self.board.push(chess.Move.from_uci(msg['uci']))
         if self.board.is_game_over() is True:
             msg['result'] = self.board.result()
         else:
             msg['result'] = ''
+        
         self.update_display_move(msg)
         self.update_display_board()
         if 'ponder' in msg:
@@ -627,6 +670,7 @@ class TurquoiseDispatcher:
             self.stop()
             move = self.board.pop()
             self.undo_stack.append(move)
+            self.undo_stats_stack.append(self.stats.pop())
             self.update_display_board()
             self.state = self.State.IDLE
         else:
@@ -638,6 +682,7 @@ class TurquoiseDispatcher:
         while len(self.board.move_stack) > 0:
             move = self.board.pop()
             self.undo_stack.append(move)
+            self.undo_stats_stack.append(self.stats.pop())
         self.update_display_board()
         self.state = self.State.IDLE
 
@@ -645,6 +690,7 @@ class TurquoiseDispatcher:
         if len(self.undo_stack) > 0:
             self.stop()
             move = self.undo_stack.pop()
+            self.stats.append = self.undo_stats_stack.pop()
             self.board.push(move)
             self.update_display_board()
             self.state = self.State.IDLE
@@ -659,6 +705,7 @@ class TurquoiseDispatcher:
         while len(self.undo_stack) > 0:
             move = self.undo_stack.pop()
             self.board.push(move)
+            self.stats.append = self.undo_stats_stack.pop()
         self.update_display_board()
         self.state = self.State.IDLE
 

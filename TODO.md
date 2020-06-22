@@ -6,7 +6,6 @@
 
 ## Web
 
-- [ ] Move input via chess.js integration
 - [ ] Game state console (save/load PGN, modes)
 - [ ] Log monitor
 - [ ] Debug console
@@ -62,6 +61,7 @@
 ### ChessLink fixes and enhancements
 
 - [x] Javascript mess cleanup
+- [x] Move input via chess.js integration (solved without chess.js dependencies)
 
 - [x] Handle USB-reconnect
 - [x] Handle Bluetooth-reconnect

@@ -37,6 +37,7 @@ class WebAgent:
         self.uci_engines_cache = {}
         self.display_move_cache = {}
         self.valid_moves_cache = {}
+        self.game_stats_cache = {}
         self.max_mpv = 1
         self.last_board = None
         self.last_attribs = None
@@ -211,7 +212,8 @@ class WebAgent:
         self.log.info("web set valid called.")
         self.valid_moves_cache = {
             "cmd": "valid_moves",
-            "valid_moves": []
+            "valid_moves": [],
+            'actor': 'WebAgent'
         }
         if vals != None:
             for v in vals:
@@ -243,6 +245,15 @@ class WebAgent:
                 self.log.warning(
                     "Sending uci-info to WebSocket client {} failed with {}".format(w, e))
 
+    def game_stats(self, stats):
+        msg = {'cmd': 'game_stats', 'stats': stats, 'actor': 'WebAgent'}
+        self.game_stats_cache = msg
+        for w in self.ws_clients:
+            try:
+                self.ws_clients[w].send(json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending game_stats to WebSocket client {} failed with {}".format(w, e))
 
     def agent_states(self, msg):
         self.agent_state_cache[msg['actor']] = msg
