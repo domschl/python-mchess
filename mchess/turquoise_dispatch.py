@@ -647,9 +647,11 @@ class TurquoiseDispatcher:
         if self.board.turn == chess.WHITE:
             stat['color'] = 'WHITE'
             stat['halfmove_number'] = self.board.fullmove_number * 2
+            stat['player'] = self.player_w_name
         else:
             stat['color'] = 'BLACK'
             stat['halfmove_number'] = self.board.fullmove_number * 2 + 1
+            stat['player'] = self.player_b_name
         self.stats.append(stat)
         self.update_stats()
         

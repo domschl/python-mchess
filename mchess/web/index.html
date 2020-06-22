@@ -13,7 +13,8 @@
     <link rel="apple-touch-icon" href="/images/turquoise.png">
     <link rel="stylesheet" type="text/css" href="./node_modules/cm-chessboard/styles/page.css" />
     <link rel="stylesheet" type="text/css" href="./node_modules/cm-chessboard/styles/cm-chessboard.css" />
-
+    <link rel="stylesheet" type="text/css" href="./node_modules/chart.js/dist/Chart.css" />
+    <script type="module" type="text/xml" src="./node_modules/chart.js/dist/Chart.js"></script>
     <link rel="stylesheet" type="text/css" href="./styles/mchess.css">
     <script type="module" type="text/xml" src="./scripts/mchess.js"></script>
 </head>
@@ -105,6 +106,10 @@
                         -->
                         <button id="mb2-a" class="sbutton" title="not yet implemented"><img src="images/tree.png" width="6px" alt="analysis"></button>
                     </div>
+                </div>
+                <div style="padding-bottom: 0.4em"></div>
+                <div>
+                    <canvas id="stats"></canvas>
                 </div>
             </div>
         </div>
