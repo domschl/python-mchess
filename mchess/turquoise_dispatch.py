@@ -699,7 +699,7 @@ class TurquoiseDispatcher:
         if len(self.undo_stack) > 0:
             self.stop()
             move = self.undo_stack.pop()
-            self.stats.append = self.undo_stats_stack.pop()
+            self.stats.append(self.undo_stats_stack.pop())
             self.board.push(move)
             self.update_display_board()
             self.update_stats();
@@ -716,7 +716,7 @@ class TurquoiseDispatcher:
         while len(self.undo_stack) > 0:
             move = self.undo_stack.pop()
             self.board.push(move)
-            self.stats.append = self.undo_stats_stack.pop()
+            self.stats.append(self.undo_stats_stack.pop())
         self.update_display_board()
         self.update_stats();
         self.state = self.State.IDLE
