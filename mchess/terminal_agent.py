@@ -411,7 +411,7 @@ class TerminalAgent:
                         elif cmd[2:] == "EE":
                             log.debug("mode: engine-engine")
                             appque.put(
-                                {'cmd': 'game_mode', 'mode': 'computer_computer'})
+                                {'cmd': 'game_mode', 'mode': 'computer-computer'})
                     else:
                         log.warning(
                             'Illegal m parameter, use: PP, PE, EP, EE (see help-command)')
