@@ -22,6 +22,7 @@ var engines = {};
 var FenRef = {};
 var StatHeader = {};
 var ValidMoves = [];
+var GameStats = {};
 var id = null;
 
 var oldFen = null;
@@ -34,7 +35,8 @@ var cmds = {
     'current_move_info': current_move_info,
     'engine_list': engine_list,
     'move': set_move,
-    'valid_moves': set_valid_moves
+    'valid_moves': set_valid_moves,
+    'game_stats': set_game_stats
 }
 
 var mchessSocket;
@@ -451,81 +453,77 @@ function set_valid_moves(msg) {
     ValidMoves=msg.valid_moves;
 }
 
-var ctx = document.getElementById('stats');
-var myLineChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: [0,1,2,3,4,5,6],
-        datasets: [
-            { 
-                label: "White score",
-                backgroundColor: "#2E3532",
-                borderColor: "#D8DBE2", 
-                cubicInterpolationMode: "monotone",
-                lineTension: 0.4,
-                fill: false,
-                borderWidth: 1,
-                data: [0,0.1,0.5,0.3,-0.1,-0.2,-0.5]},
-            { 
-                label: "Black score",
-                backgroundColor: "#2E3532",
-                borderColor: "#58A4B0",
-                borderWidth: 1,
-                lineTension: 0.4,
-                fill: false,
-                cubicInterpolationMode: "monotone",
-                data: [0.1,0.3,-0.2,0.4,-0.7,-0.4,-0.3] 
+function set_game_stats(stats_msg) {
+    console.log("Received stats msg");
+    var stats = stats_msg['stats'];
+    var lbls = [];
+    var dsb=[];
+    var dsw=[];
+    for (var i=0; i<stats.length; i++) {
+        if (stats[i].hasOwnProperty("score")) {
+            if (stats[i].color=="WHITE") {
+                lbls.push(`${stats[i].move_number} (W)`);
+                dsw.push(stats[i].score);
+            } else {
+                lbls.push(`${stats[i].move_number} (B)`);
+                dsb.push(stats[i].score);
             }
-        ]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            xAxes: [{
-                display: true
-            }],
-            yAxes: [{
-                display: true
-            }]
-
         }
     }
-});
-/*
-var myChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-        datasets: [{
-            label: '# of Votes',
-            data: [12, 19, 3, 5, 2, 3],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero: true
+    console.log(`lbls: ${lbls}, dsw: ${dsw}, dsb: ${dsb}`);
+    var ctx = document.getElementById('stats');
+    var myLineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: lbls,
+            datasets: [
+                { 
+                    label: "White score",
+                    backgroundColor: "#2E3532",
+                    borderColor: "#D8DBE2", 
+                    cubicInterpolationMode: "monotone",
+                    lineTension: 0.4,
+                    fill: false,
+                    borderWidth: 1,
+                    data: dsw
+                },
+                { 
+                    label: "Black score",
+                    backgroundColor: "#2E3532",
+                    borderColor: "#58A4B0",
+                    borderWidth: 1,
+                    lineTension: 0.4,
+                    fill: false,
+                    cubicInterpolationMode: "monotone",
+                    data: dsb 
                 }
-            }]
+            ]
+        },
+        options: {
+            responsive: true,
+            legend: {
+                labels: {
+                    fontColor: "#D8DBE2",
+                    fontSize: 11
+                }
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    ticks: {
+                        fontSize: 10,
+                        fontColor: "#D8DBE2"
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    ticks: {
+                        fontSize: 10,
+                        fontColor: "#D8DBE2"
+                    }
+                }]
+    
+            }
         }
-    }
-});
-*/
+    });    
+}

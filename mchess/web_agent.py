@@ -248,6 +248,7 @@ class WebAgent:
     def game_stats(self, stats):
         msg = {'cmd': 'game_stats', 'stats': stats, 'actor': 'WebAgent'}
         self.game_stats_cache = msg
+        self.log.info(f"Game stats: {msg}")
         for w in self.ws_clients:
             try:
                 self.ws_clients[w].send(json.dumps(msg))

@@ -160,6 +160,36 @@ best variations and evaluations. This message is sent often.
 The generator should provide only `"variant"` in uci format, a san-formatted variantformat
 is added by the dispatcher for client-display use.
 
+### Game stats
+
+Provide information about eval and resource stats.
+
+```json
+{
+    "cmd": "game_stats",
+    "stats": [
+        {
+            "score": "centi-pawn score or #2 mate announcement",
+            "depth": "search depth (half moves)",
+            "seldepth": "selective search depth (half moves)",
+            "nps": "nodes per second",
+            "tbhits": "table-base hits",
+            "move_number": "full move number",
+            "halfmove_number: "half-move-number",
+            "color": "WHITE or BLACK",
+            "player": "playername"
+        },
+```
+...
+```json     
+    ],
+    "actor": "name-of-agent-sending-this"
+}
+```
+
+The generator should provide only `"variant"` in uci format, a san-formatted variantformat
+is added by the dispatcher for client-display use.
+
 ## Board moves
 
 ### Move
