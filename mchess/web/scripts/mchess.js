@@ -522,6 +522,7 @@ function drawStats(ctx, lbls, dsw, dsb, title) {
                     lineTension: 0.4,
                     fill: false,
                     borderWidth: 1,
+                    pointRadius: 1.5,
                     data: dsw
                 },
                 { 
@@ -529,6 +530,7 @@ function drawStats(ctx, lbls, dsw, dsb, title) {
                     backgroundColor: "#2E3532",
                     borderColor: "#58A4B0",
                     borderWidth: 1,
+                    pointRadius: 1.5,
                     lineTension: 0.4,
                     fill: false,
                     cubicInterpolationMode: "monotone",
