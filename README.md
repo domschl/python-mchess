@@ -82,7 +82,7 @@ cd mchess/web
 npm install
 ```
 
-This installs the dependency `cm-chessboard`.
+This installs the dependencies `cm-chessboard` and `charts.js`.
 
 ### Start
 
@@ -147,7 +147,7 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 
 ### `preferences.json`, general options for mchess
 
-* outdated
+* outdated! The documentation of `preferences.json` is invalid.
 
 | Field                | Default  | Description                                             |
 | -------------------- | -------- | --------------------------------------------------------|
@@ -239,7 +239,7 @@ It whould be straight forward to include other agents at a later point.
 * Start with option `-v` to get more logging output:
 
 ```bash
-python3 mchess.py -v
+python3 turquoise.py -v
 ```
 
 * Linux users: many distris require users to be be in group `DIALOUT` in order to access USB and serials.
@@ -284,7 +284,7 @@ This will show bit-level communication with the ChessLink board.
 * [cm-chessboard](https://github.com/shaack/cm-chessboard): a chessboard rendered in SVG, coded in ES6. Views FEN, handles move input, animated, responsive, mobile friendly.
 * [bluepy](https://github.com/IanHarvey/bluepy): Python interface to Bluetooth LE on Linux
 * Chess pieces by [Cburnett](https://en.wikipedia.org/wiki/User:Cburnett)
-* TBD
+* [charts.js](https://www.chartjs.org/)
 
 ## Acknowledgements
 
