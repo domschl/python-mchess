@@ -570,10 +570,14 @@ class TurquoiseDispatcher:
                     self.log.debug(f"Importing position from {agent.name}, by" \
                                     " {msg['actor']}, FEN: {fen}")
                     self.stop(silent=True)
+                    self.stats = []
+                    self.undo_stack = []
+                    self.undo_stats_stack = []
                     if self.analysis_active is True:
                         self.analysis_active = False
                     self.board = chess.Board(fen)
                     self.update_display_board()
+                    self.update_stats()
                     self.state = self.State.IDLE
                     break
 
@@ -674,6 +678,7 @@ class TurquoiseDispatcher:
             self.undo_stack.append(move)
             self.undo_stats_stack.append(self.stats.pop())
             self.update_display_board()
+            self.update_stats();
             self.state = self.State.IDLE
         else:
             self.log.debug(
@@ -686,6 +691,7 @@ class TurquoiseDispatcher:
             self.undo_stack.append(move)
             self.undo_stats_stack.append(self.stats.pop())
         self.update_display_board()
+        self.update_stats();
         self.state = self.State.IDLE
 
     def move_forward(self, msg):
@@ -695,12 +701,14 @@ class TurquoiseDispatcher:
             self.stats.append = self.undo_stats_stack.pop()
             self.board.push(move)
             self.update_display_board()
+            self.update_stats();
             self.state = self.State.IDLE
         else:
             self.log.debug(
                 'Cannot move forward, nothing taken back.')
             # Stack empty, translate to 'go' command.
-            msg['go'] = ''
+            msg['cmd']='go'
+            self.go(msg)
 
     def move_end(self, msg):
         self.stop()
@@ -709,6 +717,7 @@ class TurquoiseDispatcher:
             self.board.push(move)
             self.stats.append = self.undo_stats_stack.pop()
         self.update_display_board()
+        self.update_stats();
         self.state = self.State.IDLE
 
     def go(self, msg):
