@@ -340,3 +340,12 @@ div.board {
     vertical-align: -7pt;
 }
 
+.statscontainer {
+    display: grid;
+    /* grid-template-columns: repeat(2, 1fr); */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 220px));
+    /* grid-template-rows: repeat(2, 1fr); */
+    /* grid-auto-rows: minmax(0,auto); */
+    /* background: var(--color-dark); */
+    grid-gap: 0.4em;
+}

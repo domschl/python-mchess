@@ -459,6 +459,12 @@ function set_game_stats(stats_msg) {
     var lbls = [];
     var dsb=[];
     var dsw=[];
+    var dnb=[];
+    var dnw=[];
+    var ddb=[];
+    var ddw=[];
+    var dsdb=[];
+    var dsdw=[];
     for (var i=0; i<stats.length; i++) {
         if (stats[i].hasOwnProperty("score")) {
             if (stats[i].color=="WHITE") {
@@ -469,16 +475,47 @@ function set_game_stats(stats_msg) {
                 dsb.push(stats[i].score);
             }
         }
+        if (stats[i].hasOwnProperty("nps")) {
+            if (stats[i].color=="WHITE") {
+                dnw.push(stats[i].nps/1000);
+            } else {
+                dnb.push(stats[i].nps/1000);
+            }
+        }
+        if (stats[i].hasOwnProperty("depth")) {
+            if (stats[i].color=="WHITE") {
+                ddw.push(stats[i].depth);
+            } else {
+                ddb.push(stats[i].depth);
+            }
+        }
+        if (stats[i].hasOwnProperty("seldepth")) {
+            if (stats[i].color=="WHITE") {
+                dsdw.push(stats[i].seldepth);
+            } else {
+                dsdb.push(stats[i].seldepth);
+            }
+        }
     }
     console.log(`lbls: ${lbls}, dsw: ${dsw}, dsb: ${dsb}`);
-    var ctx = document.getElementById('stats');
+    var ctx = document.getElementById('stats1');
+    drawStats(ctx,lbls,dsw,dsb, "Score");
+    ctx = document.getElementById('stats2');
+    drawStats(ctx,lbls,dnw,dnb, "kNodes/sec");
+    ctx = document.getElementById('stats3');
+    drawStats(ctx,lbls,ddw,ddb, "Depth");
+    ctx = document.getElementById('stats4');
+    drawStats(ctx,lbls,dsdw,dsdb, "Selective depth");
+}
+
+function drawStats(ctx, lbls, dsw, dsb, title) {
     var myLineChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: lbls,
             datasets: [
                 { 
-                    label: "White score",
+                    label: "White",
                     backgroundColor: "#2E3532",
                     borderColor: "#D8DBE2", 
                     cubicInterpolationMode: "monotone",
@@ -488,7 +525,7 @@ function set_game_stats(stats_msg) {
                     data: dsw
                 },
                 { 
-                    label: "Black score",
+                    label: "Black",
                     backgroundColor: "#2E3532",
                     borderColor: "#58A4B0",
                     borderWidth: 1,
@@ -501,7 +538,16 @@ function set_game_stats(stats_msg) {
         },
         options: {
             responsive: true,
+            aspectRatio: 1.3,
+            title: {
+                display: true,
+                text: title,
+                fontColor: "#D8DBE2",
+                fontSize: 11,
+                lineHeight: 0.8
+        },
             legend: {
+                display: true,
                 labels: {
                     fontColor: "#D8DBE2",
                     fontSize: 11

@@ -150,6 +150,8 @@ class WebAgent:
             ws.send(json.dumps(self.display_move_cache))
         if self.valid_moves_cache != {}:
             ws.send(json.dumps(self.valid_moves_cache))
+        if self.game_stats_cache != {}:
+            ws.send(json.dumps(self.game_stats_cache))
         self.ws_clients[handle] = ws
         while not ws.closed:
             message = ws.receive()

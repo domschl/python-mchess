@@ -277,6 +277,7 @@ class TurquoiseDispatcher:
         self.mode = mode
         if silent is False:
             self.update_display_board()
+            self.update_stats()
         return True
 
     class State(Enum):
