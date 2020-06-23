@@ -642,7 +642,7 @@ class TurquoiseDispatcher:
         if 'nps' in msg:
             stat['nps'] = msg['nps']
         if 'tbhits' in msg:
-            stat['tbhis'] = msg['tbhis']
+            stat['tbhits'] = msg['tbhits']
         stat['move_number'] = self.board.fullmove_number
         if self.board.turn == chess.WHITE:
             stat['color'] = 'WHITE'

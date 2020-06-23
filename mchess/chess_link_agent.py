@@ -18,6 +18,7 @@ class ChessLinkAgent:
         self.log = logging.getLogger(self.name)
         self.cl_brd = cl.ChessLink(appque, self.name)
         self.init_position = False
+        self.max_plies = prefs['max_plies_board']
 
         if self.cl_brd.connected is True:
             self.cl_brd.get_version()
@@ -29,7 +30,6 @@ class ChessLinkAgent:
         else:
             self.log.warning("Connection to ChessLink failed.")
             return
-        self.max_plies = 3
 
         self.log.debug("waiting for board position")
         start = time.time()
