@@ -470,29 +470,37 @@ function set_game_stats(stats_msg) {
             if (stats[i].color=="WHITE") {
                 lbls.push(`${stats[i].move_number} (W)`);
                 dsw.push(stats[i].score);
+                dsb.push(NaN);
             } else {
                 lbls.push(`${stats[i].move_number} (B)`);
+                dsw.push(NaN);
                 dsb.push(stats[i].score);
             }
         }
         if (stats[i].hasOwnProperty("nps")) {
             if (stats[i].color=="WHITE") {
                 dnw.push(stats[i].nps/1000);
+                dnb.push(NaN);
             } else {
+                dnw.push(NaN);
                 dnb.push(stats[i].nps/1000);
             }
         }
         if (stats[i].hasOwnProperty("depth")) {
             if (stats[i].color=="WHITE") {
                 ddw.push(stats[i].depth);
+                ddb.push(NaN);
             } else {
+                ddw.push(NaN);
                 ddb.push(stats[i].depth);
             }
         }
         if (stats[i].hasOwnProperty("seldepth")) {
             if (stats[i].color=="WHITE") {
                 dsdw.push(stats[i].seldepth);
+                dsdb.push(NaN);
             } else {
+                dsdw.push(NaN);
                 dsdb.push(stats[i].seldepth);
             }
         }
@@ -523,6 +531,7 @@ function drawStats(ctx, lbls, dsw, dsb, title) {
                     fill: false,
                     borderWidth: 1,
                     pointRadius: 1.5,
+                    spanGaps: true,
                     data: dsw
                 },
                 { 
@@ -534,6 +543,7 @@ function drawStats(ctx, lbls, dsw, dsb, title) {
                     lineTension: 0.4,
                     fill: false,
                     cubicInterpolationMode: "monotone",
+                    spanGaps: true,
                     data: dsb 
                 }
             ]
@@ -545,6 +555,7 @@ function drawStats(ctx, lbls, dsw, dsb, title) {
                 display: true,
                 text: title,
                 fontColor: "#D8DBE2",
+                fontStyle: "regular",
                 fontSize: 11,
                 lineHeight: 0.8
         },
