@@ -468,11 +468,11 @@ function set_game_stats(stats_msg) {
     for (var i=0; i<stats.length; i++) {
         if (stats[i].hasOwnProperty("score")) {
             if (stats[i].color=="WHITE") {
-                lbls.push(`${stats[i].move_number} (W)`);
+                lbls.push(`${stats[i].move_number}w`);
                 dsw.push(stats[i].score);
                 dsb.push(NaN);
             } else {
-                lbls.push(`${stats[i].move_number} (B)`);
+                lbls.push(`${stats[i].move_number}b`);
                 dsw.push(NaN);
                 dsb.push(stats[i].score);
             }
@@ -556,14 +556,14 @@ function drawStats(ctx, lbls, dsw, dsb, title) {
                 text: title,
                 fontColor: "#D8DBE2",
                 fontStyle: "regular",
-                fontSize: 11,
+                fontSize: 10,
                 lineHeight: 0.8
         },
             legend: {
                 display: true,
                 labels: {
                     fontColor: "#D8DBE2",
-                    fontSize: 11
+                    fontSize: 10
                 }
             },
             scales: {
