@@ -356,7 +356,7 @@ class TurquoiseDispatcher:
         for agent in self.agents_all:
             dispm = getattr(agent, "game_stats", None)
             if callable(dispm):
-                agent.engine_list(self.stats)
+                agent.game_stats(self.stats)
 
     def update_display_info(self, mesg, max_board_preview_hmoves=6):
         st_msg = copy.deepcopy(mesg)

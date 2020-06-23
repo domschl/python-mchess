@@ -461,19 +461,19 @@ var myLineChart = new Chart(ctx, {
                 label: "White score",
                 backgroundColor: "#2E3532",
                 borderColor: "#D8DBE2", 
-                // cubicInterpolationMode: "monotone",
-                lineTension: 0,
+                cubicInterpolationMode: "monotone",
+                lineTension: 0.4,
                 fill: false,
-                borderWidth: 2,
+                borderWidth: 1,
                 data: [0,0.1,0.5,0.3,-0.1,-0.2,-0.5]},
             { 
                 label: "Black score",
                 backgroundColor: "#2E3532",
                 borderColor: "#58A4B0",
-                borderWidth: 2,
-                lineTension: 0,
+                borderWidth: 1,
+                lineTension: 0.4,
                 fill: false,
-                // cubicInterpolationMode: "monotone",
+                cubicInterpolationMode: "monotone",
                 data: [0.1,0.3,-0.2,0.4,-0.7,-0.4,-0.3] 
             }
         ]
