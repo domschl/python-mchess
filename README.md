@@ -106,10 +106,11 @@ Note: Bluetooth LE hardware detection either requires admin privileges for the o
 #### Bluetooth LE board search without `sudo` (recommended)
 
 ```bash
+# adapt path:
 sudo setcap 'cap_net_raw,cap_net_admin+eip' PATH/TO/LIB/python3._x_/site-packages/bluepy/bluepy-helper
 
 # The simply start mchess, scanning is started automatically:
-python3 mchess.py
+python3 turquoise.py
 ```
 
 #### Bluetooth LE board search with `sudo`
