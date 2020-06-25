@@ -326,7 +326,7 @@ function chessMainboardInputHandler(event) {
             return false;
         case INPUT_EVENT_TYPE.moveDone:
             for (var mv in ValidMoves) {
-                if (ValidMoves[mv]==event.squareFrom+event.squareTo) 
+                if (ValidMoves[mv].substring(0,4)==event.squareFrom+event.squareTo) 
                 {
                     console.log(`moveDone: ${event.squareFrom}-${event.squareTo}`);
                     console.log(`Socket: ${mchessSocket}`);
@@ -341,6 +341,8 @@ function chessMainboardInputHandler(event) {
                     }));
                     ValidMoves=[];
                     return true;
+                } else {
+                    console.log(`Inv: ${mv} and ${mv.substring(0,4)}`)
                 }
             }
             console.log(`invalid move: ${event.squareFrom}-${event.squareTo}`);
