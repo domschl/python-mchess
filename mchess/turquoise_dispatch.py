@@ -535,7 +535,7 @@ class TurquoiseDispatcher:
                     if callable(fstate):
                         agent.agent_states(msg)
 
-    def quit(self):
+    def quit(self, msg=None):
         print("Quitting...")
         self.stop()
         # leds off
