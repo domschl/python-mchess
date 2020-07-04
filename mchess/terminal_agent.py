@@ -148,13 +148,21 @@ class TerminalAgent:
                         sep = self.chesssym['ascii'][0]
                 if mv.promotion is not None:
                     # TODO: cleanup fig-code generation
-                    try:
-                        fig = chess.Piece(chess.PAWN, board.piece_at(
-                            mv.from_square).color).unicode_symbol(invert_color=not invert)
-                    except Exception as e:
-                        self.log.error(
-                            "Move contains empty origin: {}".format(e))
-                        fig = "?"
+                    if use_unicode_chess_figures is True:
+                        try:
+                            fig = board.piece_at(mv.from_square).unicode_symbol(
+                                invert_color=not invert)
+                        except Exception as e:
+                            self.log.error(
+                                "Move contains empty origin: {}".format(e))
+                            fig = "?"
+                    else:
+                        try:
+                            fig = board.piece_at(mv.from_square).symbol()
+                        except Exception as e:
+                            self.log.error(
+                                "Move contains empty origin: {}".format(e))
+                            fig = "?"
                     if use_unicode_chess_figures is True:
                         try:
                             pro = chess.Piece(mv.promotion, board.piece_at(
