@@ -237,7 +237,7 @@ It whould be straight forward to include other agents at a later point.
 
 ## Troubleshooting
 
-- Start with option `-v` to get more logging output:
+- Start with option `-v` to get more logging output, logs are written to file `turquoise.log`:
 
 ```bash
 python3 turquoise.py -v
