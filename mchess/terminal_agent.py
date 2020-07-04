@@ -166,7 +166,7 @@ class TerminalAgent:
                     else:
                         try:
                             # pro = mv.promotion.symbol()
-                            chess.Piece(mv.promotion, board.piece_at(
+                            pro = chess.Piece(mv.promotion, board.piece_at(
                                 mv.from_square).color).symbol()
                         except Exception as e:
                             self.log.error(
