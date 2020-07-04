@@ -162,14 +162,16 @@ class TerminalAgent:
                         except Exception as e:
                             self.log.error(
                                 "Move contains empty origin: {}".format(e))
-                            fig = "?"
+                            pro = "?"
                     else:
                         try:
-                            pro = mv.promotion.symbol()
+                            # pro = mv.promotion.symbol()
+                            chess.Piece(mv.promotion, board.piece_at(
+                                mv.from_square).color).symbol()
                         except Exception as e:
                             self.log.error(
                                 "Move contains empty origin: {}".format(e))
-                            fig = "?"
+                            pro = "?"
                 else:
                     pro = ""
                     if use_unicode_chess_figures is True:
@@ -306,7 +308,7 @@ class TerminalAgent:
             for i in range(mvs):
                 if i > 0:
                     variant += ' '
-                variant += f"{moves[i][1]} " 
+                variant += f"{moves[i][1]} "
 
         if info['actor'] not in self.info_provider:
             self.info_provider[info['actor']] = {}
