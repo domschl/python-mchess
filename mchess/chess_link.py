@@ -172,6 +172,7 @@ class ChessLink:
         # These repetitions are caused by monolitic arch of bluepy single-threads.
         reps = 0
         # Should be replaced by async refactor at some point.
+        transports_blacklist = self.mill_config.get("transports_blacklist", [])
         while reps < 2:
             if reps > 0:
                 self.log.warning('Retrying scan and connect after error.')
@@ -180,6 +181,8 @@ class ChessLink:
                 if self.mill_config is None or 'autodetect' not in self.mill_config or \
                    self.mill_config['autodetect'] is True:
                     for transport in self.transports[platform.system()]:
+                        if transport in transports_blacklist:
+                            continue
                         try:
                             tri = importlib.import_module(transport)
                             self.log.debug(f"imported {transport}")
@@ -388,7 +391,8 @@ class ChessLink:
                                 self.show_delta(
                                     self.reference_position, self.position)
                             # self.print_position_ascii(position)
-                            self.appque.put({'cmd': 'raw_board_position', 'fen': fen, 'actor': self.name})
+                            self.appque.put(
+                                {'cmd': 'raw_board_position', 'fen': fen, 'actor': self.name})
                             self._check_move(position)
                     if msg[0] == 'v':
                         self.log.debug('got version reply')
