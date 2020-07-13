@@ -518,6 +518,13 @@ function set_game_stats(stats_msg) {
     drawStats(ctx,lbls,dsdw,dsdb, "Selective depth");
 }
 
+var popUpList = '<div><input type="radio">♞<br><input type="radio">♝<br><input type="radio">♜<br><input type="radio">♝<br><input type="radio">♛</div>';
+var dlgId=document.getElementById("dlg")
+dlgId.click(function() {
+    console.log("click dlg")
+    dlgId.innerHTML=popUpList;
+});
+
 function drawStats(ctx, lbls, dsw, dsb, title) {
     var myLineChart = new Chart(ctx, {
         type: 'line',
