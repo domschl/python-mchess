@@ -59,7 +59,6 @@ class Transport():
             self.log.warning(f'Unexpected: {self.bp_helper} does not exists!')
         self.fix_cmd = "sudo setcap 'cap_net_raw,cap_net_admin+eip' " + self.bp_helper
 
-
     def quit(self):
         """
         Initiate worker-thread stop
@@ -77,13 +76,15 @@ class Transport():
 
         class ScanDelegate(DefaultDelegate):
             ''' scanner class '''
+
             def __init__(self, log):
                 self.log = log
                 DefaultDelegate.__init__(self)
 
             def handleDiscovery(self, scanEntry, isNewDev, isNewData):
                 if isNewDev:
-                    self.log.debug("Discovered device {}".format(scanEntry.addr))
+                    self.log.debug(
+                        "Discovered device {}".format(scanEntry.addr))
                 elif isNewData:
                     self.log.debug(
                         "Received new data from {}".format(scanEntry.addr))
@@ -95,23 +96,23 @@ class Transport():
         except Exception as e:
             self.log.error(f"BLE scanning failed. {e}")
             self.log.error(f"excecute: {self.fix_cmd}")
-            self.log.error(f"or (if that fails) start ONCE with: `sudo python mchess.py`" \
+            self.log.error(f"or (if that fails) start ONCE with: `sudo python mchess.py`"
                            "(fix ownership of chess_link_config.json afterwards)")
             return None
 
         devs = sorted(devices, key=lambda x: x.rssi, reverse=True)
-        print("Sorted:")
         for b in devs:
             self.log.debug(f'sorted by rssi {b.addr} {b.rssi}')
 
         for bledev in devs:
-            self.log.debug(f"Device {bledev.addr} ({bledev.addrType}), RSSI={bledev.rssi} dB")
+            self.log.debug(
+                f"Device {bledev.addr} ({bledev.addrType}), RSSI={bledev.rssi} dB")
             for (adtype, desc, value) in bledev.getScanData():
                 self.log.debug(f"  {desc} ({adtype}) = {value}")
                 if desc == "Complete Local Name":
                     if "MILLENNIUM CHESS" in value:
-                        self.log.info(f"Autodetected Millennium Chess Link board at "\
-                                      "Bluetooth LE address: {bledev.addr}, "\
+                        self.log.info(f"Autodetected Millennium Chess Link board at "
+                                      "Bluetooth LE address: {bledev.addr}, "
                                       "signal strength (rssi): {bledev.rssi}")
                         return bledev.addr
         return None
@@ -180,6 +181,7 @@ class Transport():
 
         class PeriDelegate(DefaultDelegate):
             ''' peripheral delegate class '''
+
             def __init__(self, log, que):
                 self.log = log
                 self.que = que
@@ -237,10 +239,11 @@ class Transport():
                     tx = chri
                     # txh = chri.getHandle()
                 if chri.supportsRead():
-                    log.debug(f"  {chri} UUID={chri.uuid} {chri.propertiesToString()} -> "\
+                    log.debug(f"  {chri} UUID={chri.uuid} {chri.propertiesToString()} -> "
                               "{chri.read()}")
                 else:
-                    log.debug(f"  {chri} UUID={chri.uuid}{chri.propertiesToString()}")
+                    log.debug(
+                        f"  {chri} UUID={chri.uuid}{chri.propertiesToString()}")
 
         try:
             log.debug('Installing peripheral delegate')
@@ -300,7 +303,8 @@ class Transport():
                     mil.connect(address)
                 except Exception as e:
                     if rep_err is False:
-                        self.log.warning("Reconnect failed: {e} [Local bluetooth problem?]")
+                        self.log.warning(
+                            "Reconnect failed: {e} [Local bluetooth problem?]")
                         rep_err = True
                     bt_error = True
                 if bt_error is False:
@@ -341,7 +345,8 @@ class Transport():
             except Exception as e:
                 self.log.warning(f"Bluetooth error {e}")
                 bt_error = True
-                self.agent_state(que, 'offline', f'Connected to Bluetooth peripheral lost: {e}')
+                self.agent_state(
+                    que, 'offline', f'Connected to Bluetooth peripheral lost: {e}')
                 continue
 
         log.debug('wt-end')
