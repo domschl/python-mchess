@@ -147,7 +147,7 @@ function wsConnect(address) {
         ValidMoves=[];
         setTimeout(function () {
             wsConnect(address)
-        }, 1000);dfgdfghyyhyh
+        }, 1000);
     };
     mchessSocket.onmessage = function (event) {
         var msg;
