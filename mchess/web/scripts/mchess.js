@@ -588,3 +588,23 @@ function drawStats(ctx, lbls, dsw, dsb, title) {
         }
     });    
 }
+
+/* Menu */
+
+document.getElementById("gameMenuButton").addEventListener("click", function(event) {
+    document.getElementById("gameMenu").classList.toggle("show");
+  }, false);
+  
+  // Close the dropdown if the user clicks outside of it
+  window.onclick = function(event) {
+    if (!event.target.matches('.dropbtn')) {
+      var dropdowns = document.getElementsByClassName("dropdown-content");
+      var i;
+      for (i = 0; i < dropdowns.length; i++) {
+        var openDropdown = dropdowns[i];
+        if (openDropdown.classList.contains('show')) {
+          openDropdown.classList.remove('show');
+        }
+      }
+    }
+  }

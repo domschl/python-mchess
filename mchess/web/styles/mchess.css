@@ -349,3 +349,52 @@ div.board {
     /* background: var(--color-dark); */
     grid-gap: 0.4em;
 }
+
+/* menu stuff */ 
+
+.dropbtn {
+    background-color: var(--color-ddark);
+    color: var(--color-light);
+    padding: 4px;
+    font-size: 12px;
+    border: none;
+    cursor: pointer;
+    border-radius: 0px;
+  }
+  
+  .dropbtn:hover, .dropbtn:focus {
+    background-color: var(--color-ldark);
+  }
+  
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    color: var(--color-light);
+    background-color: var(--color-ddark);
+    min-width: 100px;
+    font-size: 12px;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(10,10,10,0.4);
+    z-index: 1;
+  }
+  
+  .dropdown-content-button {
+    background-color: var(--color-ddark);
+    color: var(--color-light);
+    padding: 4px;
+    font-size: 12px;
+    border: none;
+    cursor: pointer;
+    display: block;
+    border-radius: 0px;
+  }
+  
+  .dropdown button:hover {background-color: var(--color-turquoise);}
+  
+  .show {display: block;}
+  
