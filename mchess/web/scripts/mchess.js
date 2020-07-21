@@ -37,7 +37,7 @@ var cmds = {
     'move': set_move,
     'valid_moves': set_valid_moves,
     'game_stats': set_game_stats
-}
+};
 
 var mchessSocket;
 
@@ -47,7 +47,7 @@ function wsConnect(address) {
     mchessSocket.onopen = function (event) {
         document.getElementById("connect-state").style.color = "#58A4B0";
         document.getElementById("connect-text").innerText = "connected";
-        document.getElementById("")
+        document.getElementById("");
 
         document.getElementById("m-new").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
@@ -117,7 +117,7 @@ function wsConnect(address) {
         document.getElementById("whiteplayer").addEventListener("change", function (event) {
             var pl = document.getElementById("whiteplayer");
             var player = String(pl.options[pl.selectedIndex].value);
-            console.log('wplayer: ' + player + " selected.")
+            console.log('wplayer: ' + player + " selected.");
             mchessSocket.send(JSON.stringify({
                 'cmd': 'select_player',
                 'color': 'white',
@@ -128,7 +128,7 @@ function wsConnect(address) {
         document.getElementById("blackplayer").addEventListener("change", function (event) {
             var pl = document.getElementById("blackplayer");
             var player = pl.options[pl.selectedIndex].value;
-            console.log('bplayer: ' + player + " selected.")
+            console.log('bplayer: ' + player + " selected.");
             mchessSocket.send(JSON.stringify({
                 'cmd': 'select_player',
                 'color': 'black',
@@ -136,7 +136,7 @@ function wsConnect(address) {
                 'actor': 'WebAgent'
             }));
         }, false);
-    }
+    };
     mchessSocket.onclose = function () {
         // Try to reconnect in 1 seconds
         document.getElementById("connect-state").style.color = "red";
@@ -148,7 +148,7 @@ function wsConnect(address) {
         console.log(`Socket close: ${mchessSocket}`);
         ValidMoves = [];
         setTimeout(function () {
-            wsConnect(address)
+            wsConnect(address);
         }, 1000);
     };
     mchessSocket.onmessage = function (event) {
@@ -165,39 +165,39 @@ function wsConnect(address) {
             console.log("received and ignored old-style message");
             console.log(msg);
         } else {
-            if (!cmds.hasOwnProperty(msg['cmd'])) {
-                console.log("cmd " + msg['cmd'] + " is not yet implemented, ignored.");
+            if (!cmds.hasOwnProperty(msg.cmd)) {
+                console.log("cmd " + msg.cmd + " is not yet implemented, ignored.");
                 console.log(msg);
             } else {
-                cmds[msg['cmd']](msg);
+                cmds[msg.cmd](msg);
             }
         }
 
 
-    }
+    };
 }
 
 function agent_state(msg) {
-    console.log('agent_state msg: ' + msg['actor'] + ' ' + msg['state'] + ' ' + msg['message'])
-    if (msg['actor'] == 'ChessLinkAgent') {
-        if (msg['state'] == 'online') {
+    console.log('agent_state msg: ' + msg.actor + ' ' + msg.state + ' ' + msg.message);
+    if (msg.actor == 'ChessLinkAgent') {
+        if (msg.state == 'online') {
             document.getElementById("chesslink-state").style.color = "#58A4B0";
         } else {
             document.getElementById("chesslink-state").style.color = "red";
         }
     }
-    if (msg['class'] == 'engine') {
+    if (msg.class == 'engine') {
         if (EngineStates == null) EngineStates = {};
-        if (!(msg['actor'] in EngineStates)) {
+        if (!(msg.actor in EngineStates)) {
             id = Object.keys(EngineStates).length;
-            EngineStates[msg['actor']] = id;
+            EngineStates[msg.actor] = id;
             //console.log(id);
-            if (id == 0) document.getElementById("engine1-name").innerHTML = msg['name'];
-            else document.getElementById("engine2-name").innerHTML = msg['name'];
+            if (id == 0) document.getElementById("engine1-name").innerHTML = msg.name;
+            else document.getElementById("engine2-name").innerHTML = msg.name;
         }
-        id = EngineStates[msg['actor']]
+        id = EngineStates[msg.actor];
         if (id == 0) {
-            if (msg['state'] == 'busy') {
+            if (msg.state == 'busy') {
                 document.getElementById("engine1-state").style.color = "#D8DBE2";
                 document.getElementById("mb1-a").style.backgroundColor = "#D8DBE2";
             } else {
@@ -205,7 +205,7 @@ function agent_state(msg) {
                 document.getElementById("mb1-a").style.backgroundColor = "#58A4B0";
             }
         } else {
-            if (msg['state'] == 'busy') {
+            if (msg.state == 'busy') {
                 document.getElementById("engine2-state").style.color = "#D8DBE2";
                 document.getElementById("mb2-a").style.backgroundColor = "#D8DBE2";
             } else {
@@ -232,8 +232,8 @@ function availablePlayers() {
 function display_board(msg) {
     if (msg.hasOwnProperty("fen") && msg.hasOwnProperty("attribs") && msg.hasOwnProperty("pgn")) {
         console.log("got board position.");
-        console.log(msg.pgn)
-        console.log(msg.fen)
+        console.log(msg.pgn);
+        console.log(msg.fen);
         if (msg.fen == oldFen) {
             console.log("position did not change, ignoring FEN update");
             return;
@@ -257,7 +257,7 @@ function display_board(msg) {
             document.getElementById("board1").style.width = "260px";
             console.log(brd[0].style.width);
             //document.getElementById("ph1").style.width = brd[0].style.width;
-            mainBoard.enableMoveInput(chessMainboardInputHandler)
+            mainBoard.enableMoveInput(chessMainboardInputHandler);
         } else {
             mainBoard.setPosition(msg.fen);
         }
@@ -268,9 +268,9 @@ function display_board(msg) {
             pgn = msg.pgn.substring(pi);
         }
         // pgn = pgn.replace(" *", "");
-        pgn = pgn.replace(" ", "&nbsp;")
+        pgn = pgn.replace(" ", "&nbsp;");
         var regex = /([0-9]+\.)/g;
-        pgn = pgn.replace(regex, " <span class=\"movenrb\"> $1</span>")
+        pgn = pgn.replace(regex, " <span class=\"movenrb\"> $1</span>");
         document.getElementById("mainmoves").innerHTML = pgn;
 
         if (miniBoard1 == null) {
@@ -290,8 +290,8 @@ function display_board(msg) {
         } else {
             miniBoard1.setPosition(msg.fen);
         }
-        document.getElementById("miniinfo1").innerHTML = ""
-        document.getElementById("ph21").innerHTML = ""
+        document.getElementById("miniinfo1").innerHTML = "";
+        document.getElementById("ph21").innerHTML = "";
         if (miniBoard2 == null) {
             miniBoard2 = new Chessboard(document.getElementById("miniboard2"), {
                 position: msg.fen,
@@ -309,25 +309,25 @@ function display_board(msg) {
         } else {
             miniBoard2.setPosition(msg.fen);
         }
-        document.getElementById("miniinfo2").innerHTML = ""
-        document.getElementById("ph31").innerHTML = ""
+        document.getElementById("miniinfo2").innerHTML = "";
+        document.getElementById("ph31").innerHTML = "";
     }
 }
 
 function chessMainboardInputHandler(event) {
-    console.log(event)
+    console.log(event);
     switch (event.type) {
         case INPUT_EVENT_TYPE.moveStart:
-            for (var mv in ValidMoves) {
+            for (let mv in ValidMoves) {
                 if (String(ValidMoves[mv].substring(0, 2)) == String(event.square)) {
                     console.log(`moveStart: ${event.square}`);
                     return true;
                 }
             }
-            console.log("invalid all")
+            console.log("invalid all");
             return false;
         case INPUT_EVENT_TYPE.moveDone:
-            for (var mv in ValidMoves) {
+            for (let mv in ValidMoves) {
                 if (ValidMoves[mv].substring(0, 4) == event.squareFrom + event.squareTo) {
                     console.log(`moveDone: ${event.squareFrom}-${event.squareTo}`);
                     console.log(`Socket: ${mchessSocket}`);
@@ -343,13 +343,13 @@ function chessMainboardInputHandler(event) {
                     ValidMoves = [];
                     return true;
                 } else {
-                    console.log(`Inv: ${mv} and ${mv.substring(0,4)}`)
+                    console.log(`Inv: ${mv} and ${mv.substring(0,4)}`);
                 }
             }
             console.log(`invalid move: ${event.squareFrom}-${event.squareTo}`);
             return false;
         case INPUT_EVENT_TYPE.moveCanceled:
-            console.log(`moveCanceled`)
+            console.log(`moveCanceled`);
     }
 }
 
@@ -357,16 +357,16 @@ function current_move_info(msg) {
     if (VariantInfo == null) {
         VariantInfo = {};
     }
-    console.log(msg)
+    console.log(msg);
     if (msg.hasOwnProperty("san_variant")) {
         //console.log("V");
         var actor = msg.actor;
         var id = msg.multipv_index;
         if (!(actor in VariantInfo)) {
-            VariantInfo[actor] = {}
+            VariantInfo[actor] = {};
         }
-        if (id == 1) FenRef[actor] = msg["preview_fen"];
-        var hd = ""
+        if (id == 1) FenRef[actor] = msg.preview_fen;
+        var hd = "";
         if ("nps" in msg) {
             hd += " | Nps: " + msg.nps;
         }
@@ -380,7 +380,7 @@ function current_move_info(msg) {
             }
         }
         if ("tbhits" in msg) {
-            hd += " | TbHits: " + msg["tbhits"];
+            hd += " | TbHits: " + msg.tbhits;
         }
         hd += " |";
         StatHeader[actor] = hd;
@@ -396,7 +396,7 @@ function current_move_info(msg) {
             var mv1 = mv[1].replace('-', '‑'); // make dash non-breaking
             var mv2 = "";
             if (mv.length > 2) {
-                var mv2 = mv[2].replace('-', '‑');
+                mv2 = mv[2].replace('-', '‑');
             }
             if (first) {
                 if (mv1 == '..')
@@ -409,7 +409,7 @@ function current_move_info(msg) {
             }
         }
         htmlpgn += "</div>";
-        VariantInfo[actor][id] = htmlpgn
+        VariantInfo[actor][id] = htmlpgn;
 
         var n = 0;
         for (var actorName in VariantInfo) {
@@ -441,10 +441,10 @@ function current_move_info(msg) {
 
 function engine_list(msg) {
     // console.log(msg);
-    for (var engine in msg["engines"]) {
+    for (var engine in msg.engines) {
         console.log("Received info for engine " + engine);
     }
-    engines = msg["engines"];
+    engines = msg.engines;
     availablePlayers();
 }
 
@@ -458,7 +458,7 @@ function set_valid_moves(msg) {
 
 function set_game_stats(stats_msg) {
     console.log("Received stats msg");
-    var stats = stats_msg['stats'];
+    var stats = stats_msg.stats;
     var lbls = [];
     var dsb = [];
     var dsw = [];
@@ -607,7 +607,7 @@ window.onclick = function (event) {
             }
         }
     }
-}
+};
 
 function hideElement(id) {
     let x = document.getElementById(id);

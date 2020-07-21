@@ -53,13 +53,15 @@ class WebAgent:
             self.bind_address = self.prefs['bind_address']
         else:
             self.bind_address = 'localhost'
-            self.log.warning(f'Bind_address not configured, defaulting to f{self.bind_address}, set to "0.0.0.0" for remote accessibility')
+            self.log.warning(
+                f'Bind_address not configured, defaulting to f{self.bind_address}, set to "0.0.0.0" for remote accessibility')
 
         self.private_key = None
         self.public_key = None
         if 'tls' in self.prefs and self.prefs['tls'] is True:
             if 'private_key' not in self.prefs or 'public_key' not in self.prefs:
-                self.log.error(f"Cannot configure tls without public_key and private_key configured!")
+                self.log.error(
+                    f"Cannot configure tls without public_key and private_key configured!")
             else:
                 self.private_key = prefs['private_key']
                 self.public_key = prefs['public_key']
@@ -118,7 +120,8 @@ class WebAgent:
     def ws_dispatch(self, ws, message):
         # self.log.info(f"message received: {message}")
         if message is not None:
-            self.log.debug("Client ws_dispatch: ws:{} msg:{}".format(ws, message))
+            self.log.debug(
+                "Client ws_dispatch: ws:{} msg:{}".format(ws, message))
             try:
                 self.log.info(f"Received: {message}")
                 self.appque.put(json.loads(message))
@@ -202,7 +205,7 @@ class WebAgent:
                     "Sending board to WebSocket client {} failed with {}".format(w, e))
 
     def display_move(self, move_msg):
-        self.display_move_cache = move_msg;
+        self.display_move_cache = move_msg
         for w in self.ws_clients:
             try:
                 self.ws_clients[w].send(json.dumps(move_msg))
@@ -282,12 +285,12 @@ class WebAgent:
         if self.private_key is None or self.public_key is None:
             server = pywsgi.WSGIServer(
                 (self.bind_address, self.port), app, handler_class=WebSocketHandler)
-            protocol='http'
+            protocol = 'http'
             self.log.info(f"Web browser: {protocol}://{address}:{self.port}")
         else:
             server = pywsgi.WSGIServer(
                 (self.bind_address, self.port), app, keyfile=self.private_key, certfile=self.public_key, handler_class=WebSocketHandler)
-            protocol='https'
+            protocol = 'https'
             self.log.info(f"Web browser: {protocol}://{address}:{self.port}")
         print(f"Web browser: {protocol}://{address}:{self.port}")
         server.serve_forever()

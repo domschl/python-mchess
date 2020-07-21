@@ -24,7 +24,6 @@ from PIL import ImageTk, Image, ImageOps
 # convert -background none -density 128 -resize 128x Chess_bdt45.svg cbd.gif
 
 
-
 class GameBoard(ttk.Frame):
     def __init__(self, parent, size=64, r=0, c=0, color1="white", color2="gray",
                  bg_color="black", ol_color="black", log=None):
@@ -74,7 +73,8 @@ class GameBoard(ttk.Frame):
         img_size = size-4
         for fn in self.figrep['png60']:
             fp = os.path.join('resources/pieces', fn)
-            img = Image.open(fp).convert('RGBA').resize((img_size, img_size), Image.ANTIALIAS)
+            img = Image.open(fp).convert('RGBA').resize(
+                (img_size, img_size), Image.ANTIALIAS)
             self.png60s.append(ImageTk.PhotoImage(img))
 
     def mouse_click(self, event):
@@ -107,7 +107,8 @@ class GameBoard(ttk.Frame):
                 self.cur_move = ""
         else:
             if self.log is not None:
-                self.log.warning("You are not allowed to click on the board at this time!")
+                self.log.warning(
+                    "You are not allowed to click on the board at this time!")
             self.move_part = 0
             self.cur_move = 0
 
@@ -174,7 +175,7 @@ class TkAgent:
             "dlight": "#A9BCC0",  # Pastel Blue
             "turquoise": "#58A4B0",  # Cadet Blue
             "silver": "#C0C0C0",  # Silver
-            "darkgray": "#A9A9A9", # Darkgray
+            "darkgray": "#A9A9A9",  # Darkgray
             "ldark": "#373F41",  # Charcoil
             "dark": "#2E3532",  # Jet
             "ddark": "#282A32",  # Charleston Green
@@ -222,7 +223,6 @@ class TkAgent:
         self.log.info("GUI online.")
         self.active = True
 
-
     def agent_ready(self):
         return self.active
 
@@ -256,7 +256,8 @@ class TkAgent:
         self.log.info("display_board")
         if self.gui_init is False:
             return
-        self.title_text.set(attribs["white_name"] + " - " + attribs["black_name"])
+        self.title_text.set(attribs["white_name"] +
+                            " - " + attribs["black_name"])
         self.tk_board.position = self.board2pos(board)
         self.tk_board.refresh()
 
@@ -298,12 +299,14 @@ class TkAgent:
                 try:
                     san = nboard.san(move)
                 except Exception as e:
-                    self.log.warning(f"Internal error '{e}' at san conversion.")
+                    self.log.warning(
+                        f"Internal error '{e}' at san conversion.")
                     san = None
                 if san is not None:
                     mv += (san,)
                 else:
-                    self.log.info(f"Variant cut off due to san-conversion-error: '{mv}'")
+                    self.log.info(
+                        f"Variant cut off due to san-conversion-error: '{mv}'")
                     break
                 if nboard.turn is False:
                     ml.append(mv)
@@ -317,7 +320,7 @@ class TkAgent:
                 mv = ""
             ninfo['variant'] = ml
         self.analist.delete(f"{mpv_ind}.0", f"{mpv_ind+1}.0")
-        self.analist.insert(f"{mpv_ind}.0", f"[{mpv_ind}]: "+ str(ml) + "\n")
+        self.analist.insert(f"{mpv_ind}.0", f"[{mpv_ind}]: " + str(ml) + "\n")
         if mpv_ind == 1:
             self.tk_board2.position = self.board2pos(nboard_cut)
             self.tk_board2.refresh()
@@ -371,33 +374,48 @@ class TkAgent:
         s = 20
         self.bfr = ttk.Frame(self.bof)
         self.bfr.grid(row=2, column=0, sticky="news")
-        img = Image.open('web/images/bb.png').convert('RGBA').resize((s, s), Image.ANTIALIAS)
+        img = Image.open(
+            'web/images/bb.png').convert('RGBA').resize((s, s), Image.ANTIALIAS)
         bbackimg = ImageTk.PhotoImage(img)
-        self.button_bback = ttk.Button(self.bfr, image=bbackimg, command=self.on_fast_back)
+        self.button_bback = ttk.Button(
+            self.bfr, image=bbackimg, command=self.on_fast_back)
         # background=self.turquoise['dlight'], , relief=FLAT)
         # self.button_bback.configure(padx=15, pady=15)
-        self.button_bback.grid(row=0, column=0, sticky="ew", padx=(5, 5), pady=(7, 7))
-        img = Image.open('web/images/b.png').convert('RGBA').resize((s, s), Image.ANTIALIAS)
+        self.button_bback.grid(
+            row=0, column=0, sticky="ew", padx=(5, 5), pady=(7, 7))
+        img = Image.open(
+            'web/images/b.png').convert('RGBA').resize((s, s), Image.ANTIALIAS)
         backimg = ImageTk.PhotoImage(img)
-        self.button_back = ttk.Button(self.bfr, image=backimg, command=self.on_back)
+        self.button_back = ttk.Button(
+            self.bfr, image=backimg, command=self.on_back)
         # , relief=FLAT)
-        self.button_back.grid(row=0, column=1, sticky="ew", padx=(5, 5), pady=(7, 7))
-        img = Image.open('web/images/stop.png').convert('RGBA').resize((s, s), Image.ANTIALIAS)
+        self.button_back.grid(row=0, column=1, sticky="ew",
+                              padx=(5, 5), pady=(7, 7))
+        img = Image.open(
+            'web/images/stop.png').convert('RGBA').resize((s, s), Image.ANTIALIAS)
         stopimg = ImageTk.PhotoImage(img)
-        self.button_stop = ttk.Button(self.bfr, image=stopimg, command=self.on_stop)
+        self.button_stop = ttk.Button(
+            self.bfr, image=stopimg, command=self.on_stop)
         # , relief=FLAT)
-        self.button_stop.grid(row=0, column=2, sticky="ew", padx=(8, 8), pady=(7, 7))
-        img = Image.open('web/images/f.png').convert('RGBA').resize((s, s), Image.ANTIALIAS)
+        self.button_stop.grid(row=0, column=2, sticky="ew",
+                              padx=(8, 8), pady=(7, 7))
+        img = Image.open(
+            'web/images/f.png').convert('RGBA').resize((s, s), Image.ANTIALIAS)
         forimg = ImageTk.PhotoImage(img)
-        self.button_forward = ttk.Button(self.bfr, image=forimg, command=self.on_forward)
+        self.button_forward = ttk.Button(
+            self.bfr, image=forimg, command=self.on_forward)
         # , relief=FLAT)
-        self.button_forward.grid(row=0, column=3, sticky="ew", padx=(5, 5), pady=(7, 7))
-        img = Image.open('web/images/ff.png').convert('RGBA').resize((s, s), Image.ANTIALIAS)
+        self.button_forward.grid(
+            row=0, column=3, sticky="ew", padx=(5, 5), pady=(7, 7))
+        img = Image.open(
+            'web/images/ff.png').convert('RGBA').resize((s, s), Image.ANTIALIAS)
         fforimg = ImageTk.PhotoImage(img)
-        self.button_fforward = ttk.Button(self.bfr, image=fforimg, command=self.on_fast_forward)
+        self.button_fforward = ttk.Button(
+            self.bfr, image=fforimg, command=self.on_fast_forward)
         # , relief=FLAT)
-        self.button_fforward.grid(row=0, column=4, sticky="ew", padx=(5, 5), pady=(7, 7))
-    
+        self.button_fforward.grid(
+            row=0, column=4, sticky="ew", padx=(5, 5), pady=(7, 7))
+
         self.tk_board2 = GameBoard(root, log=self.log, r=1, c=2, color1=self.turquoise['dlight'],
                                    color2=self.turquoise['turquoise'],
                                    bg_color=self.turquoise['ldark'],
@@ -431,7 +449,6 @@ class TkAgent:
                               accelerator="Ctrl+x")
         root.bind_all("<Control-x>", self.on_exit)
 
-
         game_menu = tk.Menu(menubar, tearoff=0)
 
         submenu = tk.Menu(game_menu)
@@ -442,16 +459,19 @@ class TkAgent:
         game_menu.add_cascade(label="Game mode", menu=submenu, underline=6)
 
         game_menu.add_separator()
-        game_menu.add_command(label="Go", command=self.on_go, underline=0, accelerator="Ctrl+g")
+        game_menu.add_command(label="Go", command=self.on_go,
+                              underline=0, accelerator="Ctrl+g")
         root.bind_all("<Control-g>", self.on_go)
-        game_menu.add_command(label="Beginning", command=self.on_fast_back, underline=0)
+        game_menu.add_command(
+            label="Beginning", command=self.on_fast_back, underline=0)
         game_menu.add_command(label="Back", command=self.on_back, underline=0,
                               accelerator="Ctrl+b")
         root.bind_all("<Control-b>", self.on_back)
         game_menu.add_command(label="Forward", command=self.on_forward, underline=0,
                               accelerator="Ctrl+f")
         root.bind_all("<Control-f>", self.on_forward)
-        game_menu.add_command(label="End", command=self.on_fast_forward, underline=0)
+        game_menu.add_command(
+            label="End", command=self.on_fast_forward, underline=0)
         game_menu.add_separator()
         game_menu.add_command(label="Stop", command=self.on_stop, underline=1,
                               accelerator="Ctrl+t")
@@ -475,10 +495,13 @@ class TkAgent:
 
     def on_back(self, event=None):
         self.appque.put({'back': '', 'actor': self.name})
+
     def on_fast_back(self, event=None):
         self.appque.put({'fast-back': '', 'actor': self.name})
+
     def on_forward(self, event=None):
         self.appque.put({'forward': '', 'actor': self.name})
+
     def on_fast_forward(self, event=None):
         self.appque.put({'fast-forward': '', 'actor': self.name})
 
@@ -511,7 +534,7 @@ class TkAgent:
             print(f"Failed to read {fn}: {e}")
             return None
         pt = d.split('\n\n')
-        if len(pt)%2 != 0:
+        if len(pt) % 2 != 0:
             print("Bad structure or incomplete!")
             return None
         if len(pt) == 0:
@@ -529,7 +552,8 @@ class TkAgent:
                                                          ("all files", "*.*")))
         games = self.load_pgns(filename)
         if len(games) > 1:
-            self.log.warning(f'File contained {len(games)}, only first game read.')
+            self.log.warning(
+                f'File contained {len(games)}, only first game read.')
         if games is not None:
             self.appque.put({'pgn_game': {'pgn_data': games[0]}})
 

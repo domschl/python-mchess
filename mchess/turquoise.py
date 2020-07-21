@@ -41,17 +41,19 @@ class TurquoiseSetup():
         self.dispatcher = None
         self.main_event_queue = queue.Queue()
 
-        self.agent_modules={}
+        self.agent_modules = {}
         self.uci_engine_configurator = None
         self.agents = {}
         self.engines = {}
         for agent in self.known_agents:
             if agent in self.prefs['agents']:
                 try:
-                    module = importlib.import_module(self.known_agents[agent][0])
+                    module = importlib.import_module(
+                        self.known_agents[agent][0])
                     self.agent_modules[agent] = module
                 except Exception as e:
-                    self.log.error(f"Failed to import module {self.known_agents[agent][0]} for agent {agent}: {e}")
+                    self.log.error(
+                        f"Failed to import module {self.known_agents[agent][0]} for agent {agent}: {e}")
 
     def write_preferences(self, pref):
         try:
@@ -63,7 +65,7 @@ class TurquoiseSetup():
     def set_default_preferences(self, version):
         prefs = {
             "version": version,
-            "agents": ["chesslink", "terminal", "web", "computer"], 
+            "agents": ["chesslink", "terminal", "web", "computer"],
             "default_human_player": {
                 "name": "human",
                 "location": ""
@@ -149,38 +151,48 @@ class TurquoiseSetup():
             class_name = self.known_agents[agent][1]
             if isinstance(class_name, list):
                 if class_name[0] == 'UciEngines':
-                    self.uci_engine_configurator = self.agent_modules[agent].UciEngines(self.main_event_queue, self.prefs[agent])
+                    self.uci_engine_configurator = self.agent_modules[agent].UciEngines(
+                        self.main_event_queue, self.prefs[agent])
                     for engine in self.uci_engine_configurator.engines:
                         self.log.info(f"Found engine {engine}")
                         engine_json = self.uci_engine_configurator.engines[engine]['params']
-                        if engine==self.prefs['computer']['default_player']:
+                        if engine == self.prefs['computer']['default_player']:
                             self.log.info(f"{engine} is default-engine")
-                            self.agents['uci1'] = self.agent_modules[agent].UciAgent(self.main_event_queue, engine_json, self.prefs['computer'])
+                            self.agents['uci1'] = self.agent_modules[agent].UciAgent(
+                                self.main_event_queue, engine_json, self.prefs['computer'])
                             if self.agents['uci1'] is None:
-                                self.log.error(f'Failed to instantiate {engine}')
-                        if engine==self.prefs['computer']['default_2nd_analyser']:
+                                self.log.error(
+                                    f'Failed to instantiate {engine}')
+                        if engine == self.prefs['computer']['default_2nd_analyser']:
                             self.log.info(f"{engine} is 2nd-engine")
-                            self.agents['uci2'] = self.agent_modules[agent].UciAgent(self.main_event_queue, engine_json, self.prefs['computer'])
+                            self.agents['uci2'] = self.agent_modules[agent].UciAgent(
+                                self.main_event_queue, engine_json, self.prefs['computer'])
                             if self.agents['uci2'] is None:
-                                self.log.error(f'Failed to instantiate {engine}')
+                                self.log.error(
+                                    f'Failed to instantiate {engine}')
                         # XXX: startup 1..n engine-agents ?!
                 else:
                     self.log.error(f"Not yet implemented: {class_name}")
             else:
                 try:
                     self.log.info(f"Instantiating agent {agent}, {class_name}")
-                    agent_class = getattr(self.agent_modules[agent], class_name)
-                    self.agents[agent] = agent_class(self.main_event_queue, self.prefs[agent])
+                    agent_class = getattr(
+                        self.agent_modules[agent], class_name)
+                    self.agents[agent] = agent_class(
+                        self.main_event_queue, self.prefs[agent])
                 except Exception as e:
-                    self.log.error(f"Failed to instantiate {class_name} for agent {agent}: {e}")
+                    self.log.error(
+                        f"Failed to instantiate {class_name} for agent {agent}: {e}")
 
         # mainthreader id
-        self.dispatcher = TurquoiseDispatcher(self.main_event_queue, self.prefs, self.agents, self.uci_engine_configurator)
+        self.dispatcher = TurquoiseDispatcher(
+            self.main_event_queue, self.prefs, self.agents, self.uci_engine_configurator)
 
         try:
             self.dispatcher.game_state_machine_NEH()
         except KeyboardInterrupt:
             self.dispatcher.quit()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='python mchess.py')
@@ -213,7 +225,7 @@ if __name__ == '__main__':
 
     # console = logging.StreamHandler()
     # console.setLevel(logging.INFO)
-                            
+
     logger = logging.getLogger('Turquoise')
 
     logger.setLevel(log_level)
@@ -223,4 +235,3 @@ if __name__ == '__main__':
 
     ts = TurquoiseSetup(args)
     ts.main()
-
