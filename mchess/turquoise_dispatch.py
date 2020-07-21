@@ -9,8 +9,10 @@ import io
 import chess
 import chess.pgn
 
+
 class TurquoiseDispatcher:
     ''' Main dispatcher and event state machine '''
+
     def __init__(self, appque, prefs, agents, uci_conf):
         self.log = logging.getLogger('StateMachine')
         self.appque = appque
@@ -57,7 +59,7 @@ class TurquoiseDispatcher:
         # self.update_display_board()
         self.state_machine_active = True
 
-        self.cmds={
+        self.cmds = {
             'quit': self.quit,
             'agent_state': self.agent_state,
             'new_game': self.new_game,
@@ -139,7 +141,7 @@ class TurquoiseDispatcher:
             self.agents_all.append(self.uci_agent2)
 
         self.uci_engine_configurator.publish_uci_engines()
-        
+
     class Mode(Enum):
         ''' state machine play mode '''
         NONE = 0
@@ -197,15 +199,16 @@ class TurquoiseDispatcher:
                 time.sleep(0.1)
                 if time.time()-t0 > 5:
                     t0 = time.time()
-                    self.log.warning(f"Problems stopping {self.uci_agent.name}")
+                    self.log.warning(
+                        f"Problems stopping {self.uci_agent.name}")
         t0 = time.time()
         if self.uci_agent2 is not None:
             while self.uci_agent2.stopping is True:
                 time.sleep(0.1)
                 if time.time()-t0 > 5:
                     t0 = time.time()
-                    self.log.warning(f"Problems stopping {self.uci_agent2.name}")
-
+                    self.log.warning(
+                        f"Problems stopping {self.uci_agent2.name}")
 
     def set_mode(self, mode, silent=False):
         if mode == self.Mode.NONE:
@@ -396,9 +399,9 @@ class TurquoiseDispatcher:
                     mv = ""
                 nboard.push(chess.Move.from_uci(move))
                 if rel_mv < max_cut:
-                    nboard_cut.push(chess.Move.from_uci(move)) 
+                    nboard_cut.push(chess.Move.from_uci(move))
                     rel_mv += 1
-            if mv != "":
+            if mv != "" and len(mv) == 2:
                 ml.append(mv)
                 mv = ""
             st_msg['san_variant'] = ml
@@ -441,7 +444,8 @@ class TurquoiseDispatcher:
                     self.log.info(f"Checking {agent.name} for set_valid_moves")
                     setm = getattr(agent, "set_valid_moves", None)
                     if callable(setm):
-                        self.log.info(f"Resetting {agent.name} valid-move list")
+                        self.log.info(
+                            f"Resetting {agent.name} valid-move list")
                         agent.set_valid_moves(self.board, [])
 
                 if self.board.is_game_over() is True:
@@ -475,7 +479,8 @@ class TurquoiseDispatcher:
                         # print("This is sent to UCI:")
                         # self.term_agent.display_board(brd_copy)
                         self.log.debug(f"Go {agent.name}")
-                        agent.go(self.board, self.prefs['computer']['think_ms'])
+                        agent.go(
+                            self.board, self.prefs['computer']['think_ms'])
                         self.uci_agent.busy = True
                         self.log.debug(f"Done Go {agent.name}")
 
@@ -502,23 +507,25 @@ class TurquoiseDispatcher:
                 self.log.debug(f"App received msg: {msg}")
                 if 'cmd' not in msg:
                     if 'actor' in msg:
-                        agent=msg['actor']
+                        agent = msg['actor']
                     else:
-                        agent='unknown'
-                    self.log.error(f"Old-style message {msg} received from {agent}, ignored, please update agent!")
+                        agent = 'unknown'
+                    self.log.error(
+                        f"Old-style message {msg} received from {agent}, ignored, please update agent!")
                     continue
                 if msg['cmd'] in self.cmds:
                     self.cmds[msg['cmd']](msg)
                 else:
                     if 'actor' in msg:
-                        agent=msg['actor']
+                        agent = msg['actor']
                     else:
-                        agent='unknown'
-                    self.log.error(f"Message cmd {msg['cmd']} has not yet been implemented (from: {agent}), msg: {msg}")
+                        agent = 'unknown'
+                    self.log.error(
+                        f"Message cmd {msg['cmd']} has not yet been implemented (from: {agent}), msg: {msg}")
                     continue
             else:
                 time.sleep(0.05)
-    
+
     def agent_state(self, msg):
         if 'message' not in msg or 'actor' not in msg:
             self.log.error(f'Invalid <agent_state> message: {msg}')
@@ -568,8 +575,8 @@ class TurquoiseDispatcher:
                 fen = agent.get_fen()
                 # Only treat as setup, if it's not the start position
                 if self.short_fen(fen) != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR":
-                    self.log.debug(f"Importing position from {agent.name}, by" \
-                                    " {msg['actor']}, FEN: {fen}")
+                    self.log.debug(f"Importing position from {agent.name}, by"
+                                   " {msg['actor']}, FEN: {fen}")
                     self.stop(silent=True)
                     self.stats = []
                     self.undo_stack = []
@@ -637,7 +644,7 @@ class TurquoiseDispatcher:
         self.undo_stack = []
         self.undo_stats_stack = []
 
-        stat={}
+        stat = {}
         if 'score' in msg:
             stat['score'] = msg['score']
         if 'depth' in msg:
@@ -659,13 +666,13 @@ class TurquoiseDispatcher:
             stat['player'] = self.player_b_name
         self.stats.append(stat)
         self.update_stats()
-        
+
         self.board.push(chess.Move.from_uci(msg['uci']))
         if self.board.is_game_over() is True:
             msg['result'] = self.board.result()
         else:
             msg['result'] = ''
-        
+
         self.update_display_move(msg)
         self.update_display_board()
         if 'ponder' in msg:
@@ -679,7 +686,7 @@ class TurquoiseDispatcher:
             self.undo_stack.append(move)
             self.undo_stats_stack.append(self.stats.pop())
             self.update_display_board()
-            self.update_stats();
+            self.update_stats()
             self.state = self.State.IDLE
         else:
             self.log.debug(
@@ -692,7 +699,7 @@ class TurquoiseDispatcher:
             self.undo_stack.append(move)
             self.undo_stats_stack.append(self.stats.pop())
         self.update_display_board()
-        self.update_stats();
+        self.update_stats()
         self.state = self.State.IDLE
 
     def move_forward(self, msg):
@@ -702,13 +709,13 @@ class TurquoiseDispatcher:
             self.stats.append(self.undo_stats_stack.pop())
             self.board.push(move)
             self.update_display_board()
-            self.update_stats();
+            self.update_stats()
             self.state = self.State.IDLE
         else:
             self.log.debug(
                 'Cannot move forward, nothing taken back.')
             # Stack empty, translate to 'go' command.
-            msg['cmd']='go'
+            msg['cmd'] = 'go'
             self.go(msg)
 
     def move_end(self, msg):
@@ -718,7 +725,7 @@ class TurquoiseDispatcher:
             self.board.push(move)
             self.stats.append(self.undo_stats_stack.pop())
         self.update_display_board()
-        self.update_stats();
+        self.update_stats()
         self.state = self.State.IDLE
 
     def go(self, msg):
@@ -727,7 +734,7 @@ class TurquoiseDispatcher:
             self.log.debug("Aborting analysis...")
             self.analysis_active = False
         if (self.board.turn == chess.WHITE and self.mode == self.Mode.ENGINE_PLAYER) or\
-            (self.board.turn == chess.BLACK and self.mode == self.Mode.PLAYER_ENGINE):
+                (self.board.turn == chess.BLACK and self.mode == self.Mode.PLAYER_ENGINE):
             pass
         else:
             if self.board.turn == chess.WHITE:
@@ -816,13 +823,15 @@ class TurquoiseDispatcher:
         self.import_chesslink_position()
 
     def text_encoding(self, msg):
-        self.prefs['terminal']['use_unicode_figures'] = msg['unicode'] # not self.prefs['terminal']['use_unicode_figures']
+        # not self.prefs['terminal']['use_unicode_figures']
+        self.prefs['terminal']['use_unicode_figures'] = msg['unicode']
         # XXX: update prefs: self.write_preferences(self.prefs)
         # XXX: old implementation toggles and doesn't save?! See terminal, commented out.
         self.update_display_board()
 
     def raw_board_position(self, msg):
-        self.log.debug(f"Raw board position (unchecked) on Hardware board: {msg['fen']}")
+        self.log.debug(
+            f"Raw board position (unchecked) on Hardware board: {msg['fen']}")
 
     def engine_list(self, msg):
         self.update_engine_list(msg)
