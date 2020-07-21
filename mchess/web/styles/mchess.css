@@ -1,13 +1,17 @@
 /* Mchess.css */
 
 /* reset everything we need, obsoletes normalize.css */
-html, body, div, span, iframe {
+html,
+body,
+div,
+span,
+iframe {
     margin: 0;
-	padding: 0;
-	border: 0;
-	font-size: 100%;
-	font:  Arial, Helvetica, sans-serif;
-	vertical-align: baseline;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: Arial, Helvetica, sans-serif;
+    vertical-align: baseline;
 }
 
 :root {
@@ -39,13 +43,13 @@ body {
     display: grid;
     grid-template-columns: 60px 400px;
     /* grid-template-rows: repeat(8, 1fr); */
-    grid-auto-rows: minmax(0px,auto);
+    grid-auto-rows: minmax(0px, auto);
     background: #222;
 }
 
 .logo {
     grid-column: 1/2;
-    grid-row:1/3;
+    grid-row: 1/3;
     margin-top: auto;
     margin-bottom: auto;
     vertical-align: middle;
@@ -58,7 +62,7 @@ body {
     grid-column: 2/3;
     grid-row: 1/2;
     font-size: 12pt;
-    line-height:0.4;
+    line-height: 0.4;
     text-align: left;
     padding-top: 6px;
 }
@@ -84,13 +88,13 @@ body {
 }
 
 .white {
-    font-size:12pt;
+    font-size: 12pt;
     vertical-align: -12pt;
     color: var(--color-light);
 }
 
 .turq {
-    font-size:12pt;
+    font-size: 12pt;
     vertical-align: -12pt;
     color: var(--color-turquoise);
 }
@@ -99,16 +103,16 @@ body {
     font-size: 7pt;
     color: var(--color-turquoise);
     padding-top: 6px;
-    line-height:0.4;
+    line-height: 0.4;
     vertical-align: -12pt;
 }
 
 .panel-header {
     background: var(--color-ddark);
     color: var(--color-dlight);
-    font-size: 7pt;
+    font-size: 8pt;
     text-align: center;
-    padding: 1px;
+    padding: 0px;
     /* text-align: center; */
 }
 
@@ -119,7 +123,7 @@ body {
     -moz-appearance: none;
     appearance: none;
 
-    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'), linear-gradient(to bottom, var(--color-ddark) 0%,var(--color-ddark) 100%);
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'), linear-gradient(to bottom, var(--color-ddark) 0%, var(--color-ddark) 100%);
     background-repeat: no-repeat, repeat;
     background-position: right .7em top 50%, 0 0;
     background-size: .65em auto, 100%;
@@ -136,7 +140,7 @@ body {
     color: var(--color-dlight);
     font-size: 7pt;
     text-align: center;
-    padding: 1px;
+    padding: 0px;
     /* text-align: center; */
 }
 
@@ -176,6 +180,7 @@ body {
     grid-template-columns: 260px 1fr;
     grid-template-rows: 20pt 1fr;
 }
+
 .submain2 {
     display: grid;
     grid-template-columns: 260px 1fr;
@@ -219,8 +224,9 @@ div.board {
     font-size: 6pt;
     padding-bottom: 0.25em;
     padding-left: 4em;
-    text-indent:-4em;
+    text-indent: -4em;
 }
+
 .variant:nth-child(odd) {
     font-size: 6pt;
     padding-bottom: 0.25em;
@@ -282,7 +288,7 @@ div.board {
     color: var(--color-ddark);
     border: none;
     padding: 1px;
-/*    vertical-align: top; */
+    /*    vertical-align: top; */
     text-align: center;
     text-decoration: none;
     display: inline-block;
@@ -350,7 +356,7 @@ div.board {
     grid-gap: 0.4em;
 }
 
-/* menu stuff */ 
+/* menu stuff */
 
 .dropbtn {
     background-color: var(--color-ddark);
@@ -360,18 +366,19 @@ div.board {
     border: none;
     cursor: pointer;
     border-radius: 0px;
-  }
-  
-  .dropbtn:hover, .dropbtn:focus {
+}
+
+.dropbtn:hover,
+.dropbtn:focus {
     background-color: var(--color-ldark);
-  }
-  
-  .dropdown {
+}
+
+.dropdown {
     position: relative;
     display: inline-block;
-  }
-  
-  .dropdown-content {
+}
+
+.dropdown-content {
     display: none;
     position: absolute;
     color: var(--color-light);
@@ -379,11 +386,11 @@ div.board {
     min-width: 100px;
     font-size: 12px;
     overflow: auto;
-    box-shadow: 0px 8px 16px 0px rgba(10,10,10,0.4);
+    box-shadow: 0px 8px 16px 0px rgba(10, 10, 10, 0.4);
     z-index: 1;
-  }
-  
-  .dropdown-content-button {
+}
+
+.dropdown-content-button {
     background-color: var(--color-ddark);
     color: var(--color-light);
     padding: 4px;
@@ -392,9 +399,12 @@ div.board {
     cursor: pointer;
     display: block;
     border-radius: 0px;
-  }
-  
-  .dropdown button:hover {background-color: var(--color-turquoise);}
-  
-  .show {display: block;}
-  
+}
+
+.dropdown button:hover {
+    background-color: var(--color-turquoise);
+}
+
+.show {
+    display: block;
+}

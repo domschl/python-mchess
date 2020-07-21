@@ -40,6 +40,7 @@ var cmds = {
 }
 
 var mchessSocket;
+
 function wsConnect(address) {
     mchessSocket = new WebSocket(address);
     console.log(`Socket: ${mchessSocket}`);
@@ -107,7 +108,8 @@ function wsConnect(address) {
         }, false);
         document.getElementById("m-send").addEventListener("click", function (event) {
             mchessSocket.send(JSON.stringify({
-                'cmd': 'import_fen', 'fen': document.getElementById("m-edit").value,
+                'cmd': 'import_fen',
+                'fen': document.getElementById("m-edit").value,
                 'actor': 'WebAgent'
             }));
             document.getElementById("m-send").blur();
@@ -115,7 +117,7 @@ function wsConnect(address) {
         document.getElementById("whiteplayer").addEventListener("change", function (event) {
             var pl = document.getElementById("whiteplayer");
             var player = String(pl.options[pl.selectedIndex].value);
-            console.log('wplayer: '+player+" selected.")
+            console.log('wplayer: ' + player + " selected.")
             mchessSocket.send(JSON.stringify({
                 'cmd': 'select_player',
                 'color': 'white',
@@ -126,7 +128,7 @@ function wsConnect(address) {
         document.getElementById("blackplayer").addEventListener("change", function (event) {
             var pl = document.getElementById("blackplayer");
             var player = pl.options[pl.selectedIndex].value;
-            console.log('bplayer: '+player+" selected.")
+            console.log('bplayer: ' + player + " selected.")
             mchessSocket.send(JSON.stringify({
                 'cmd': 'select_player',
                 'color': 'black',
@@ -144,7 +146,7 @@ function wsConnect(address) {
         document.getElementById("engine2-state").style.color = "red";
         mchessSocket = null;
         console.log(`Socket close: ${mchessSocket}`);
-        ValidMoves=[];
+        ValidMoves = [];
         setTimeout(function () {
             wsConnect(address)
         }, 1000);
@@ -164,14 +166,14 @@ function wsConnect(address) {
             console.log(msg);
         } else {
             if (!cmds.hasOwnProperty(msg['cmd'])) {
-                console.log("cmd "+msg['cmd']+" is not yet implemented, ignored.");
+                console.log("cmd " + msg['cmd'] + " is not yet implemented, ignored.");
                 console.log(msg);
             } else {
                 cmds[msg['cmd']](msg);
             }
         }
 
- 
+
     }
 }
 
@@ -184,29 +186,29 @@ function agent_state(msg) {
             document.getElementById("chesslink-state").style.color = "red";
         }
     }
-    if (msg['class']=='engine') {
-        if (EngineStates==null) EngineStates={};
+    if (msg['class'] == 'engine') {
+        if (EngineStates == null) EngineStates = {};
         if (!(msg['actor'] in EngineStates)) {
-            id=Object.keys(EngineStates).length;
-            EngineStates[msg['actor']]=id;
+            id = Object.keys(EngineStates).length;
+            EngineStates[msg['actor']] = id;
             //console.log(id);
-            if (id==0) document.getElementById("engine1-name").innerHTML = msg['name'];
+            if (id == 0) document.getElementById("engine1-name").innerHTML = msg['name'];
             else document.getElementById("engine2-name").innerHTML = msg['name'];
         }
-        id=EngineStates[msg['actor']]
-        if (id==0) {
-            if (msg['state']=='busy') {
+        id = EngineStates[msg['actor']]
+        if (id == 0) {
+            if (msg['state'] == 'busy') {
                 document.getElementById("engine1-state").style.color = "#D8DBE2";
                 document.getElementById("mb1-a").style.backgroundColor = "#D8DBE2";
-            } else { 
+            } else {
                 document.getElementById("engine1-state").style.color = "#58A4B0";
                 document.getElementById("mb1-a").style.backgroundColor = "#58A4B0";
             }
         } else {
-            if (msg['state']=='busy') {
+            if (msg['state'] == 'busy') {
                 document.getElementById("engine2-state").style.color = "#D8DBE2";
                 document.getElementById("mb2-a").style.backgroundColor = "#D8DBE2";
-            } else { 
+            } else {
                 document.getElementById("engine2-state").style.color = "#58A4B0";
                 document.getElementById("mb2-a").style.backgroundColor = "#58A4B0";
             }
@@ -215,13 +217,13 @@ function agent_state(msg) {
 }
 
 function availablePlayers() {
-    var wHtml="<option class=\"panel-header\" value=\"human\">human</option>";
-    for (var engine in engines) {
-        wHtml = wHtml+"<option class=\"panel-header\" value=\""+engine+"\">"+engine+"</option>";
+    var wHtml = "<option class=\"panel-header\" value=\"human\">human</option>";
+    for (let engine_i in engines) {
+        wHtml = wHtml + "<option class=\"panel-header\" value=\"" + engine_i + "\">" + engine_i + "</option>";
     }
-    var bHtml="<option class=\"panel-header\" value=\"human\">human</option>"
-    for (var engine in engines) {
-        bHtml = bHtml+"<option class=\"panel-header\" value=\""+engine+"\">"+engine+"</option>";
+    var bHtml = "<option class=\"panel-header\" value=\"human\">human</option>";
+    for (let engine_i in engines) {
+        bHtml = bHtml + "<option class=\"panel-header\" value=\"" + engine_i + "\">" + engine_i + "</option>";
     }
     document.getElementById("whiteplayer").innerHTML = wHtml;
     document.getElementById("blackplayer").innerHTML = bHtml;
@@ -232,11 +234,11 @@ function display_board(msg) {
         console.log("got board position.");
         console.log(msg.pgn)
         console.log(msg.fen)
-        if (msg.fen==oldFen) {
+        if (msg.fen == oldFen) {
             console.log("position did not change, ignoring FEN update");
             return;
         }
-        oldFen=msg.fen;
+        oldFen = msg.fen;
         if (mainBoard == null) {
             mainBoard = new Chessboard(document.getElementById("board1"), {
                 position: msg.fen,
@@ -288,8 +290,8 @@ function display_board(msg) {
         } else {
             miniBoard1.setPosition(msg.fen);
         }
-        document.getElementById("miniinfo1").innerHTML=""
-        document.getElementById("ph21").innerHTML=""
+        document.getElementById("miniinfo1").innerHTML = ""
+        document.getElementById("ph21").innerHTML = ""
         if (miniBoard2 == null) {
             miniBoard2 = new Chessboard(document.getElementById("miniboard2"), {
                 position: msg.fen,
@@ -307,8 +309,8 @@ function display_board(msg) {
         } else {
             miniBoard2.setPosition(msg.fen);
         }
-        document.getElementById("miniinfo2").innerHTML=""
-        document.getElementById("ph31").innerHTML=""
+        document.getElementById("miniinfo2").innerHTML = ""
+        document.getElementById("ph31").innerHTML = ""
     }
 }
 
@@ -317,7 +319,7 @@ function chessMainboardInputHandler(event) {
     switch (event.type) {
         case INPUT_EVENT_TYPE.moveStart:
             for (var mv in ValidMoves) {
-                if (String(ValidMoves[mv].substring(0,2))==String(event.square)) {
+                if (String(ValidMoves[mv].substring(0, 2)) == String(event.square)) {
                     console.log(`moveStart: ${event.square}`);
                     return true;
                 }
@@ -326,11 +328,10 @@ function chessMainboardInputHandler(event) {
             return false;
         case INPUT_EVENT_TYPE.moveDone:
             for (var mv in ValidMoves) {
-                if (ValidMoves[mv].substring(0,4)==event.squareFrom+event.squareTo) 
-                {
+                if (ValidMoves[mv].substring(0, 4) == event.squareFrom + event.squareTo) {
                     console.log(`moveDone: ${event.squareFrom}-${event.squareTo}`);
                     console.log(`Socket: ${mchessSocket}`);
-                    if (mchessSocket==null) {
+                    if (mchessSocket == null) {
                         console.log("Error: Cannot send move, undoing!");
                         return false;
                     }
@@ -339,7 +340,7 @@ function chessMainboardInputHandler(event) {
                         'uci': ValidMoves[mv],
                         'actor': 'WebAgent'
                     }));
-                    ValidMoves=[];
+                    ValidMoves = [];
                     return true;
                 } else {
                     console.log(`Inv: ${mv} and ${mv.substring(0,4)}`)
@@ -384,9 +385,9 @@ function current_move_info(msg) {
         hd += " |";
         StatHeader[actor] = hd;
         var htmlpgn = "<div class=\"variant\"><span class=\"leadt\">";
-        if (msg.score!="") htmlpgn+="[" + msg.score + "]";
-        else htmlpgn+="&nbsp;&nbsp;&nbsp;&nbsp;";
-        htmlpgn+="</span>&nbsp;&nbsp;";
+        if (msg.score != "") htmlpgn += "[" + msg.score + "]";
+        else htmlpgn += "&nbsp;&nbsp;&nbsp;&nbsp;";
+        htmlpgn += "</span>&nbsp;&nbsp;";
         var first = true;
         for (var mvi in msg.san_variant) {
             if (mvi == "fen") continue;
@@ -441,7 +442,7 @@ function current_move_info(msg) {
 function engine_list(msg) {
     // console.log(msg);
     for (var engine in msg["engines"]) {
-        console.log("Received info for engine "+engine);
+        console.log("Received info for engine " + engine);
     }
     engines = msg["engines"];
     availablePlayers();
@@ -452,24 +453,24 @@ function set_move(msg) {
 }
 
 function set_valid_moves(msg) {
-    ValidMoves=msg.valid_moves;
+    ValidMoves = msg.valid_moves;
 }
 
 function set_game_stats(stats_msg) {
     console.log("Received stats msg");
     var stats = stats_msg['stats'];
     var lbls = [];
-    var dsb=[];
-    var dsw=[];
-    var dnb=[];
-    var dnw=[];
-    var ddb=[];
-    var ddw=[];
-    var dsdb=[];
-    var dsdw=[];
-    for (var i=0; i<stats.length; i++) {
+    var dsb = [];
+    var dsw = [];
+    var dnb = [];
+    var dnw = [];
+    var ddb = [];
+    var ddw = [];
+    var dsdb = [];
+    var dsdw = [];
+    for (var i = 0; i < stats.length; i++) {
         if (stats[i].hasOwnProperty("score")) {
-            if (stats[i].color=="WHITE") {
+            if (stats[i].color == "WHITE") {
                 lbls.push(`${stats[i].move_number}w`);
                 dsw.push(stats[i].score);
                 dsb.push(NaN);
@@ -480,16 +481,16 @@ function set_game_stats(stats_msg) {
             }
         }
         if (stats[i].hasOwnProperty("nps")) {
-            if (stats[i].color=="WHITE") {
-                dnw.push(stats[i].nps/1000);
+            if (stats[i].color == "WHITE") {
+                dnw.push(stats[i].nps / 1000);
                 dnb.push(NaN);
             } else {
                 dnw.push(NaN);
-                dnb.push(stats[i].nps/1000);
+                dnb.push(stats[i].nps / 1000);
             }
         }
         if (stats[i].hasOwnProperty("depth")) {
-            if (stats[i].color=="WHITE") {
+            if (stats[i].color == "WHITE") {
                 ddw.push(stats[i].depth);
                 ddb.push(NaN);
             } else {
@@ -498,7 +499,7 @@ function set_game_stats(stats_msg) {
             }
         }
         if (stats[i].hasOwnProperty("seldepth")) {
-            if (stats[i].color=="WHITE") {
+            if (stats[i].color == "WHITE") {
                 dsdw.push(stats[i].seldepth);
                 dsdb.push(NaN);
             } else {
@@ -509,13 +510,13 @@ function set_game_stats(stats_msg) {
     }
     console.log(`lbls: ${lbls}, dsw: ${dsw}, dsb: ${dsb}`);
     var ctx = document.getElementById('stats1');
-    drawStats(ctx,lbls,dsw,dsb, "Score");
+    drawStats(ctx, lbls, dsw, dsb, "Score");
     ctx = document.getElementById('stats2');
-    drawStats(ctx,lbls,dnw,dnb, "kNodes/sec");
+    drawStats(ctx, lbls, dnw, dnb, "kNodes/sec");
     ctx = document.getElementById('stats3');
-    drawStats(ctx,lbls,ddw,ddb, "Depth");
+    drawStats(ctx, lbls, ddw, ddb, "Depth");
     ctx = document.getElementById('stats4');
-    drawStats(ctx,lbls,dsdw,dsdb, "Selective depth");
+    drawStats(ctx, lbls, dsdw, dsdb, "Selective depth");
 }
 
 function drawStats(ctx, lbls, dsw, dsb, title) {
@@ -523,11 +524,10 @@ function drawStats(ctx, lbls, dsw, dsb, title) {
         type: 'line',
         data: {
             labels: lbls,
-            datasets: [
-                { 
+            datasets: [{
                     label: "White",
                     backgroundColor: "#2E3532",
-                    borderColor: "#D8DBE2", 
+                    borderColor: "#D8DBE2",
                     cubicInterpolationMode: "monotone",
                     lineTension: 0.4,
                     fill: false,
@@ -536,7 +536,7 @@ function drawStats(ctx, lbls, dsw, dsb, title) {
                     spanGaps: true,
                     data: dsw
                 },
-                { 
+                {
                     label: "Black",
                     backgroundColor: "#2E3532",
                     borderColor: "#58A4B0",
@@ -546,7 +546,7 @@ function drawStats(ctx, lbls, dsw, dsb, title) {
                     fill: false,
                     cubicInterpolationMode: "monotone",
                     spanGaps: true,
-                    data: dsb 
+                    data: dsb
                 }
             ]
         },
@@ -560,7 +560,7 @@ function drawStats(ctx, lbls, dsw, dsb, title) {
                 fontStyle: "regular",
                 fontSize: 10,
                 lineHeight: 0.8
-        },
+            },
             legend: {
                 display: true,
                 labels: {
@@ -583,28 +583,45 @@ function drawStats(ctx, lbls, dsw, dsb, title) {
                         fontColor: "#D8DBE2"
                     }
                 }]
-    
+
             }
         }
-    });    
+    });
 }
 
 /* Menu */
 
-document.getElementById("gameMenuButton").addEventListener("click", function(event) {
+document.getElementById("gameMenuButton").addEventListener("click", function (event) {
     document.getElementById("gameMenu").classList.toggle("show");
-  }, false);
-  
-  // Close the dropdown if the user clicks outside of it
-  window.onclick = function(event) {
+}, false);
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function (event) {
     if (!event.target.matches('.dropbtn')) {
-      var dropdowns = document.getElementsByClassName("dropdown-content");
-      var i;
-      for (i = 0; i < dropdowns.length; i++) {
-        var openDropdown = dropdowns[i];
-        if (openDropdown.classList.contains('show')) {
-          openDropdown.classList.remove('show');
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        var i;
+        for (i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
         }
-      }
     }
-  }
+}
+
+function hideElement(id) {
+    let x = document.getElementById(id);
+    x.style.visibility = "collapse";
+}
+
+function showElement(id) {
+    let x = document.getElementById(id);
+    x.style.visibility = "visible";
+}
+
+function deleteElement(id) {
+    document.getElementById(id).remove();
+}
+
+deleteElement("test-menu");
+deleteElement("test-piece-buttons");
