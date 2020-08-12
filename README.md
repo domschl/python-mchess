@@ -15,7 +15,7 @@ It provides two layers of functionality:
 
 Currently, the following platforms are under development:
 
-|              | Linux | Raspberry Pi | macOS | Windows |
+|              | Linux | Raspberry Pi | macOS (x86, ARM) | Windows |
 | ------------ | ----- | ------------ | ----- | ------- |
 | USB          | x     | x            | x     | x       |
 | Bluetooth LE | x     | x            |       |
