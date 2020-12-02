@@ -157,7 +157,11 @@ class UciAgent:
         self.loop_active = False
 
     async def async_quit(self):
-        await self.engine.quit()
+        try:
+            await self.engine.quit()
+        except:
+            # Something has changed with timing in Python 3.9, ignore quit-error.
+            pass
 
     def quit(self):
         # ft = self.engine.terminate(async_callback=True)
