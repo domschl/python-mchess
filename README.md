@@ -175,9 +175,21 @@ detection at start of `mchess.py`.
 | `orientation`          | true             | Orientation of the Millennium chess board. The orientation is detected and saved automatically as soon as the start position is setup on the Millennium board.                                                                                                 |
 | `autodetect`           | `true`           | On `true`, automatic hardware detection of Millennium ChessLink is tried on each start of `mchess.py`, if the default connection does not work. Setting to `false` disables automatic hardware detection (e.g. if no board hardware is available)              |
 | `transports_blacklist` | []               | List of transports that should not be used for autodetect. Valid transport names are `chess_link_usb` and `chess_link_bluepy` (linux). This option is useful to prevent probing on serial or USB channels that have other devices (e.g. a terminal) connected. |
-
 | `protocol_debug` | `false` | On `true` extensive logging of the hardware communication with the Millennium board is enabled for debugging purposes. |
 | `btle_iface` | `0` | Linux Bluetooth LE interface number. If scanning continues to fail (with `17, error: Invalid Index`), it might help to use values from 0..2 for alternative tests. Not used for USB connections. |
+
+#### Sample chess_link_config.json for USB-connection
+
+```json
+{
+    "transport": "chess_link_usb",
+    "address": "/dev/ttyUSB0",
+    "orientation": true,
+    "btle_iface": 0,
+    "autodetect": true,
+    "protocol_debug": false
+}
+```
 
 ### Json files in `mchess/engines`
 
