@@ -172,7 +172,10 @@ class ChessLink:
         # These repetitions are caused by monolitic arch of bluepy single-threads.
         reps = 0
         # Should be replaced by async refactor at some point.
-        transports_blacklist = self.mill_config.get("transports_blacklist", [])
+        if self.mill_config is not None:
+            transports_blacklist = self.mill_config.get("transports_blacklist", [])
+        else:
+            transports_blacklist = []
         while reps < 2:
             if reps > 0:
                 self.log.warning('Retrying scan and connect after error.')
@@ -191,8 +194,11 @@ class ChessLink:
                             if tr.is_init() is True:
                                 self.log.debug(
                                     f"Transport {tr.get_name()} loaded.")
-                                address = tr.search_board(
-                                    self.mill_config['btle_iface'])
+                                if self.mill_config is not None:
+                                    btle = self.mill_config['btle_iface']
+                                else:
+                                    btle = 0
+                                address = tr.search_board(btle)
                                 if address is not None:
                                     self.log.debug(f"Found board on transport {tr.get_name()} "
                                                    "at address {address}")
