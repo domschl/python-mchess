@@ -20,6 +20,12 @@ Currently, the following platforms are under development:
 | USB          | x     | x            | x     | x       |
 | Bluetooth LE | x     | x            |       |
 
+## State of the project
+
+- This project in it's current state depends on flask 1.x, which has known security issues. The websockets library used only supports flask 1.
+- The python library used for bluetooth supports only Linux, an platform independent alternative is available with `bleak`, but prefers async model.
+- The whole project should probably move to using async model, but that requires a major rewrite.
+
 ## Installation instructions
 
 The project requires Python 3.7 and later (tested with 3.11). Please use a Python virtual environment to install the dependencies:

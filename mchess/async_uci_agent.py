@@ -340,11 +340,12 @@ class UciAgent:
                            }
                     if 'score' in info:
                         try:
-                            if info['score'].is_mate():
-                                sc = str(info['score'])
-                            else:
-                                cp = float(str(info['score']))/100.0
-                                sc = '{:.2f}'.format(cp)
+                            # if info['score'].is_mate():
+                            #     sc = str(info['score'])
+                            # else:
+                            #     cp = float(str(info['score']))/100.0
+                            #     sc = '{:.2f}'.format(cp)
+                            sc = info['score'].relative.score(mate_score=10000) / 100.0
                         except Exception as e:
                             self.log.error(
                                 f"Score transform failed {info['score']}: {e}")
