@@ -22,13 +22,14 @@ Currently, the following platforms are under development:
 
 ## State of the project
 
-- This project in it's current state depends on flask 1.x, which has known security issues. The websockets library used only supports flask 1.
+- This project in it's current state depends on flask 1.x, which has known security issues. So do __not__ expose the web client to the internet.
+- The websockets library used only supports flask 1. So this needs to be replaced with another stack.
 - The python library used for bluetooth supports only Linux, an platform independent alternative is available with `bleak`, but prefers async model.
 - The whole project should probably move to using async model, but that requires a major rewrite.
 
 ## Installation instructions
 
-The project requires Python 3.7 and later (tested with 3.11). Please use a Python virtual environment to install the dependencies:
+The project requires Python 3.8 and later (tested with 3.11). Please use a Python virtual environment to install the dependencies:
 
 ```bash
 git clone https://github.com/domschl/python-mchess
