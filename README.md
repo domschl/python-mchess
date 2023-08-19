@@ -104,7 +104,7 @@ Then in directory `mchess`, simply start from console:
 python3 turquoise.py
 ```
 
-This will start chess agents for the chess board, automatically detecting board hardware via USB or BLuetooth LE (Linux, Raspberry PI only), and load the [first active] UCI engine (testet with Leela Chess Zero (Lc0) and Stockfish 9).
+This will start chess agents for the chess board, automatically detecting board hardware via USB or BLuetooth LE (Linux, Raspberry PI only), and load the [first active] UCI engine (testet with Leela Chess Zero (Lc0) and Stockfish 16).
 
 Enter `help` in terminal to get an overview of available console commands (e.g. switch sides, take back moves, analyze position).
 
