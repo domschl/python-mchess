@@ -298,6 +298,7 @@ This will show bit-level communication with the ChessLink board.
 
 ## History
 
+- 2023-08-19: Minimal house-keeping, support installation via venv and requirements.txt do make project accessible again.
 - 2020-06-19: Main file renamed from `mchess.py` to `turquoise.py`. Major cleanup of internals, basis for extending functionality, v0.3.0
 - 2020-04-28: Work started on updating changes in module depencies (especially the async interface python-chess)
 
