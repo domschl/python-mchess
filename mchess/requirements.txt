@@ -1,6 +1,12 @@
 # https://docs.python.org/3/tutorial/venv.html
 
-Flask==2.0.1
+pyserial
+chess
+pillow
+# bluepy
+
+markupsafe==2.0.1
+Flask==1.1.4 
 Flask-Sockets==0.2.1
-gevent==21.1.2
-gevent-websocket==0.10.1
+gevent # ==21.12.0
+gevent-websocket # ==0.10.1
