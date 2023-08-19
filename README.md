@@ -20,34 +20,60 @@ Currently, the following platforms are under development:
 | USB          | x     | x            | x     | x       |
 | Bluetooth LE | x     | x            |       |
 
-## Alpha installation instructions
+## Installation instructions
 
-This project is under heavy development, and basically everything described below might change at some point.
-
-### Dependencies
-
-`python-mchess` is written for Python >= 3.7.
-If UCI-engine support (python-chess dependency) is not used, any Python 3.x works. (python-mchess makes use of latest async features of Python 3.7 and later)
-
-`python-mchess` board driver for Chess Link depends on `PySerial` and (Linux/Raspberry Pi only) `BluePy`
-
-#### Optional UCI engine support
-
-In order to use UCI engines with mchess, additionally `python-chess` is used, the Tkinter-GUI prototype uses `Pillow`.
-
-```bash
-pip3 install pyserial [bluepy] [python-chess] [Pillow]
-```
-
-Then clone the repository
+The project requires Python 3.7 and later (tested with 3.11). Please use a Python virtual environment to install the dependencies:
 
 ```bash
 git clone https://github.com/domschl/python-mchess
+cd python-mchess
+# In folder python-mchess:
+python -m venv mchess
+cd mchess
+# Windows: Scripts\activate.bat
+source bin/activate
+# Now install dependencies:
+python -m pip install -r requirements.txt
+# On Linux, install bluepy, skip for macOS and Windows:
+python -m pip install bluepy
 ```
+
+### Notes on venv usage
+
+When stopping to use the virtual environment, use `deactivate` to deactivate the virtual environment, each time you come back to the project, use `source bin/activate` to activate the virtual environment.
+
+To check, if you are running a `venv` environment:
+
+```bash
+pip -V
+# should show something like:
+# <some-path>//python-mchess/mchess/lib/python3.11/site-packages/pip (python 3.11)
+# path should contain 'python-mchess/mchess'
+```
+
+```bash
+- On Windows, use `Scripts\activate.bat` instead of `bin/activate` to activate the environment. On Linxu/macOS use `source bin/activate`.
+- On Windows, the `Scripts` folder is hidden by default. Use `dir /a` to list all files and folders.
+- To deactivate the virtual environment, use `deactivate` on Linux/macOS, or `Scripts\deactivate.bat` on Windows.
+
+#### Web client
+
+Node JS packet manager `npm` is needed to install the javascript dependencies:
+
+```bash
+# In folder python-mchess:
+cd mchess/web
+npm install
+```
+
+This installs the dependencies `cm-chessboard` and `charts.js`.
+
+## Configuration
 
 Now configure some engines:
 
 ```bash
+# In folder python-mchess:
 cd mchess/engines
 ```
 
@@ -65,23 +91,6 @@ A sample content for stockfish in Linux would be:
 ```
 
 Note: Windows users need to use paths with `\\` or `/` for proper json encoding.
-
-#### Web client
-
-The web agent requires python modules `Flask`, `Flask-Sockets` and `gevent`.
-
-```bash
-pip3 install flask flask-sockets gevent
-```
-
-Node JS packet manager `npm` is needed to install the javascript dependencies:
-
-```bash
-cd mchess/web
-npm install
-```
-
-This installs the dependencies `cm-chessboard` and `charts.js`.
 
 ### Start
 

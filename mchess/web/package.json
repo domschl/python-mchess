@@ -1,7 +1,7 @@
 {
   "lockfileVersion": 1,
   "dependencies": {
-    "cm-chessboard": "^2.15.3",
-    "chart.js": "^2.9.3"
+    "chart.js": "^2.9.3",
+    "cm-chessboard": "^2.15.7"
   }
 }
