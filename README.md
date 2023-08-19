@@ -20,34 +20,27 @@ Currently, the following platforms are under development:
 | USB          | x     | x            | x     | x       |
 | Bluetooth LE | x     | x            |       |
 
-## Alpha installation instructions
+## Installation instructions
 
-This project is under heavy development, and basically everything described below might change at some point.
-
-### Dependencies
-
-`python-mchess` is written for Python >= 3.7.
-If UCI-engine support (python-chess dependency) is not used, any Python 3.x works. (python-mchess makes use of latest async features of Python 3.7 and later)
-
-`python-mchess` board driver for Chess Link depends on `PySerial` and (Linux/Raspberry Pi only) `BluePy`
-
-#### Optional UCI engine support
-
-In order to use UCI engines with mchess, additionally `python-chess` is used, the Tkinter-GUI prototype uses `Pillow`.
-
-```bash
-pip3 install pyserial [bluepy] [python-chess] [Pillow]
-```
-
-Then clone the repository
+The project requires Python 3.7 and later (tested with 3.11). Please use a Python virtual environment to install the dependencies:
 
 ```bash
 git clone https://github.com/domschl/python-mchess
+cd python-mchess
+# In folder python-mchess:
+python -m venv mchess
+cd mchess
+source bin/activate
+# Now install dependencies:
+python -m pip install -r requirements.txt
+# On Linux, install bluepy, skip for macOS and Windows:
+python -m pip install bluepy
 ```
 
 Now configure some engines:
 
 ```bash
+# In folder python-mchess:
 cd mchess/engines
 ```
 
@@ -68,15 +61,10 @@ Note: Windows users need to use paths with `\\` or `/` for proper json encoding.
 
 #### Web client
 
-The web agent requires python modules `Flask`, `Flask-Sockets` and `gevent`.
-
-```bash
-pip3 install flask flask-sockets gevent
-```
-
 Node JS packet manager `npm` is needed to install the javascript dependencies:
 
 ```bash
+# In folder python-mchess:
 cd mchess/web
 npm install
 ```
