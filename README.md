@@ -45,7 +45,7 @@ To check, if you are running a `venv` environment:
 ```bash
 pip -V
 # should show something like:
-# <some-path>//python-mchess/mchess/lib/python3.11/site-packages/pip (python 3.11)
+# <some-path>/python-mchess/mchess/lib/python3.11/site-packages/pip (python 3.11)
 # path should contain 'python-mchess/mchess'
 ```
 
