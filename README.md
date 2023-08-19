@@ -30,12 +30,45 @@ cd python-mchess
 # In folder python-mchess:
 python -m venv mchess
 cd mchess
+# Windows: Scripts\activate.bat
 source bin/activate
 # Now install dependencies:
 python -m pip install -r requirements.txt
 # On Linux, install bluepy, skip for macOS and Windows:
 python -m pip install bluepy
 ```
+
+### Notes on venv usage
+
+When stopping to use the virtual environment, use `deactivate` to deactivate the virtual environment, each time you come back to the project, use `source bin/activate` to activate the virtual environment.
+
+To check, if you are running a `venv` environment:
+
+```bash
+pip -V
+# should show something like:
+# <some-path>//python-mchess/mchess/lib/python3.11/site-packages/pip (python 3.11)
+# path should contain 'python-mchess/mchess'
+```
+
+```bash
+- On Windows, use `Scripts\activate.bat` instead of `bin/activate` to activate the environment. On Linxu/macOS use `source bin/activate`.
+- On Windows, the `Scripts` folder is hidden by default. Use `dir /a` to list all files and folders.
+- To deactivate the virtual environment, use `deactivate` on Linux/macOS, or `Scripts\deactivate.bat` on Windows.
+
+#### Web client
+
+Node JS packet manager `npm` is needed to install the javascript dependencies:
+
+```bash
+# In folder python-mchess:
+cd mchess/web
+npm install
+```
+
+This installs the dependencies `cm-chessboard` and `charts.js`.
+
+## Configuration
 
 Now configure some engines:
 
@@ -58,18 +91,6 @@ A sample content for stockfish in Linux would be:
 ```
 
 Note: Windows users need to use paths with `\\` or `/` for proper json encoding.
-
-#### Web client
-
-Node JS packet manager `npm` is needed to install the javascript dependencies:
-
-```bash
-# In folder python-mchess:
-cd mchess/web
-npm install
-```
-
-This installs the dependencies `cm-chessboard` and `charts.js`.
 
 ### Start
 
