@@ -180,8 +180,11 @@ class UciAgent:
 
     async def uci_open_engine(self):
         try:
-            transport, engine = await chess.engine.popen_uci(
-                self.engine_json['path'])
+            if 'engine_params' in self.engine_json:
+                engine_path = [self.engine_json['path']] + self.engine_json['engine_params']
+            else:
+                engine_path = self.engine_json['path']
+            transport, engine = await chess.engine.popen_uci(engine_path)
             self.engine = engine
             self.transport = transport
             self.log.info(f"Engine {self.name} opened.")
@@ -344,8 +347,11 @@ class UciAgent:
                             #     sc = str(info['score'])
                             # else:
                             #     cp = float(str(info['score']))/100.0
-                            #     sc = '{:.2f}'.format(cp)
-                            sc = info['score'].relative.score(mate_score=10000) / 100.0
+                            #     sc = '{:.2f}'.format(cp) 
+                            if info['score'].is_mate():
+                                sc = f"#{info['score'].relative.mate()}"
+                            else:
+                                sc = info['score'].relative.score(mate_score=10000) / 100.0
                         except Exception as e:
                             self.log.error(
                                 f"Score transform failed {info['score']}: {e}")

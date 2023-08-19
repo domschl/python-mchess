@@ -95,6 +95,17 @@ A sample content for stockfish in Linux would be:
 }
 ```
 
+An example for `lc0` (Leela Chess Zero) with CUDA backend:
+
+```json
+  "name": "lc0",
+  "path": "/home/user/lc0/build/release/lc0",
+  "engine_params": ["--backend=cuda"],
+  "active": true
+```
+
+Note: The field "engine_params" is optional and can contain a list of additional parameters for the engine that are given on start.
+
 Note: Windows users need to use paths with `\\` or `/` for proper json encoding.
 
 ### Start
@@ -142,7 +153,7 @@ Do NOT use `sudo` on subsequent starts, or the communication might fail. If scan
 
 All engine descriptions in directory 'engines' will now contain the default-UCI options for each engine. Those can be edited e.g. to enable tablebases or other UCI options.
 
-![Console mchess](https://raw.github.com/domschl/python-mchess/master/images/MchessAlpha.png)
+![Console mchess](https://raw.github.com/domschl/python-mchess/master/images/TurquoiseAlpha.png)
 _Console output of python module, allows terminal interactions: enter 'help' for an overview of console commands_
 
 ## Usage
@@ -215,6 +226,7 @@ The mandatory fields in `<engine-name>.json` are:
 | -------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`   | e.g. `"stockfish"`                | Name of executable of the engine, e.g. `stockfish`. Unfortunately this name must be precisely equal to the name of the json file, and must be referenced in `preferences.json` as either `computer_player_name` or `computer_player2_name` and within `active_agents`. That is subject to improvement in the future. |
 | `path`   | e.g. `"/usr/local/bin/stockfish"` | Path to the engine executable. Windows users must either use `\\` or `/` in json files as path separators.                                                                                                                                                                                                           |
+| `engine_params` | `["--backend=cuda"]` | Optional list of additional parameters for the engine that are given on start. This entry should be ommited, if no parameter are necessary. |
 | `active` | `true`                            | `mchess.py` currently uses only the first two active engines. If more engines are configured, the unused ones should be set to `false`                                                                                                                                                                               |
 
 Once the UCI engine is started for the first time, the UCI-options of the engine are enumerated and added to the `<engine-name>.json` config file. That allows further customization of each engine. Some commonly used options are:
