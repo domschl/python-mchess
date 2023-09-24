@@ -115,19 +115,29 @@ class AsyncWebAgent:
     def mchess_style(self, request):
         return web.FileResponse('web/styles/mchess.css')
 
+    async def send_out(self, ws, text):
+        await ws.send_str(text)
+
     def send2ws(self, ws, text):
         if ws.closed:
             self.log.warning(f"Closed websocket encountered: {ws}")
             return False
-        asyncio.run_coroutine_threadsafe(ws.send_str(text), self.event_loop)
+        self.log.info(f"Sending {text} to {ws}")
+        asyncio.run(self.send_out(ws, text))
         return True
 
     async def websocket_handler(self, request):
-        ws = web.WebSocketResponse(autoclose=False)
+        ws = web.WebSocketResponse()
+        thread_log = logging.getLogger("ThrdWeb")
+        thread_log.setLevel(logging.INFO)
+
         await ws.prepare(request)
 
         if ws not in self.ws_clients:
             self.ws_clients.append(ws)
+            thread_log.info(f"New ws client {ws}! (clients: {len(self.ws_clients)})")
+        else:
+            thread_log.info(f"Client already registered! (clients: {len(self.ws_clients)})")
 
         if self.last_board is not None and self.last_attribs is not None:
             msg = {'cmd': 'display_board', 'fen': self.last_board.fen(), 'pgn': self.last_pgn,
@@ -135,7 +145,7 @@ class AsyncWebAgent:
             try:
                 await ws.send_str(json.dumps(msg))
             except Exception as e:
-                self.log.warning(
+                thread_log.warning(
                     "Sending to WebSocket client {} failed with {}".format(ws, e))
                 return
         for actor in self.agent_state_cache:
@@ -143,7 +153,7 @@ class AsyncWebAgent:
             try:
                 await ws.send_str(json.dumps(msg))
             except Exception as e:
-                self.log.warning(
+                thread_log.warning(
                     f"Failed to update agents states to new web-socket client: {e}")
         if self.uci_engines_cache != {}:
             await ws.send_str(json.dumps(self.uci_engines_cache))
@@ -156,24 +166,25 @@ class AsyncWebAgent:
 
         async for msg in ws:
             if msg.type == aiohttp.WSMsgType.TEXT:
-                if msg.data is not None:
-                    self.log.info(
-                        "Client ws_dispatch: ws:{} msg:{}".format(ws, msg.data))
-                    try:
-                        self.log.info(f"Received: {msg.data}")
-                        self.appque.put(json.loads(msg.data))
-                    except Exception as e:
-                        self.log.warning(f"WebClient sent invalid JSON: {msg.data}: {e}")
+                # if msg.data is not None:
+                thread_log.info(
+                    "Client ws_dispatch: ws:{} msg:{}".format(ws, msg.data))
+                try:
+                    self.log.info(f"Received: {msg.data}")
+                    self.appque.put(json.loads(msg.data))
+                except Exception as e:
+                    thread_log.warning(f"WebClient sent invalid JSON: {msg.data}: {e}")
                 # if msg.data == 'close':
                 #     await ws.close()
                 # else:
                 #     await ws.send_str(msg.data + '/answer')
             elif msg.type == aiohttp.WSMsgType.ERROR:
-                self.log.warning(f'ws connection closed with exception {ws.exception()}')
+                thread_log.warning(f'ws connection closed with exception {ws.exception()}')
+                break
             else:
-                self.log.error(f"Unexpected message {msg.data}, of type {msg.type}")
-            
-        self.log.warning(f"WS-CLOSE: {ws}")
+                thread_log.error(f"Unexpected message {msg.data}, of type {msg.type}")
+                break
+        thread_log.warning(f"WS-CLOSE: {ws}")
         self.ws_clients.remove(ws)
 
         return ws
@@ -187,6 +198,7 @@ class AsyncWebAgent:
     def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
         self.last_board = board
         self.last_attribs = attribs
+        self.log.info(f"Display board, clients: {len(self.ws_clients)}")
         try:
             game = chess.pgn.Game().from_board(board)
             game.headers["White"] = attribs["white_name"]
@@ -219,7 +231,7 @@ class AsyncWebAgent:
                     f"Sending display_move {move_msg} to WebSocket client {ws} failed with {e}")
 
     def set_valid_moves(self, board, vals):
-        self.log.info("web set valid called.")
+        self.log.info(f"web set valid called, clients: {len(self.ws_clients)}.")
         self.valid_moves_cache = {
             "cmd": "valid_moves",
             "valid_moves": [],
