@@ -3,6 +3,7 @@
 pyserial
 chess==1.10.0
 pillow
+aiohttp
 # bluepy
 
 markupsafe==2.0.1

@@ -26,6 +26,7 @@ class TurquoiseDispatcher:
         self.tk_agent = None
         self.qt_agent = None
         self.web_agent = None
+        self.aweb_agent = None
         self.uci_agent = None
         self.uci_agent2 = None
 
@@ -130,6 +131,12 @@ class TurquoiseDispatcher:
             self.agents_all.append(self.web_agent)
         else:
             self.qt_agent = None
+        if 'aweb' in self.agents:
+            self.log.warning('Uncharted territory: aweb agent')
+            self.aweb_agent = self.agents['aweb']
+            self.agents_all.append(self.aweb_agent)
+        else:
+            self.qt_agent = None
 
         self.uci_agent = None
         self.uci_agent2 = None
@@ -170,6 +177,8 @@ class TurquoiseDispatcher:
             agents += [self.tk_agent]
         if self.web_agent and self.web_agent.agent_ready() is True:
             agents += [self.web_agent]
+        if self.aweb_agent and self.aweb_agent.agent_ready() is True:
+            agents += [self.aweb_agent]
         return agents
 
     def get_uci_agent(self):
@@ -197,7 +206,7 @@ class TurquoiseDispatcher:
         if self.uci_agent is not None:
             while self.uci_agent.stopping is True:
                 time.sleep(0.1)
-                if time.time()-t0 > 5:
+                if time.time() - t0 > 5:
                     t0 = time.time()
                     self.log.warning(
                         f"Problems stopping {self.uci_agent.name}")
@@ -205,7 +214,7 @@ class TurquoiseDispatcher:
         if self.uci_agent2 is not None:
             while self.uci_agent2.stopping is True:
                 time.sleep(0.1)
-                if time.time()-t0 > 5:
+                if time.time() - t0 > 5:
                     t0 = time.time()
                     self.log.warning(
                         f"Problems stopping {self.uci_agent2.name}")
@@ -306,7 +315,7 @@ class TurquoiseDispatcher:
             else:
                 if len(ags) > 0:
                     ags += ", "
-                ags += '"'+p.name+'"'
+                ags += '"' + p.name + '"'
         self.log.info(f"Agents {ags} initialized")
 
     def set_loglevels(self, prefs):
@@ -570,7 +579,7 @@ class TurquoiseDispatcher:
             self.analysis_active = False
 
     def position_fetch(self, msg):
-        for agent in self.player_b+self.player_w:
+        for agent in self.player_b + self.player_w:
             if agent.name == msg['from']:
                 fen = agent.get_fen()
                 # Only treat as setup, if it's not the start position
@@ -639,7 +648,7 @@ class TurquoiseDispatcher:
 
     def move(self, msg):
         self.log.info(f"move: {msg['uci']}, {msg}")
-        self.log.info(f"board.fen()")
+        self.log.info("board.fen()")
         self.uci_stop_engines()
         self.undo_stack = []
         self.undo_stats_stack = []

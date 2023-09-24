@@ -25,6 +25,7 @@ class TurquoiseSetup():
             'tk': ('tk_agent', 'TkAgent'),
             'qt': ('qt_agent', 'QtAgent'),
             'web': ('web_agent', 'WebAgent'),
+            'aweb': ('async_web_agent', 'AsyncWebAgent'),
             'computer': ('async_uci_agent', ['UciEngines', 'UciAgent'])
         }
 
@@ -89,6 +90,13 @@ class TurquoiseSetup():
             },
             "web": {
                 "port": 8001,
+                "bind_address": "localhost",
+                "tls": False,
+                "private_key": "",
+                "public_key": ""
+            },
+            "aweb": {
+                "port": 8002,
                 "bind_address": "localhost",
                 "tls": False,
                 "private_key": "",
@@ -201,15 +209,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     msg = r"""
- _______                          _                
-|__   __|                        (_)               
-    | |_   _ _ __ __ _ _   _  ___  _ ___  ___       
-    | | | | | '__/ _` | | | |/ _ \| / __|/ _ \      
-    | | |_| | | | (_| | |_| | (_) | \__ \  __/      
-    |_|\__,_|_|  \__, |\__,_|\___/|_|___/\___|      
-                    | |   _____ _         {} 
-                    |_|  / ____| |                  
-               _ __ ___ | |    | |__   ___  ___ ___ 
+ _______                          _
+|__   __|                        (_)
+    | |_   _ _ __ __ _ _   _  ___  _ ___  ___
+    | | | | | '__/ _` | | | |/ _ \| / __|/ _ \
+    | | |_| | | | (_| | |_| | (_) | \__ \  __/
+    |_|\__,_|_|  \__, |\__,_|\___/|_|___/\___|
+                    | |   _____ _         {}
+                    |_|  / ____| |
+               _ __ ___ | |    | |__   ___  ___ ___
               | '_ ` _ \| |    | '_ \ / _ \/ __/ __|
               | | | | | | |____| | | |  __/\__ \__ \\
               |_| |_| |_|\_____|_| |_|\___||___/___/"""
