@@ -7,6 +7,7 @@ import os
 import threading
 import asyncio
 import copy
+import aiohttp
 from aiohttp import web
 import chess
 import chess.pgn
@@ -17,6 +18,7 @@ class AsyncWebAgent:
         self.name = 'AsyncWebAgent'
         self.prefs = prefs
         self.log = logging.getLogger("AsyncWebAgent")
+        self.log.setLevel(logging.INFO)
         self.appque = appque
         self.orientation = True
         self.active = False
@@ -37,6 +39,7 @@ class AsyncWebAgent:
         self.last_attribs = None
         self.last_pgn = None
         self.socket_thread_active = False
+        self.ws_clients = []
 
         if 'port' in self.prefs:
             self.port = self.prefs['port']
@@ -71,31 +74,25 @@ class AsyncWebAgent:
         self.chesssym = {"unic": ["-", "×", "†", "‡", "½"],
                          "ascii": ["-", "x", "+", "#", "1/2"]}
 
+        self.event_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.event_loop)
         self.worker = threading.Thread(target=self.async_web_agent_thread, args=())
         self.worker.setDaemon(True)
         self.worker.start()
+        self.active = True
 
     def async_web_agent_thread(self):
         self.socket_thread_active = True
-        asyncio.set_event_loop(asyncio.new_event_loop())
+        asyncio.set_event_loop(self.event_loop)
         self.app = web.Application(debug=True)
         self.app.add_routes([web.static('/node_modules', 'web/node_modules'),
                              web.static('/images', 'web/images')])
 
         self.app.add_routes([web.get('/', self.web_root),
-                            web.get('/favicon.ico', self.web_favicon),
-                            web.get('/scripts/mchess.js', self.mchess_script),
-                            web.get('/styles/mchess.css', self.mchess_style)
-                            ])
-
-        # self.app.add_url_rule('/index.html', 'index', self.web_root)
-        # self.app.add_url_rule('/scripts/mchess.js',
-        #                       'script', self.mchess_script)
-        # self.app.add_url_rule('/styles/mchess.css',
-        #                       'style', self.mchess_style)
-        # self.app.add_url_rule('/images/<path:path>',
-        #                       'images', self.images)
-        # self.active = True
+                             web.get('/favicon.ico', self.web_favicon),
+                             web.get('/scripts/mchess.js', self.mchess_script),
+                             web.get('/styles/mchess.css', self.mchess_style)])
+        self.app.add_routes([web.get('/ws', self.websocket_handler)])
         web.run_app(self.app, handle_signals=False)  # in threads: no signals!
         while self.socket_thread_active:
             asyncio.sleep(0.1)
@@ -118,11 +115,156 @@ class AsyncWebAgent:
     def mchess_style(self, request):
         return web.FileResponse('web/styles/mchess.css')
 
+    def send2ws(self, ws, text):
+        asyncio.run_coroutine_threadsafe(ws.send_str(text), self.event_loop)
+
+    async def websocket_handler(self, request):
+        ws = web.WebSocketResponse()
+        await ws.prepare(request)
+
+        self.ws_clients.append(ws)
+
+        if self.last_board is not None and self.last_attribs is not None:
+            msg = {'cmd': 'display_board', 'fen': self.last_board.fen(), 'pgn': self.last_pgn,
+                   'attribs': self.last_attribs}
+            try:
+                await ws.send_str(json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending to WebSocket client {} failed with {}".format(ws, e))
+                return
+        for actor in self.agent_state_cache:
+            msg = self.agent_state_cache[actor]
+            try:
+                await ws.send_str(json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    f"Failed to update agents states to new web-socket client: {e}")
+        if self.uci_engines_cache != {}:
+            await ws.send_str(json.dumps(self.uci_engines_cache))
+        if self.display_move_cache != {}:
+            await ws.send_str(json.dumps(self.display_move_cache))
+        if self.valid_moves_cache != {}:
+            await ws.send_str(json.dumps(self.valid_moves_cache))
+        if self.game_stats_cache != {}:
+            await ws.send_str(json.dumps(self.game_stats_cache))
+
+        async for msg in ws:
+            if msg.type == aiohttp.WSMsgType.TEXT:
+                if msg.data is not None:
+                    self.log.info(
+                        "Client ws_dispatch: ws:{} msg:{}".format(ws, msg.data))
+                    try:
+                        self.log.info(f"Received: {msg.data}")
+                        self.appque.put(json.loads(msg.data))
+                    except Exception as e:
+                        self.log.warning(f"WebClient sent invalid JSON: {msg.data}: {e}")
+                # if msg.data == 'close':
+                #     await ws.close()
+                # else:
+                #     await ws.send_str(msg.data + '/answer')
+            elif msg.type == aiohttp.WSMsgType.ERROR:
+                self.log.warning(f'ws connection closed with exception {ws.exception()}')
+            else:
+                self.log.error(f"Unexpected message {msg.data}, of type {msg.type}")
+
+        return ws
+
     def agent_ready(self):
         return self.active
 
     def quit(self):
         self.socket_thread_active = False
+
+    def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
+        self.last_board = board
+        self.last_attribs = attribs
+        try:
+            game = chess.pgn.Game().from_board(board)
+            game.headers["White"] = attribs["white_name"]
+            game.headers["Black"] = attribs["black_name"]
+            pgntxt = str(game)
+        except Exception as e:
+            self.log.error("Invalid PGN position, {}".format(e))
+            return
+        self.last_pgn = pgntxt
+        # print("pgn: {}".format(pgntxt))
+        msg = {'cmd': 'display_board', 'fen': board.fen(), 'pgn': pgntxt,
+               'attribs': attribs}
+        for ws in self.ws_clients:
+            try:
+                self.send2ws(ws, json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending board to WebSocket client {} failed with {}".format(ws, e))
+
+    def display_move(self, move_msg):
+        self.display_move_cache = move_msg
+        for ws in self.ws_clients:
+            try:
+                self.send2ws(ws, json.dumps(move_msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending display_move to WebSocket client {} failed with {}".format(ws, e))
+
+    def set_valid_moves(self, board, vals):
+        self.log.info("web set valid called.")
+        self.valid_moves_cache = {
+            "cmd": "valid_moves",
+            "valid_moves": [],
+            'actor': 'WebAgent'
+        }
+        if vals is not None:
+            for v in vals:
+                self.valid_moves_cache['valid_moves'].append(vals[v])
+        self.log.info(f"Valid-moves: {self.valid_moves_cache}")
+        for ws in self.ws_clients:
+            try:
+                self.send2ws(ws, json.dumps(self.valid_moves_cache))
+            except Exception as e:
+                self.log.warning(
+                    "Sending display_move to WebSocket client {} failed with {}".format(ws, e))
+
+    def display_info(self, board, info):
+        for ws in self.ws_clients:
+            try:
+                self.send2ws(ws, json.dumps(info))
+            except Exception as e:
+                self.log.warning(
+                    "Sending move-info to WebSocket client {} failed with {}".format(ws, e))
+
+    def engine_list(self, msg):
+        for engine in msg["engines"]:
+            self.log.info(f"Engine {engine} announced.")
+        self.uci_engines_cache = msg
+        for ws in self.ws_clients:
+            try:
+                self.send2ws(ws, json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending uci-info to WebSocket client {} failed with {}".format(ws, e))
+
+    def game_stats(self, stats):
+        msg = {'cmd': 'game_stats', 'stats': stats, 'actor': 'WebAgent'}
+        self.game_stats_cache = msg
+        self.log.info(f"Game stats: {msg}")
+        for ws in self.ws_clients:
+            try:
+                self.send2ws(ws, json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending game_stats to WebSocket client {} failed with {}".format(ws, e))
+
+    def agent_states(self, msg):
+        self.agent_state_cache[msg['actor']] = msg
+        for ws in self.ws_clients:
+            try:
+                self.send2ws(ws, json.dumps(msg))
+            except Exception as e:
+                self.log.warning(
+                    "Sending agent-state info to WebSocket client {} failed with {}".format(ws, e))
+
+
 
 class NotPorted:
     def ws_dispatch(self, ws, message):
@@ -169,18 +311,11 @@ class NotPorted:
             self.ws_dispatch(handle, message)
         del self.ws_clients[handle]
 
-
 #    def sock_connect(self):
 #        print("CONNECT")
 
 #    def sock_message(self, message):
 #        print("RECEIVED: {}".format(message))
-
-    def agent_ready(self):
-        return self.active
-
-    def quit(self):
-        self.socket_thread_active = False
 
     def display_board(self, board, attribs={'unicode': True, 'invert': False, 'white_name': 'white', 'black_name': 'black'}):
         self.last_board = board
