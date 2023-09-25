@@ -96,7 +96,7 @@ class Transport():
         except Exception as e:
             self.log.error(f"BLE scanning failed. {e}")
             self.log.error(f"excecute: {self.fix_cmd}")
-            self.log.error(f"or (if that fails) start ONCE with: `sudo python mchess.py`"
+            self.log.error("or (if that fails) start ONCE with: `sudo python mchess.py`"
                            "(fix ownership of chess_link_config.json afterwards)")
             return None
 
@@ -111,9 +111,9 @@ class Transport():
                 self.log.debug(f"  {desc} ({adtype}) = {value}")
                 if desc == "Complete Local Name":
                     if "MILLENNIUM CHESS" in value:
-                        self.log.info(f"Autodetected Millennium Chess Link board at "
-                                      "Bluetooth LE address: {bledev.addr}, "
-                                      "signal strength (rssi): {bledev.rssi}")
+                        self.log.info("Autodetected Millennium Chess Link board at "
+                                      f"Bluetooth LE address: {bledev.addr}, "
+                                      f"signal strength (rssi): {bledev.rssi}")
                         return bledev.addr
         return None
 
@@ -142,7 +142,7 @@ class Transport():
         self.worker_threader.start()
         timer = time.time()
         self.conn_state = None
-        while self.conn_state is None and time.time()-timer < 5.0:
+        while self.conn_state is None and time.time() - timer < 5.0:
             time.sleep(0.1)
         if self.conn_state is None:
             return False
@@ -175,7 +175,7 @@ class Transport():
         return self.init
 
     def agent_state(self, que, state, msg):
-        que.put('agent-state: '+state + ' ' + msg)
+        que.put('agent-state: ' + state + ' ' + msg)
 
     def mil_open(self, address, mil, que, log):
 
@@ -234,7 +234,7 @@ class Transport():
                     # Enable notification magic:
                     log.debug('Enabling notifications')
                     mil.writeCharacteristic(
-                        rxh+1, (1).to_bytes(2, byteorder='little'))
+                        rxh + 1, (1).to_bytes(2, byteorder='little'))
                 if chri.uuid == "49535343-8841-43f4-a8d4-ecbe34729bb3":  # RX char, tx for us
                     tx = chri
                     # txh = chri.getHandle()
@@ -285,7 +285,7 @@ class Transport():
 
         rx, tx = self.mil_open(address, mil, que, log)
 
-        time_last_out = time.time()+0.2
+        time_last_out = time.time() + 0.2
 
         if rx is None or tx is None:
             bt_error = True
@@ -304,21 +304,21 @@ class Transport():
                 except Exception as e:
                     if rep_err is False:
                         self.log.warning(
-                            "Reconnect failed: {e} [Local bluetooth problem?]")
+                            f"Reconnect failed: {e} [Local bluetooth problem?]")
                         rep_err = True
                     bt_error = True
                 if bt_error is False:
                     self.log.info(f"Bluetooth reconnected to {address}")
                     rx, tx = self.mil_open(address, mil, que, log)
-                    time_last_out = time.time()+0.2
+                    time_last_out = time.time() + 0.2
                     self.init = True
 
-            if wrque.empty() is False and time.time()-time_last_out > message_delta_time:
+            if wrque.empty() is False and time.time() - time_last_out > message_delta_time:
                 msg = wrque.get()
                 gpar = 0
                 for b in msg:
                     gpar = gpar ^ ord(b)
-                msg = msg+clp.hex2(gpar)
+                msg = msg + clp.hex2(gpar)
                 if self.protocol_debug is True:
                     log.debug("blue_ble write: <{}>".format(msg))
                 bts = ""

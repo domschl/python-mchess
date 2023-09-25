@@ -34,11 +34,11 @@ class ChessLinkAgent:
         self.log.debug("waiting for board position")
         start = time.time()
         warned = False
-        while time.time()-start < timeout and self.init_position is False:
+        while time.time() - start < timeout and self.init_position is False:
             if self.cl_brd.error_condition is True:
                 self.log.info("ChessLink board not available.")
                 return
-            if time.time()-start > 2 and warned is False:
+            if time.time() - start > 2 and warned is False:
                 warned = True
                 self.log.info(
                     f"Searching for ChessLink board (max {timeout} secs)...")

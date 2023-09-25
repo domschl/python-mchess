@@ -66,7 +66,7 @@ class Transport():
         :returns: Name of the port with a ChessLink board, None on failure.
         """
         self.log.info("Searching for ChessLink boards...")
-        self.log.info('Note: search can be disabled in < chess_link_config.json >' \
+        self.log.info('Note: search can be disabled in < chess_link_config.json >'
                       ' by setting {"autodetect": false}')
         port = None
         ports = self.usb_port_search()
@@ -176,12 +176,12 @@ class Transport():
             try:
                 b = chr(ord(usbdev.read()) & 127)
             except Exception as e:
-                self.log.debug("USB read failed: {e}")
+                self.log.debug(f"USB read failed: {e}")
                 return []
             if b == cmd:
                 rep.append(b)
                 start = True
-        for _ in range(num-1):
+        for _ in range(num - 1):
             try:
                 b = chr(ord(usbdev.read()) & 127)
                 rep.append(b)
@@ -195,7 +195,7 @@ class Transport():
     def agent_state(self, que, state, msg):
         if state != self.last_agent_state:
             self.last_agent_state = state
-            que.put('agent-state: '+state + ' ' + msg)
+            que.put('agent-state: ' + state + ' ' + msg)
 
     def open_mt(self, port):
         """
@@ -237,7 +237,7 @@ class Transport():
                 try:
                     self.usb_dev.close()
                 except Exception as e:
-                    self.log.debug('Failed to close usb: {e}')
+                    self.log.debug(f'Failed to close usb: {e}')
                 try:
                     self.usb_dev = serial.Serial(
                         self.uport, 38400, timeout=0.1)

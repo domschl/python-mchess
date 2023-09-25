@@ -1,7 +1,7 @@
 ''' implementation framework for additional bluetooth module, not functional '''
 import logging
 
-import chess_link_protocol as clp
+# import chess_link_protocol as clp
 
 # TODO: expand empty framework with actual functionality!
 

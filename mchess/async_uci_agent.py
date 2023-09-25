@@ -27,7 +27,7 @@ class UciEngines:
 
         COMMON_ENGINES = ['stockfish', 'crafty', 'komodo']
         for engine_name in COMMON_ENGINES:
-            engine_json_path = os.path.join('engines', engine_name+'.json')
+            engine_json_path = os.path.join('engines', engine_name + '.json')
             if os.path.exists(engine_json_path):
                 inv = False
                 try:
@@ -76,16 +76,16 @@ class UciEngines:
                     f'Failed to read UCI engine description {engine_json_path}: {e}')
                 continue
             if 'name' not in engine_json:
-                self.log.error(f"Mandatory parameter 'name' is not in UCI description "
-                               "{engine_json_path}, ignoring this engine.")
+                self.log.error("Mandatory parameter 'name' is not in UCI description "
+                               f"{engine_json_path}, ignoring this engine.")
                 continue
             if 'path' not in engine_json:
-                self.log.error(f"Mandatory parameter 'path' is not in UCI description "
-                               "{engine_json_path}, ignoring this engine.")
+                self.log.error("Mandatory parameter 'path' is not in UCI description "
+                               f"{engine_json_path}, ignoring this engine.")
                 continue
             if os.path.exists(engine_json['path']) is False:
-                self.log.error(f"Invalid path {engine_json['path']} in UCI description "
-                               "{engine_json_path}, ignoring this engine.")
+                self.log.error("Invalid path {engine_json['path']} in UCI description "
+                               f"{engine_json_path}, ignoring this engine.")
                 continue
 
             if 'active' not in engine_json or engine_json['active'] is False:
@@ -134,7 +134,7 @@ class UciAgent:
         self.engine_json = engine_json
         self.prefs = prefs
         self.name = engine_json['name']
-        self.log = logging.getLogger('UciAgent_'+self.name)
+        self.log = logging.getLogger('UciAgent_' + self.name)
         # self.engine = engine_spec['engine']
         # self.ponder_board = None
         self.active = True
@@ -150,7 +150,7 @@ class UciAgent:
         self.worker.setDaemon(True)
         self.worker.start()
         self.info_throttle = 0.5
-        self.version_name = self.name+" 1.0"
+        self.version_name = self.name + " 1.0"
         self.authors = ""
         self.engine = None
         self.transport = None
@@ -159,7 +159,8 @@ class UciAgent:
     async def async_quit(self):
         try:
             await self.engine.quit()
-        except:
+        except Exception as _:
+            del _
             # Something has changed with timing in Python 3.9, ignore quit-error.
             pass
 
@@ -199,7 +200,7 @@ class UciAgent:
             self.log.debug(f"Engine id: {self.engine.id}")
         except Exception as e:
             self.log.error(f"Failed to popen UCI engine {self.name} at "
-                           "{self.engine_json['path']}, ignoring: {e}")
+                           f"{self.engine_json['path']}, ignoring: {e}")
             self.engine = None
             self.transport = None
             return False
@@ -289,7 +290,7 @@ class UciAgent:
 
     async def async_go(self, board, mtime, ponder=False, analysis=False):
         if mtime != -1:
-            mtime = mtime/1000.0
+            mtime = mtime / 1000.0
         if ponder is True:
             self.log.warning("Ponder not implemented!")
         pv = []
@@ -301,7 +302,7 @@ class UciAgent:
                 pv.append([])
                 last_info.append(0)
                 res = {'cmd': 'current_move_info',
-                       'multipv_index': i+1,
+                       'multipv_index': i + 1,
                        'variant': [],
                        'actor': self.name,
                        'score': ''
@@ -325,19 +326,19 @@ class UciAgent:
                 as self.analysisresults:
             async for info in self.analysisresults:
                 if self.stopping is True:
-                    self.log.info(f"Stop: request, aborting calc.")
+                    self.log.info("Stop: request, aborting calc.")
                     break
                 self.log.debug(info)
                 if 'pv' in info:
                     if 'multipv' in info:
-                        ind = info['multipv']-1
+                        ind = info['multipv'] - 1
                     else:
                         ind = 0
                     pv[ind] = []
                     for mv in info['pv']:
                         pv[ind].append(mv.uci())
                     rep = {'cmd': 'current_move_info',
-                           'multipv_index': ind+1,
+                           'multipv_index': ind + 1,
                            'variant': pv[ind],
                            'actor': self.name
                            }
@@ -347,7 +348,7 @@ class UciAgent:
                             #     sc = str(info['score'])
                             # else:
                             #     cp = float(str(info['score']))/100.0
-                            #     sc = '{:.2f}'.format(cp) 
+                            #     sc = '{:.2f}'.format(cp)
                             if info['score'].is_mate():
                                 sc = f"#{info['score'].relative.mate()}"
                             else:
@@ -367,7 +368,7 @@ class UciAgent:
                         rep['nps'] = info['nps']
                     if 'tbhits' in info:
                         rep['tbhits'] = info['tbhits']
-                    if time.time()-last_info[ind] > self.info_throttle:
+                    if time.time() - last_info[ind] > self.info_throttle:
                         self.que.put(rep)
                         last_info[ind] = time.time()
                         skipped = False

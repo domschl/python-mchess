@@ -43,9 +43,9 @@ def hexd(digit):
     :returns: an ASCII hex character '0'..'F'
     """
     if digit < 10:
-        return chr(ord('0')+digit)
+        return chr(ord('0') + digit)
     else:
-        return chr(ord('A')-10+digit)
+        return chr(ord('A') - 10 + digit)
 
 
 def hex2(num):
@@ -56,9 +56,9 @@ def hex2(num):
     :param num: uint_8 integer 0..255
     :returns: Returns a 2-digit hex code '00'..'FF'
     """
-    d1 = num//16
+    d1 = num // 16
     d2 = num % 16
-    s = hexd(d1)+hexd(d2)
+    s = hexd(d1) + hexd(d2)
     return s
 
 
@@ -75,7 +75,7 @@ def check_block_crc(msg):
         gpar = 0
         for b in msg[:-2]:
             gpar = gpar ^ ord(b)
-        if msg[-2]+msg[-1] != hex2(gpar):
+        if msg[-2] + msg[-1] != hex2(gpar):
             logging.warning(f"CRC error rep={msg} CRCs: {ord(msg[-2])}!={hex2(gpar)}")
             return False
         else:
@@ -96,5 +96,5 @@ def add_block_crc(msg):
     gpar = 0
     for b in msg:
         gpar = gpar ^ ord(b)
-    msg = msg+hex2(gpar)
+    msg = msg + hex2(gpar)
     return msg
