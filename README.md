@@ -132,6 +132,8 @@ Note: Bluetooth LE hardware detection either requires admin privileges for the o
 ```bash
 # adapt path:
 sudo setcap 'cap_net_raw,cap_net_admin+eip' PATH/TO/LIB/python3._x_/site-packages/bluepy/bluepy-helper
+# e.g. for venv installation with python 3.11 (in directory python-mchess/mchess):
+sudo setcap 'cap_net_raw,cap_net_admin+eip' lib/python3.11/site-packages/bluepy/bluepy-helper
 
 # The simply start mchess, scanning is started automatically:
 python3 turquoise.py
