@@ -1,12 +1,8 @@
 ''' Web interface using aiohttp '''
 import logging
-# import time
-# import queue
 import json
-# import os
 import threading
 import asyncio
-# import copy
 import aiohttp
 from aiohttp import web
 import chess
