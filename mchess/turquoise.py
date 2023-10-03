@@ -8,7 +8,7 @@ import queue
 from turquoise_dispatch import TurquoiseDispatcher
 
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 
 class TurquoiseSetup():
@@ -24,8 +24,7 @@ class TurquoiseSetup():
             'terminal': ('terminal_agent', 'TerminalAgent'),
             'tk': ('tk_agent', 'TkAgent'),
             'qt': ('qt_agent', 'QtAgent'),
-            'web': ('web_agent', 'WebAgent'),
-            'aweb': ('async_web_agent', 'AsyncWebAgent'),
+            'web': ('async_web_agent', 'AsyncWebAgent'),
             'computer': ('async_uci_agent', ['UciEngines', 'UciAgent'])
         }
 
@@ -66,7 +65,7 @@ class TurquoiseSetup():
     def set_default_preferences(self, version):
         prefs = {
             "version": version,
-            "agents": ["chesslink", "terminal", "web", "aweb", "computer"],
+            "agents": ["chesslink", "terminal", "web", "computer"],
             "default_human_player": {
                 "name": "human",
                 "location": ""
@@ -89,13 +88,6 @@ class TurquoiseSetup():
                 "max_plies_terminal": 10
             },
             "web": {
-                "port": 8001,
-                "bind_address": "localhost",
-                "tls": False,
-                "private_key": "",
-                "public_key": ""
-            },
-            "aweb": {
                 "port": 8001,
                 "bind_address": "localhost",
                 "tls": False,
