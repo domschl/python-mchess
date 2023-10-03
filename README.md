@@ -45,11 +45,8 @@ python -m pip install bluepy
 
 ### Update notes
 
-Version 0.4.0 uses a different web stack, using `aiohttp`. It it easiest to remove preferences.json (save a backup)
-remove flask, and use `requirements.txt` as described above to install the new dependencies. Current code
-supports running both stacks (flask and aiohttp) simulateously (you need to manually adapt the ports), but
-using the flask-based `web` agent is no longer recommended. Use the aiohttp-based `aweb` agent instead.
-For the time being, both `web` agent and `aweb` agent are created, but that will be cleaned up at a later point.
+Version 0.4.1 uses a different web stack, using `aiohttp`. Use `requirements.txt` as described above to 
+install the new dependencies. It works with the same configuration as the old flask-basked stack.
 
 ### Notes on venv usage
 
@@ -261,9 +258,9 @@ the future for an UCI-customization option.
                                          |
                         +----------------+---------------+----------------------+
                         |                |               |                      |
-     +---------------------+  +--------------------+  +-------------------+ +-----------------+
-     | chess_link_agent.py |  | async_uci_agent.py |  | terminal_agent.py | | [a]web_agent.py |
-     +---------------------+  +--------------------+  +-------------------+ +-----------------+
+     +---------------------+  +--------------------+  +-------------------+ +--------------+
+     | chess_link_agent.py |  | async_uci_agent.py |  | terminal_agent.py | | web_agent.py |
+     +---------------------+  +--------------------+  +-------------------+ +--------------+
                         |            uci-engines         I/O hardware         multiple web
                         |            Stockfish,                               clients
                         |            Lc0 etc.
@@ -318,6 +315,7 @@ This will show bit-level communication with the ChessLink board.
 
 ## History
 
+- 2023-10-03: Version 0.4.1 removed Flask code completely, new aiohttp based stack should be drop-in replacement working with same configuration as 0.3.0 flask.
 - 2023-10-03: Version 0.4.0 start development: Replaced outdated Flask web stack with aiohttp, fixing security problems
 - 2023-08-19: Minimal house-keeping, support installation via venv and requirements.txt do make project accessible again.
 - 2020-06-19: Main file renamed from `mchess.py` to `turquoise.py`. Major cleanup of internals, basis for extending functionality, v0.3.0
