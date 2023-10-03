@@ -8,7 +8,7 @@ import queue
 from turquoise_dispatch import TurquoiseDispatcher
 
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 
 class TurquoiseSetup():
@@ -25,6 +25,7 @@ class TurquoiseSetup():
             'tk': ('tk_agent', 'TkAgent'),
             'qt': ('qt_agent', 'QtAgent'),
             'web': ('web_agent', 'WebAgent'),
+            'aweb': ('async_web_agent', 'AsyncWebAgent'),
             'computer': ('async_uci_agent', ['UciEngines', 'UciAgent'])
         }
 
@@ -65,7 +66,7 @@ class TurquoiseSetup():
     def set_default_preferences(self, version):
         prefs = {
             "version": version,
-            "agents": ["chesslink", "terminal", "web", "computer"],
+            "agents": ["chesslink", "terminal", "web", "aweb", "computer"],
             "default_human_player": {
                 "name": "human",
                 "location": ""
@@ -88,6 +89,13 @@ class TurquoiseSetup():
                 "max_plies_terminal": 10
             },
             "web": {
+                "port": 8001,
+                "bind_address": "localhost",
+                "tls": False,
+                "private_key": "",
+                "public_key": ""
+            },
+            "aweb": {
                 "port": 8001,
                 "bind_address": "localhost",
                 "tls": False,
@@ -201,15 +209,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     msg = r"""
- _______                          _                
-|__   __|                        (_)               
-    | |_   _ _ __ __ _ _   _  ___  _ ___  ___       
-    | | | | | '__/ _` | | | |/ _ \| / __|/ _ \      
-    | | |_| | | | (_| | |_| | (_) | \__ \  __/      
-    |_|\__,_|_|  \__, |\__,_|\___/|_|___/\___|      
-                    | |   _____ _         {} 
-                    |_|  / ____| |                  
-               _ __ ___ | |    | |__   ___  ___ ___ 
+ _______                          _
+|__   __|                        (_)
+    | |_   _ _ __ __ _ _   _  ___  _ ___  ___
+    | | | | | '__/ _` | | | |/ _ \| / __|/ _ \
+    | | |_| | | | (_| | |_| | (_) | \__ \  __/
+    |_|\__,_|_|  \__, |\__,_|\___/|_|___/\___|
+                    | |   _____ _         {}
+                    |_|  / ____| |
+               _ __ ___ | |    | |__   ___  ___ ___
               | '_ ` _ \| |    | '_ \ / _ \/ __/ __|
               | | | | | | |____| | | |  __/\__ \__ \\
               |_| |_| |_|\_____|_| |_|\___||___/___/"""

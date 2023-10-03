@@ -32,8 +32,10 @@ class TerminalAgent:
 
         self.kbd_moves = []
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
-                       "pythc": [(chess.PAWN, chess.WHITE), (chess.KNIGHT, chess.WHITE), (chess.BISHOP, chess.WHITE), (chess.ROOK, chess.WHITE), (chess.QUEEN, chess.WHITE), (chess.KING, chess.WHITE),
-                                 (chess.PAWN, chess.BLACK), (chess.KNIGHT, chess.BLACK), (chess.BISHOP, chess.BLACK), (chess.ROOK, chess.BLACK), (chess.QUEEN, chess.BLACK), (chess.KING, chess.BLACK)],
+                       "pythc": [(chess.PAWN, chess.WHITE), (chess.KNIGHT, chess.WHITE), (chess.BISHOP, chess.WHITE),
+                                 (chess.ROOK, chess.WHITE), (chess.QUEEN, chess.WHITE), (chess.KING, chess.WHITE),
+                                 (chess.PAWN, chess.BLACK), (chess.KNIGHT, chess.BLACK), (chess.BISHOP, chess.BLACK),
+                                 (chess.ROOK, chess.BLACK), (chess.QUEEN, chess.BLACK), (chess.KING, chess.BLACK)],
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
         self.chesssym = {"unic": ["-", "×", "†", "‡", "½"],
@@ -66,16 +68,16 @@ class TerminalAgent:
         tpos.append(
             "  +------------------------+")
         for y in reversed(range(8)):
-            ti = "{} |".format(y+1)
+            ti = "{} |".format(y + 1)
             for x in range(8):
                 f = board.piece_at(chess.square(x, y))
-                if (x+y) % 2 == 0 and use_unicode_chess_figures is True:
+                if (x + y) % 2 == 0 and use_unicode_chess_figures is True:
                     invinv = invert
                 else:
                     invinv = not invert
                 c = '?'
                 # for i in range(len(self.figrep['int'])):
-                if f == None:
+                if f is None:
                     c = ' '
                 else:
                     if use_unicode_chess_figures is True:
@@ -88,7 +90,7 @@ class TerminalAgent:
                     #     else:
                     #         c = self.figrep['ascii'][i]
                     # break
-                if (x+y) % 2 == 0:
+                if (x + y) % 2 == 0:
                     ti += "\033[7m {} \033[m".format(c)
                 else:
                     ti += " {} ".format(c)
@@ -106,14 +108,14 @@ class TerminalAgent:
         ams = ["" for _ in range(11)]
         mc = len(board.move_stack)
         if board.turn == chess.BLACK:
-            mmc = 2*lines-1
+            mmc = 2 * lines - 1
         else:
-            mmc = 2*lines
+            mmc = 2 * lines
         if mc > mmc:
             mc = mmc
         move_store = []
 
-        amsi = lines-1
+        amsi = lines - 1
         for i in range(mc):
             if amsi < 0:
                 logging.error("bad amsi index! {}".format(amsi))
@@ -198,16 +200,16 @@ class TerminalAgent:
                                 "Move contains empty origin: {}".format(e))
                             fig = "?"
                 move = '{:10s}'.format(
-                    fig+" "+chess.SQUARE_NAMES[mv.from_square]+sep+chess.SQUARE_NAMES[mv.to_square]+pro+chk)
+                    fig + " " + chess.SQUARE_NAMES[mv.from_square] + sep + chess.SQUARE_NAMES[mv.to_square] + pro + chk)
 
-            if amsi == lines-1 and score != None:
+            if amsi == lines - 1 and score is not None:
                 move = '{} ({})'.format(move, score)
                 score = ''
 
             ams[amsi] = move + ams[amsi]
             if board.turn == chess.WHITE:
                 ams[amsi] = "{:3d}. ".format(board.fullmove_number) + ams[amsi]
-                amsi = amsi-1
+                amsi = amsi - 1
 
         for i in reversed(range(len(move_store))):
             board.push(move_store[i])
@@ -290,7 +292,7 @@ class TerminalAgent:
 
         header = '['
         if 'actor' in info:
-            header += info['actor']+' '
+            header += info['actor'] + ' '
         if 'nps' in info:
             header += 'Nps: {} '.format(info['nps'])
         if 'depth' in info:
@@ -335,7 +337,7 @@ class TerminalAgent:
                     continue
                 print('{:80s}'.format(self.info_provider[ac]['header'][:80]))
                 n += 1
-                for i in range(1, self.max_mpv+1):
+                for i in range(1, self.max_mpv + 1):
                     if i in self.info_provider[ac]:
                         print('{:80s}'.format(self.info_provider[ac][i][:80]))
                         n += 1
@@ -346,7 +348,7 @@ class TerminalAgent:
 
     def set_valid_moves(self, board, vals):
         self.kbd_moves = []
-        if vals != None:
+        if vals is not None:
             for v in vals:
                 self.kbd_moves.append(vals[v])
 

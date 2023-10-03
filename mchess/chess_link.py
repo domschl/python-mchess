@@ -145,9 +145,9 @@ class ChessLink:
                     self.mill_config['btle_iface'] = 0
                     self.write_configuration()
                 if 'transport' in self.mill_config and 'address' in self.mill_config:
-                    self.log.debug(f"Checking default configuration for board via "
-                                   "{self.mill_config['transport']} "
-                                   "at {self.mill_config['address']}")
+                    self.log.debug("Checking default configuration for board via "
+                                   f"{self.mill_config['transport']} "
+                                   f"at {self.mill_config['address']}")
                     self.orientation = self.mill_config['orientation']
                     trans = self._open_transport(self.mill_config['transport'],
                                                  self.mill_config['protocol_debug'])
@@ -289,7 +289,7 @@ class ChessLink:
                 return True
         except Exception as e:
             self.log.error(f"Failed to save default configuration {self.mill_config} "
-                           "to chess_link_config.json: {e}")
+                           f"to chess_link_config.json: {e}")
         return False
 
     def _event_worker_thread(self, que, mutex):
@@ -309,7 +309,7 @@ class ChessLink:
                     i = toks.find(' ')
                     if i != -1:
                         state = toks[:i]
-                        emsg = toks[i+1:]
+                        emsg = toks[i + 1:]
                     else:
                         state = toks
                         emsg = ''
@@ -333,7 +333,7 @@ class ChessLink:
                             if len(rp) == 64:
                                 for y in range(8):
                                     for x in range(8):
-                                        c = rp[7-x+y*8]
+                                        c = rp[7 - x + y * 8]
                                         i = self.figrep['ascii'].find(c)
                                         if i == -1:
                                             self.log.warning(
@@ -345,7 +345,7 @@ class ChessLink:
                                             if self.orientation is True:
                                                 position[y][x] = f
                                             else:
-                                                position[7-y][7-x] = f
+                                                position[7 - y][7 - x] = f
                             else:
                                 val_pos = False
                                 self.log.warning(
@@ -366,7 +366,7 @@ class ChessLink:
                                     position_inv = copy.deepcopy(position)
                                     for x in range(8):
                                         for y in range(8):
-                                            position[x][y] = position_inv[7-x][7-y]
+                                            position[x][y] = position_inv[7 - x][7 - y]
                                 else:
                                     self.log.debug(
                                         "Cable-right board detected.")
@@ -375,7 +375,7 @@ class ChessLink:
                                     position_inv = copy.deepcopy(position)
                                     for x in range(8):
                                         for y in range(8):
-                                            position[x][y] = position_inv[7-x][7-y]
+                                            position[x][y] = position_inv[7 - x][7 - y]
                             fen = self.position_to_fen(position)
                             sfen = self.short_fen(fen)
 
@@ -404,7 +404,7 @@ class ChessLink:
                         self.log.debug('got version reply')
                         if len(msg) == 7:
                             version = '{}.{}'.format(
-                                msg[1]+msg[2], msg[3]+msg[4])
+                                msg[1] + msg[2], msg[3] + msg[4])
                             self.board_version = version
                             # self.appque.put(
                             #     {'version': version, 'actor': self.name})
@@ -420,7 +420,7 @@ class ChessLink:
                         self.log.debug('got write-register reply')
                         if len(msg) == 7:
                             reg_cont = '{}->{}'.format(
-                                msg[1]+msg[2], msg[3]+msg[4])
+                                msg[1] + msg[2], msg[3] + msg[4])
                             self.log.debug(f'Register written: {reg_cont}')
                         else:
                             self.log.warning(
@@ -429,7 +429,7 @@ class ChessLink:
                         self.log.debug('got read-register reply')
                         if len(msg) == 7:
                             reg_cont = '{}->{}'.format(
-                                msg[1]+msg[2], msg[3]+msg[4])
+                                msg[1] + msg[2], msg[3] + msg[4])
                             self.log.debug(f'Register content: {reg_cont}')
                         else:
                             self.log.warning(
@@ -513,11 +513,11 @@ class ChessLink:
             else:
                 npos = len(positions)
             dpos = [[0 for x in range(8)] for y in range(8)]
-            for ply in range(npos-1):
-                frame = ply*2
+            for ply in range(npos - 1):
+                frame = ply * 2
                 for y in range(8):
                     for x in range(8):
-                        if positions[ply+1][y][x] != positions[ply][y][x]:
+                        if positions[ply + 1][y][x] != positions[ply][y][x]:
                             if positions[ply][y][x] != 0:
                                 dpos[y][x] |= 1 << (7 - frame)
                             else:
@@ -534,20 +534,20 @@ class ChessLink:
         """
         if self.connected is True:
             leds = [[0 for x in range(9)] for y in range(9)]
-            cmd = "L"+clp.hex2(freq)
+            cmd = "L" + clp.hex2(freq)
             for y in range(8):
                 for x in range(8):
                     if pos[y][x] != 0:
                         if self.orientation is True:
-                            leds[7-x][y] |= pos[y][x]
-                            leds[7-x+1][y] |= pos[y][x]
-                            leds[7-x][y+1] |= pos[y][x]
-                            leds[7-x+1][y+1] |= pos[y][x]
+                            leds[7 - x][y] |= pos[y][x]
+                            leds[7 - x + 1][y] |= pos[y][x]
+                            leds[7 - x][y + 1] |= pos[y][x]
+                            leds[7 - x + 1][y + 1] |= pos[y][x]
                         else:
-                            leds[x][7-y] |= pos[y][x]
-                            leds[x+1][7-y] |= pos[y][x]
-                            leds[x][7-y+1] |= pos[y][x]
-                            leds[x+1][7-y+1] |= pos[y][x]
+                            leds[x][7 - y] |= pos[y][x]
+                            leds[x + 1][7 - y] |= pos[y][x]
+                            leds[x][7 - y + 1] |= pos[y][x]
+                            leds[x + 1][7 - y + 1] |= pos[y][x]
 
             for y in range(9):
                 for x in range(9):
@@ -594,20 +594,20 @@ class ChessLink:
         """
         if self.connected is True:
             leds = [[0 for x in range(9)] for y in range(9)]
-            cmd = "L"+clp.hex2(freq)
+            cmd = "L" + clp.hex2(freq)
             for y in range(8):
                 for x in range(8):
                     if pos[y][x] != 0:
                         if self.orientation is True:
-                            leds[7-x][y] = pos[y][x]
-                            leds[7-x+1][y] = pos[y][x]
-                            leds[7-x][y+1] = pos[y][x]
-                            leds[7-x+1][y+1] = pos[y][x]
+                            leds[7 - x][y] = pos[y][x]
+                            leds[7 - x + 1][y] = pos[y][x]
+                            leds[7 - x][y + 1] = pos[y][x]
+                            leds[7 - x + 1][y + 1] = pos[y][x]
                         else:
-                            leds[x][7-y] = pos[y][x]
-                            leds[x+1][7-y] = pos[y][x]
-                            leds[x][7-y+1] = pos[y][x]
-                            leds[x+1][7-y+1] = pos[y][x]
+                            leds[x][7 - y] = pos[y][x]
+                            leds[x + 1][7 - y] = pos[y][x]
+                            leds[x][7 - y + 1] = pos[y][x]
+                            leds[x + 1][7 - y + 1] = pos[y][x]
 
             for y in range(9):
                 for x in range(9):
@@ -641,7 +641,7 @@ class ChessLink:
         See `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
         """
         if self.connected is True:
-            cmd = "R"+clp.hex2(2)
+            cmd = "R" + clp.hex2(2)
             self.trans.write_mt(cmd)
         else:
             self.log.warning(
@@ -661,7 +661,7 @@ class ChessLink:
                                "should be 0: no debounce, 1 .. 4: 1-4  scan times debounce')
             else:
                 # 3: no debounce, 4: 2 scans debounce, -> 7: 4 scans
-                cmd += clp.hex2(count+3)
+                cmd += clp.hex2(count + 3)
                 self.trans.write_mt(cmd)
                 self.log.debug(f"Setting board scan debounce to {count}")
         else:
@@ -676,7 +676,7 @@ class ChessLink:
         See `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
         """
         if self.connected is True:
-            cmd = "R"+clp.hex2(4)
+            cmd = "R" + clp.hex2(4)
             self.trans.write_mt(cmd)
         else:
             self.log.warning(
@@ -694,7 +694,7 @@ class ChessLink:
                 self.log.error(f'Invalid brightness level {level}, "\
                                "should be between 0(darkest)..1.0(brightest)')
             else:
-                ilevel = int(level*15)
+                ilevel = int(level * 15)
                 cmd += clp.hex2(ilevel)
                 self.trans.write_mt(cmd)
                 self.log.debug(
@@ -710,7 +710,7 @@ class ChessLink:
         See `magic-link.md <https://github.com/domschl/python-mchess/blob/master/mchess/magic-board.md>`_.
         """
         if self.connected is True:
-            cmd = "R"+clp.hex2(1)
+            cmd = "R" + clp.hex2(1)
             if self.connected is True:
                 self.trans.write_mt(cmd)
             else:
@@ -734,7 +734,7 @@ class ChessLink:
                 self.log.error(f'Invalid scan_ms {scan_ms}, shouldbe between 30.72(fastest, '
                                'might not work)..522.24(slowest, about 2 scans per sec))')
             else:
-                iscans = int(scan_ms/2.048)
+                iscans = int(scan_ms / 2.048)
                 if iscans < 15:
                     iscans = 15
                 if iscans > 255:
@@ -779,7 +779,7 @@ class ChessLink:
         blanks = 0
         for y in range(8):
             for x in range(8):
-                f = position[7-y][x]
+                f = position[7 - y][x]
                 c = '?'
                 for i in range(len(self.figrep['int'])):
                     if self.figrep['int'][i] == f:
@@ -813,7 +813,7 @@ class ChessLink:
             castle += "q"
         if castle == '':
             castle = '-'
-        fen += castle+' - 0 1'
+        fen += castle + ' - 0 1'
         return fen
 
     def fen_to_position(self, fen):
@@ -845,7 +845,7 @@ class ChessLink:
                     self.log.error(
                         f"Internal FEN2 error decoding {c} at {y}{x}")
                     return []
-                position[7-y][x] = ci
+                position[7 - y][x] = ci
                 x += 1
             if y < 7 and fenp[fi] != '/':
                 self.log.error(
@@ -931,7 +931,7 @@ class ChessLink:
                 pos = copy.deepcopy(self.position)
                 for y in range(8):
                     for x in range(8):
-                        pos[y][x] = self.position[7-y][7-x]
+                        pos[y][x] = self.position[7 - y][7 - x]
                 self.position = pos
         self.write_configuration()
 

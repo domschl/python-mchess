@@ -17,15 +17,13 @@ Currently, the following platforms are under development:
 
 |              | Linux | Raspberry Pi | macOS (x86, ARM) | Windows |
 | ------------ | ----- | ------------ | ----- | ------- |
-| USB          | x     | x            | x     | x       |
+| USB          | x     | x            | x     | x(?)       |
 | Bluetooth LE | x     | x            |       |
 
 ## State of the project
 
-- This project in it's current state depends on flask 1.x, which has known security issues. So do __not__ expose the web client to the internet.
-- The websockets library used only supports flask 1. So this needs to be replaced with another stack.
+- With version 0.4.0 the old Flask stack has been replaced by aiohttp (the old version with is tagged as 0.3.0, has however a security problem)
 - The python library used for bluetooth supports only Linux, an platform independent alternative is available with `bleak`, but prefers async model.
-- The whole project should probably move to using async model, but that requires a major rewrite.
 
 ## Installation instructions
 
@@ -44,6 +42,14 @@ python -m pip install -r requirements.txt
 # On Linux, install bluepy, skip for macOS and Windows:
 python -m pip install bluepy
 ```
+
+### Update notes
+
+Version 0.4.0 uses a different web stack, using `aiohttp`. It it easiest to remove preferences.json (save a backup)
+remove flask, and use `requirements.txt` as described above to install the new dependencies. Current code
+supports running both stacks (flask and aiohttp) simulateously (you need to manually adapt the ports), but
+using the flask-based `web` agent is no longer recommended. Use the aiohttp-based `aweb` agent instead.
+For the time being, both `web` agent and `aweb` agent are created, but that will be cleaned up at a later point.
 
 ### Notes on venv usage
 
@@ -173,7 +179,7 @@ Currrently, there doesn't exist much of a GUI to configure `mchess`, and configu
 
 ### `preferences.json`, general options for mchess
 
-- outdated! The documentation of `preferences.json` is invalid.
+- outdated! The documentation of `preferences.json` is not up-to-date.
 
 | Field                       | Default                                                                                                        | Description                                                                                                                                                                                                                                                                                                                                                                                                               |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -255,9 +261,9 @@ the future for an UCI-customization option.
                                          |
                         +----------------+---------------+----------------------+
                         |                |               |                      |
-     +---------------------+  +--------------------+  +-------------------+ +--------------+
-     | chess_link_agent.py |  | async_uci_agent.py |  | terminal_agent.py | | web_agent.py |
-     +---------------------+  +--------------------+  +-------------------+ +--------------+
+     +---------------------+  +--------------------+  +-------------------+ +-----------------+
+     | chess_link_agent.py |  | async_uci_agent.py |  | terminal_agent.py | | [a]web_agent.py |
+     +---------------------+  +--------------------+  +-------------------+ +-----------------+
                         |            uci-engines         I/O hardware         multiple web
                         |            Stockfish,                               clients
                         |            Lc0 etc.
@@ -312,6 +318,7 @@ This will show bit-level communication with the ChessLink board.
 
 ## History
 
+- 2023-10-03: Version 0.4.0 start development: Replaced outdated Flask web stack with aiohttp, fixing security problems
 - 2023-08-19: Minimal house-keeping, support installation via venv and requirements.txt do make project accessible again.
 - 2020-06-19: Main file renamed from `mchess.py` to `turquoise.py`. Major cleanup of internals, basis for extending functionality, v0.3.0
 - 2020-04-28: Work started on updating changes in module depencies (especially the async interface python-chess)

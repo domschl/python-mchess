@@ -1,7 +1,7 @@
 import logging
 import threading
 import json
-import copy
+# import copy
 import socket
 import mimetypes
 import chess
@@ -61,14 +61,16 @@ class WebAgent:
         if 'tls' in self.prefs and self.prefs['tls'] is True:
             if 'private_key' not in self.prefs or 'public_key' not in self.prefs:
                 self.log.error(
-                    f"Cannot configure tls without public_key and private_key configured!")
+                    "Cannot configure tls without public_key and private_key configured!")
             else:
                 self.private_key = prefs['private_key']
                 self.public_key = prefs['public_key']
 
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
-                       "pythc": [(chess.PAWN, chess.WHITE), (chess.KNIGHT, chess.WHITE), (chess.BISHOP, chess.WHITE), (chess.ROOK, chess.WHITE), (chess.QUEEN, chess.WHITE), (chess.KING, chess.WHITE),
-                                 (chess.PAWN, chess.BLACK), (chess.KNIGHT, chess.BLACK), (chess.BISHOP, chess.BLACK), (chess.ROOK, chess.BLACK), (chess.QUEEN, chess.BLACK), (chess.KING, chess.BLACK)],
+                       "pythc": [(chess.PAWN, chess.WHITE), (chess.KNIGHT, chess.WHITE), (chess.BISHOP, chess.WHITE),
+                                 (chess.ROOK, chess.WHITE), (chess.QUEEN, chess.WHITE), (chess.KING, chess.WHITE),
+                                 (chess.PAWN, chess.BLACK), (chess.KNIGHT, chess.BLACK), (chess.BISHOP, chess.BLACK),
+                                 (chess.ROOK, chess.BLACK), (chess.QUEEN, chess.BLACK), (chess.KING, chess.BLACK)],
                        "unic": "♟♞♝♜♛♚ ♙♘♗♖♕♔",
                        "ascii": "PNBRQK.pnbrqk"}
         self.chesssym = {"unic": ["-", "×", "†", "‡", "½"],
@@ -220,7 +222,7 @@ class WebAgent:
             "valid_moves": [],
             'actor': 'WebAgent'
         }
-        if vals != None:
+        if vals is not None:
             for v in vals:
                 self.valid_moves_cache['valid_moves'].append(vals[v])
         self.log.info(f"Valid-moves: {self.valid_moves_cache}")

@@ -17,4 +17,8 @@ mchess/lib
 mchess/include
 mchess/pyvenv.cfg
 .DS_Store
+\#*
+*~
+.#*
+mchess/certs
 
