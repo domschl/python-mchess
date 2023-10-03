@@ -105,7 +105,6 @@ class AsyncWebAgent:
         self.app.add_routes([web.get('/ws', self.websocket_handler)])
         if self.tls is True:
             self.ssl_context = ssl.SSLContext()  # = TLS
-#             self.ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
             try:
                 self.ssl_context.load_cert_chain(self.public_key, self.private_key)
             except Exception as e:
@@ -122,10 +121,12 @@ class AsyncWebAgent:
         self.log.info("Starting web runner")
         if self.tls is True:
             self.log.info(f"TLS active, bind={self.bind_addresses}, port={self.port}")
+            print(f"Webclient at: https://localhost:{self.port}")
             site = web.TCPSite(runner, self.bind_addresses, self.port, ssl_context=self.ssl_context)
         else:
             self.log.info(f"TLS NOT active, bind={self.bind_addresses}, port={self.port}")
             site = web.TCPSite(runner, self.bind_addresses, self.port)            
+            print(f"Webclient at: http://localhost:{self.port}")
         await site.start()
         self.log.info("Web server active")
         while self.active:
