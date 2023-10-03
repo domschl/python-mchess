@@ -66,7 +66,7 @@ class TurquoiseSetup():
     def set_default_preferences(self, version):
         prefs = {
             "version": version,
-            "agents": ["chesslink", "terminal", "web", "computer"],
+            "agents": ["chesslink", "terminal", "web", "aweb", "computer"],
             "default_human_player": {
                 "name": "human",
                 "location": ""
@@ -96,7 +96,7 @@ class TurquoiseSetup():
                 "public_key": ""
             },
             "aweb": {
-                "port": 8002,
+                "port": 8001,
                 "bind_address": "localhost",
                 "tls": False,
                 "private_key": "",
