@@ -27,8 +27,12 @@ var id = null;
 
 var oldFen = null;
 
-wsConnect("ws://" + window.location.host + "/ws");
-
+if (window.location.protocol == 'http:') {
+    wsConnect("ws://" + window.location.host + "/ws");
+} else {
+    wsConnect("wss://" + window.location.host + "/ws");
+}
+    
 var cmds = {
     'agent_state': agent_state,
     'display_board': display_board,

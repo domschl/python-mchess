@@ -3,10 +3,13 @@ import logging
 import json
 import threading
 import asyncio
+import ssl
 import aiohttp
 from aiohttp import web
 import chess
 import chess.pgn
+import time
+import os
 
 
 class AsyncWebAgent:
@@ -44,21 +47,32 @@ class AsyncWebAgent:
             self.log.warning(f'Port not configured, defaulting to {self.port}')
 
         if 'bind_address' in self.prefs:
-            self.bind_address = self.prefs['bind_address']
+            if isinstance(self.prefs['bind_address'], list) is True:
+                self.bind_addresses = self.prefs['bind_address']
+            else:
+                self.bind_addresses = self.prefs['bind_address']                
         else:
-            self.bind_address = 'localhost'
+            self.bind_addresses = 'localhost'
             self.log.warning(
-                f'Bind_address not configured, defaulting to f{self.bind_address}, set to "0.0.0.0" for remote accessibility')
+                f'Bind_address not configured, defaulting to {self.bind_address}, set to "[\'0.0.0.0\']" for remote accessibility'
+            )
 
         self.private_key = None
         self.public_key = None
+        self.tls = False
         if 'tls' in self.prefs and self.prefs['tls'] is True:
             if 'private_key' not in self.prefs or 'public_key' not in self.prefs:
-                self.log.error(
-                    "Cannot configure tls without public_key and private_key configured!")
+                self.log.error("Cannot configure tls without public_key and private_key configured!")
+                self.log.warning("Downgraded to tls=False")
             else:
-                self.private_key = prefs['private_key']
-                self.public_key = prefs['public_key']
+                if os.path.exists(self.prefs['private_key']) is False:
+                    self.log.error(f"Private key file {self.prefs['private_key']} does not exist, downgrading to no TLS")
+                elif os.path.exists(self.prefs['public_key']) is False:
+                    self.log.error(f"Public key file {self.prefs['public_key']} does not exist, downgrading to no TLS")
+                else:
+                    self.private_key = self.prefs['private_key']
+                    self.public_key = self.prefs['public_key']
+                    self.tls = True
 
         self.figrep = {"int": [1, 2, 3, 4, 5, 6, 0, -1, -2, -3, -4, -5, -6],
                        "pythc": [(chess.PAWN, chess.WHITE), (chess.KNIGHT, chess.WHITE), (chess.BISHOP, chess.WHITE),
@@ -72,12 +86,12 @@ class AsyncWebAgent:
 
         self.event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.event_loop)
-        self.worker = threading.Thread(target=self.async_web_agent_thread, args=())
+        self.worker = threading.Thread(target=self.web_agent_thread, args=())
         self.worker.setDaemon(True)
         self.worker.start()
         self.active = True
 
-    def async_web_agent_thread(self):
+    def web_agent_thread(self):
         self.socket_thread_active = True
         asyncio.set_event_loop(self.event_loop)
         self.app = web.Application(debug=True)
@@ -89,16 +103,35 @@ class AsyncWebAgent:
                              web.get('/scripts/mchess.js', self.mchess_script),
                              web.get('/styles/mchess.css', self.mchess_style)])
         self.app.add_routes([web.get('/ws', self.websocket_handler)])
-        web.run_app(self.app, handle_signals=False)  # in threads: no signals!
-        while self.socket_thread_active:
-            asyncio.sleep(0.1)
+        if self.tls is True:
+            self.ssl_context = ssl.SSLContext()  # = TLS
+#             self.ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+            try:
+                self.ssl_context.load_cert_chain(self.public_key, self.private_key)
+            except Exception as e:
+                self.log.error(f"Cannot create cert chain: {e}, not using TLS")
+                self.tls = False
+        asyncio.run(self.async_web_agent())
+        while self.active is True:
+            time.sleep(0.1)
+        self.log.info("Web starter thread stopped")
 
-        # self.sockets.add_url_rule('/ws', 'ws', self.ws_sockets)
-        # self.ws_clients = {}
-        # self.ws_handle = 0
-        # self.log.debug("Initializing web server...")
-        # self.socket_handler()  # Start threads for web and ws:sockets
-
+    async def async_web_agent(self):
+        runner = web.AppRunner(self.app)
+        await runner.setup()
+        self.log.info("Starting web runner")
+        if self.tls is True:
+            self.log.info(f"TLS active, bind={self.bind_addresses}, port={self.port}")
+            site = web.TCPSite(runner, self.bind_addresses, self.port, ssl_context=self.ssl_context)
+        else:
+            self.log.info(f"TLS NOT active, bind={self.bind_addresses}, port={self.port}")
+            site = web.TCPSite(runner, self.bind_addresses, self.port)            
+        await site.start()
+        self.log.info("Web server active")
+        while self.active:
+            await asyncio.sleep(0.1)
+        self.log.info("Web server stopped")
+        
     def web_root(self, request):
         return web.FileResponse('web/index.html')
 
