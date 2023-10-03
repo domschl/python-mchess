@@ -4,7 +4,7 @@
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://domschl.github.io/python-mchess/doc/build/html/index.html)
 
-`python-mchess` is a collections of libraries to work with Millennium's Chess Genius Exclusive chess board via the Chess Link interface.
+`python-mchess` is a collections of libraries to work with Millennium's Chess Genius Exclusive chess board via the Chess Link interface. Alternatively, an eOne board can be used that has the Chess Link interface built in.
 
 Note: the client-side will be renamed to 'turquoise', hence main script is now `turquoise.py`
 
